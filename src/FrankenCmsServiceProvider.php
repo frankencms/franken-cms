@@ -2,9 +2,9 @@
 
 namespace FrankenCms;
 
+use FrankenCms\Commands\FrankenCmsCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use FrankenCms\Commands\FrankenCmsCommand;
 
 class FrankenCmsServiceProvider extends PackageServiceProvider
 {
@@ -19,7 +19,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             ->name('franken-cms')
             ->hasConfigFile()
             ->hasViews()
-            ->hasMigration('create_franken_cms_table')
+            ->hasMigration('o1_create_cms_settings')
             ->hasCommand(FrankenCmsCommand::class);
     }
 }

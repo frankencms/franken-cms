@@ -13,12 +13,12 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/config',
         __DIR__ . '/resources',
-        __DIR__ . '/routes',
     ])
     ->withSkip([
         AddOverrideAttributeToOverriddenMethodsRector::class,
         __DIR__ . '/vendor',
         __DIR__ . '/tests',
+        __DIR__ . '/config',
         DeclareStrictTypesRector::class => [
             __DIR__ . '/resources/**/*.blade.php',
         ],

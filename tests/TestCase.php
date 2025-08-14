@@ -6,7 +6,6 @@ use FrankenCms\FrankenCmsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
 
-
 class TestCase extends Orchestra
 {
     protected function setUp(): void
@@ -14,15 +13,8 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'FrankenCms\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'FrankenCms\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
-    }
-
-    protected function getPackageProviders($app)
-    {
-        return [
-            FrankenCmsServiceProvider::class,
-        ];
     }
 
     public function getEnvironmentSetUp($app)
@@ -34,5 +26,12 @@ class TestCase extends Orchestra
             (include $migration->getRealPath())->up();
          }
          */
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            FrankenCmsServiceProvider::class,
+        ];
     }
 }
