@@ -1,9 +1,9 @@
 <?php
 
-use FrankenCMS\FrankenCms\Enums\DateFormat;
-use FrankenCMS\FrankenCms\Enums\PermalinkStructure;
-use FrankenCMS\FrankenCms\Enums\TimeFormat;
-use FrankenCMS\FrankenCms\Enums\UserRole;
+use FrankenCms\Enums\DateFormat;
+use FrankenCms\Enums\PermalinkStructure;
+use FrankenCms\Enums\TimeFormat;
+use FrankenCms\Enums\UserRole;
 use Spatie\LaravelSettings\Migrations\SettingsMigration;
 
 return new class extends SettingsMigration
