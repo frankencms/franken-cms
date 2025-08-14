@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace FrankenCms\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class FrankenCmsCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'franken-cms';
 
     public $description = 'My command';
 
