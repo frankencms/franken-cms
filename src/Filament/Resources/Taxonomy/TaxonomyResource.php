@@ -1,22 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FrankenCms\Filament\Resources\Taxonomy;
 
-use Filament\Forms;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
+use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Columns\BooleanColumn;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+use FrankenCms\Filament\Resources\Taxonomy\Schemas\TaxonomyForm;
+use FrankenCms\Filament\Resources\Taxonomy\Schemas\TaxonomyTable;
 use FrankenCms\Models\Taxonomy;
 
 class TaxonomyResource extends Resource
 {
     protected static ?string $model = Taxonomy::class;
 
-    //    protected static ?string $navigationGroup = 'Taxonomy';
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
+    protected static string | BackedEnum | null $navigationIcon = Heroicon::RectangleGroup;
     protected static ?int $navigationSort = 3;
 
     public static function getNavigationGroup(): string
@@ -24,23 +25,14 @@ class TaxonomyResource extends Resource
         return config('franken-cms.navigation_group_name');
     }
 
-    public static function form(Forms\Form $form): Forms\Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                TextInput::make('name')->required(),
-                Toggle::make('hierarchical')->label('Hierarchical?'),
-            ]);
+        return TaxonomyForm::make($schema);
     }
 
-    public static function table(Tables\Table $table): Tables\Table
+    public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('name')->sortable()->searchable(),
-                BooleanColumn::make('hierarchical')->label('Hierarchical'),
-            ])
-            ->filters([]);
+        return TaxonomyTable::make($table);
     }
 
     public static function getRelations(): array

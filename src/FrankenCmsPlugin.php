@@ -6,6 +6,11 @@ use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
 use FrankenCms\Filament\Resources\CmsSettings\Pages\CmsSettings;
+use FrankenCms\Filament\Resources\Page\PageResource;
+use FrankenCms\Filament\Resources\Post\PostResource;
+use FrankenCms\Filament\Resources\Taxonomy\TaxonomyResource;
+use FrankenCms\Filament\Resources\Term\TermResource;
+use FrankenCms\Filament\Resources\User\UserResource;
 
 class FrankenCmsPlugin implements Plugin
 {
@@ -25,7 +30,13 @@ class FrankenCmsPlugin implements Plugin
     {
 
         $panel
-            ->resources([])
+            ->resources([
+                TaxonomyResource::class,
+                TermResource::class,
+                UserResource::class,
+                PostResource::class,
+                PageResource::class,
+            ])
             ->pages([
                 CmsSettings::class,
             ])

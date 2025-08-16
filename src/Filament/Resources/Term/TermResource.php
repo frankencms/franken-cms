@@ -1,62 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FrankenCms\Filament\Resources\Term;
 
-use Filament\Forms;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
+use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
-use FrankenCms\Models\Taxonomy;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+use FrankenCms\Filament\Resources\Term\Schemas\TermForm;
+use FrankenCms\Filament\Resources\Term\Schemas\TermTable;
 use FrankenCms\Models\Term;
-use Illuminate\Support\Str;
 
 class TermResource extends Resource
 {
     protected static ?string $model = Term::class;
 
-    //    protected static ?string $navigationGroup = 'Taxonomy';
     protected static ?int $navigationSort = 4;
-
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string | BackedEnum | null $navigationIcon = Heroicon::Tag;
 
     public static function getNavigationGroup(): string
     {
         return config('franken-cms.navigation_group_name');
     }
 
-    public static function form(Forms\Form $form): Forms\Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                TextInput::make('name')
-                    ->live()
-                    ->required(),
-                TextInput::make('slug')
-                    // auto create slug from name
-                    ->afterStateUpdated(fn ($set, $state) => $set('slug', Str::slug($state)))
-                    ->unique(ignoreRecord: true),
-                Select::make('taxonomy_id')
-                    ->label('Taxonomy')
-                    ->options(Taxonomy::all()->pluck('name', 'id'))
-                    ->required(),
-                Select::make('parent_id')
-                    ->label('Parent Term')
-                    ->options(fn ($get) => Term::where('taxonomy_id', $get('taxonomy_id'))->pluck('name', 'id'))
-                    ->searchable(),
-            ]);
+        return TermForm::make($schema);
     }
 
-    public static function table(Tables\Table $table): Tables\Table
+    public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('name')->sortable()->searchable(),
-                TextColumn::make('taxonomy.name')->label('Taxonomy')->sortable(),
-                TextColumn::make('parent.name')->label('Parent Term')->sortable(),
-            ])
-            ->filters([]);
+        return TermTable::make($table);
     }
 
     public static function getRelations(): array

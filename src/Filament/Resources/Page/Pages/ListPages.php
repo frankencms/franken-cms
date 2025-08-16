@@ -2,7 +2,7 @@
 
 namespace FrankenCms\Filament\Resources\Page\Pages;
 
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use FrankenCms\Filament\Resources\Page\PageResource;
 
@@ -13,7 +13,7 @@ class ListPages extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }
