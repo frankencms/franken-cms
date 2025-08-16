@@ -5,13 +5,13 @@ namespace FrankenCms\Filament\Resources\CmsSettings\Schemas;
 use BackedEnum;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Html;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -335,10 +335,8 @@ class CmsSettingsSchema
                                         ->columns(3)
                                         ->columnSpanFull()
                                         ->schema([
-                                            Placeholder::make('common_settings_placeholder')
-                                                ->label('Common Settings')
-                                                ->hiddenLabel()
-                                                ->content(new HtmlString(__('franken-cms::messages.settings.permalinks.form.placeholder.content')))
+                                            Html::make(new HtmlString(__('franken-cms::messages.settings.permalinks.form.placeholder.content')))
+                                                ->key('common_settings_placeholder')
                                                 ->columnSpanFull(),
 
                                             Radio::make('permalink_structure')
@@ -364,10 +362,8 @@ class CmsSettingsSchema
                                                 ->columns(3)
                                                 ->columnSpanFull()
                                                 ->schema([
-                                                    Placeholder::make('optional_placeholder')
-                                                        ->label('Common Settings')
-                                                        ->hiddenLabel()
-                                                        ->content(new HtmlString(__('franken-cms::messages.settings.permalinks.form.optional_placeholder.content')))
+                                                    Html::make(new HtmlString(__('franken-cms::messages.settings.permalinks.form.optional_placeholder.content')))
+                                                        ->key('optional_placeholder')
                                                         ->columnSpanFull(),
 
                                                     TextInput::make('category_base_url')
