@@ -11,12 +11,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Get;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use FrankenCms\Enums\DateFormat;
@@ -132,8 +132,15 @@ class CmsSettings extends SettingsPage
                                             ->label(__('franken-cms::messages.settings.general.form.date_format.label'))
                                             ->options(DateFormat::class)
                                             ->default(DateFormat::FULL_MONTH_DAY_YEAR->value)
-                                            ->helperText(function ($state) {
-                                                return new HtmlString('<p><strong>Preview: </strong>' . now()->format($state) . '</p>');
+                                            ->helperText(function (Get $get, $state) {
+                                                $format = $state instanceof BackedEnum ? $state->value : $state;
+                                                if ($format === DateFormat::CUSTOM->value) {
+                                                    $custom = $get('custom_date_format');
+                                                    if (is_string($custom) && $custom !== '') {
+                                                        $format = $custom;
+                                                    }
+                                                }
+                                                return new HtmlString('<p><strong>Preview: </strong>' . now()->format((string) $format) . '</p>');
                                             })
                                             ->required()
                                             ->columnSpan(2),
@@ -151,8 +158,15 @@ class CmsSettings extends SettingsPage
                                             ->label(__('franken-cms::messages.settings.general.form.time_format.label'))
                                             ->options(TimeFormat::class)
                                             ->default(TimeFormat::HOURS_12_MINUTES_LOWERCASE->value)
-                                            ->helperText(function ($state) {
-                                                return new HtmlString('<p><strong>Preview: </strong>' . now()->format($state) . '</p>');
+                                            ->helperText(function (Get $get, $state) {
+                                                $format = $state instanceof BackedEnum ? $state->value : $state;
+                                                if ($format === TimeFormat::CUSTOM->value) {
+                                                    $custom = $get('custom_time_format');
+                                                    if (is_string($custom) && $custom !== '') {
+                                                        $format = $custom;
+                                                    }
+                                                }
+                                                return new HtmlString('<p><strong>Preview: </strong>' . now()->format((string) $format) . '</p>');
                                             })
                                             ->required()
                                             ->columnSpan(2),
@@ -161,7 +175,7 @@ class CmsSettings extends SettingsPage
                                             ->inlineLabel()
                                             ->label(__('franken-cms::messages.settings.general.form.custom_time_format.label'))
                                             ->columnSpan(2)
-                                            ->visible(fn (Get $get) => $get('time_format') === DateFormat::CUSTOM->value),
+                                            ->visible(fn (Get $get) => $get('time_format') === TimeFormat::CUSTOM->value),
 
                                         Select::make('week_starts_on')
                                             ->inlineLabel()
