@@ -4,11 +4,11 @@ namespace FrankenCms\Commands;
 
 use Illuminate\Console\Command;
 
-class FrankenCmsCommand extends Command
+class InstallCommand extends Command
 {
-    public $signature = 'franken-cms';
+    public $signature = 'franken-cms:install';
 
-    public $description = 'My command';
+    public $description = 'Install the Franken CMS';
 
     public function handle(): int
     {
