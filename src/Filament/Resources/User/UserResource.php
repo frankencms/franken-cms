@@ -9,6 +9,9 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use FrankenCms\Filament\Resources\User\Pages\CreateUser;
+use FrankenCms\Filament\Resources\User\Pages\EditUser;
+use FrankenCms\Filament\Resources\User\Pages\ListUsers;
 use FrankenCms\Filament\Resources\User\Schemas\UserForm;
 use FrankenCms\Filament\Resources\User\Schemas\UserTable;
 
@@ -49,9 +52,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit'   => Pages\EditUser::route('/{record}/edit'),
+            'index'  => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'edit'   => EditUser::route('/{record}/edit'),
         ];
     }
 }

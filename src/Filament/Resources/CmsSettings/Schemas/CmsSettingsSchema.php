@@ -72,7 +72,7 @@ class CmsSettingsSchema
                                         ->inlineLabel()
                                         ->required()
                                         ->label(__('franken-cms::messages.settings.general.form.default_user_role.label'))
-                                        ->options(UserRole::class)
+                                        ->options(self::enumOptions(UserRole::class))
                                         ->selectablePlaceholder(false)
                                         ->columnSpan(2),
 
@@ -89,7 +89,7 @@ class CmsSettingsSchema
                                         ->inlineLabel()
                                         ->live()
                                         ->label(__('franken-cms::messages.settings.general.form.date_format.label'))
-                                        ->options(DateFormat::class)
+                                        ->options(self::enumOptions(DateFormat::class))
                                         ->default(DateFormat::FULL_MONTH_DAY_YEAR)
                                         ->helperText(function (Get $get, $state) {
                                             $format = $state instanceof BackedEnum ? $state->value : $state;
@@ -114,7 +114,7 @@ class CmsSettingsSchema
                                         ->inlineLabel()
                                         ->live()
                                         ->label(__('franken-cms::messages.settings.general.form.time_format.label'))
-                                        ->options(TimeFormat::class)
+                                        ->options(self::enumOptions(TimeFormat::class))
                                         ->default(TimeFormat::HOURS_12_MINUTES_LOWERCASE->value)
                                         ->helperText(function (Get $get, $state) {
                                             $format = $state instanceof BackedEnum ? $state->value : $state;
@@ -332,7 +332,7 @@ class CmsSettingsSchema
                                                 ->live()
                                                 ->inlineLabel()
                                                 ->label('Permalink Structure')
-                                                ->options(PermalinkStructure::class)
+                                                ->options(self::enumOptions(PermalinkStructure::class))
                                                 ->default(PermalinkStructure::POST_NAME->value)
                                                 ->required()
                                                 ->columnSpan(2),
@@ -347,7 +347,7 @@ class CmsSettingsSchema
                                                 })
                                                 ->inlineLabel()
                                                 ->rules(['required_if:permalink_structure,' . PermalinkStructure::CUSTOM->value, new PermalinkContainsPostPlaceholder])
-                                                ->options(PermalinkTags::class)
+                                                ->options(self::enumOptions(PermalinkTags::class))
                                                 ->multiple()
                                                 ->helperText(fn ($state) => implode('/', $state))
                                                 ->columnSpan(2),
@@ -388,5 +388,14 @@ class CmsSettingsSchema
                         ]),
                 ]),
         ]);
+    }
+
+    /**
+     * Convert an enum class to options array with string values as keys and labels as values
+     * which is need to be compatible with spatie/laravel-settings.
+     */
+    private static function enumOptions(string $enumClass): array
+    {
+        return collect($enumClass::cases())->mapWithKeys(fn ($case) => [$case->value => $case->getLabel()])->toArray();
     }
 }
