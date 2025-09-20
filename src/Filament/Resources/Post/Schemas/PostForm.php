@@ -18,13 +18,13 @@ use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Models\Post;
-use FrankenCms\Settings\CmsSettings;
+use FrankenCms\Settings\GeneralSettings;
 
 class PostForm
 {
     public static function make(Schema $schema): Schema
     {
-        $settings = new CmsSettings;
+        $settings = app(GeneralSettings::class);
 
         return $schema
             ->components([
@@ -92,7 +92,7 @@ class PostForm
 
                                         DateTimePicker::make('post_published_at')
                                             ->label('Publish Date')
-                                            ->timezone(fn (CmsSettings $settings) => $settings->timezone) // TODO: UNKNOWN TIME ZONE
+                                            ->timezone(fn (GeneralSettings $settings) => $settings->timezone) // TODO: UNKNOWN TIME ZONE
                                             ->default(now())
                                             ->required(),
 

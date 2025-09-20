@@ -7,12 +7,12 @@ use Filament\Pages\SettingsPage;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use FrankenCms\Filament\Resources\CmsSettings\Schemas\CmsSettingsSchema;
-use FrankenCms\Settings\CmsSettings as SiteSettingsAlias;
+use FrankenCms\Settings\GeneralSettings;
 use Illuminate\Contracts\Support\Htmlable;
 
 class CmsSettings extends SettingsPage
 {
-    protected static string $settings = SiteSettingsAlias::class;
+    protected static string $settings = GeneralSettings::class;
     protected static string | BackedEnum | null $navigationIcon = Heroicon::AdjustmentsVertical;
 
     protected static ?string $description = 'Configure your site settings.';

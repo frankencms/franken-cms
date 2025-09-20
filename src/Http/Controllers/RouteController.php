@@ -5,7 +5,7 @@ namespace FrankenCms\Http\Controllers;
 use FrankenCms\Models\Page;
 use FrankenCms\Services\ContentResolver;
 use FrankenCms\Services\RouteHandler;
-use FrankenCms\Settings\CmsSettings;
+use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Http\Request;
 
 class RouteController
@@ -13,7 +13,7 @@ class RouteController
     public function __construct(
         private readonly RouteHandler $routeHandler,
         private readonly ContentResolver $contentResolver,
-        private readonly CmsSettings $settings
+        private readonly ReadingSettings $settings
     ) {}
 
     public function index(Request $request)

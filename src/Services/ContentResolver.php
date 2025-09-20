@@ -2,21 +2,23 @@
 
 namespace FrankenCms\Services;
 
-use FrankenCMS\FrankenCms\Enums\PermalinkStructure;
-use FrankenCMS\FrankenCms\Models\Page;
-use FrankenCMS\FrankenCms\Models\Post;
-use FrankenCMS\FrankenCms\Settings\CmsSettings;
+use FrankenCms\Enums\PermalinkStructure;
+use FrankenCms\Models\Page;
+use FrankenCms\Models\Post;
+use FrankenCms\Settings\ReadingSettings;
+use FrankenCms\Settings\PermalinkSettings;
 use Illuminate\View\View;
 
 readonly class ContentResolver
 {
     public function __construct(
-        private CmsSettings $settings
+        private ReadingSettings $readingSettings,
+        private PermalinkSettings $permalinkSettings
     ) {}
 
     public function resolveHomePage(): View
     {
-        $homePage = $this->settings->home_page;
+        $homePage = $this->readingSettings->home_page;
         if (! $homePage) {
             abort(404);
         }
@@ -28,7 +30,7 @@ readonly class ContentResolver
     public function resolvePost(string $slug, ?string $queryId = null): ?Post
     {
 
-        $post = match ($this->settings->permalink_structure) {
+        $post = match ($this->permalinkSettings->permalink_structure) {
             PermalinkStructure::PLAIN->value => $this->findPostById($queryId),
             PermalinkStructure::DAY_AND_NAME->value,
             PermalinkStructure::MONTH_AND_NAME->value,
@@ -56,13 +58,13 @@ readonly class ContentResolver
 
     public function isPostPath(string $path): bool
     {
-        $postPage = $this->settings->post_page;
+        $postPage = $this->readingSettings->post_page;
         return $postPage && str_starts_with($path, $postPage);
     }
 
     public function extractSlugFromPostPath(string $path): string
     {
-        return trim(str_replace($this->settings->post_page, '', $path), '/');
+        return trim(str_replace($this->readingSettings->post_page, '', $path), '/');
     }
 
     private function findPostById(?string $id): ?Post
@@ -77,7 +79,7 @@ readonly class ContentResolver
 
     private function findByCustomPermalink(string $slug): ?Post
     {
-        $structure = $this->settings->custom_permalink_structure;
+        $structure = $this->permalinkSettings->custom_permalink_structure;
         $segments = array_values(array_filter(explode('/', $slug)));
 
         // Return early if segments don't match structure length

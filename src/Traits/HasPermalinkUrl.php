@@ -3,7 +3,8 @@
 namespace FrankenCms\Traits;
 
 use FrankenCms\Enums\PermalinkStructure;
-use FrankenCms\Settings\CmsSettings;
+use FrankenCms\Settings\PermalinkSettings;
+use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 trait HasPermalinkUrl
@@ -15,7 +16,7 @@ trait HasPermalinkUrl
     {
         return Attribute::make(
             get: function () {
-                $settings = new CmsSettings;
+                $settings = app(PermalinkSettings::class);
                 // Get the active permalink structure (you may need to load this from a config or settings table)
                 $permalinkStructure = $settings->permalink_structure;
 
@@ -48,10 +49,10 @@ trait HasPermalinkUrl
     private function getFormattedUrl(string $structure): string
     {
 
-        $settings = app(CmsSettings::class);
+        $readingSettings = app(ReadingSettings::class);
 
         // Replace placeholders with actual values from the post
-        return $settings->post_page . str_replace([
+        return $readingSettings->post_page . str_replace([
             '%year%',
             '%monthnum%',
             '%day%',
@@ -82,7 +83,7 @@ trait HasPermalinkUrl
      */
     private function getCustomUrl(): string
     {
-        $settings = app(CmsSettings::class);
+        $settings = app(PermalinkSettings::class);
 
         $customStructure = implode('/', $settings->custom_permalink_structure) . '/';
 

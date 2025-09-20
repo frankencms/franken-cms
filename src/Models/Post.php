@@ -5,7 +5,7 @@ namespace FrankenCms\Models;
 use FrankenCms\Casts\PostContentCast;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Scopes\PostScope;
-use FrankenCms\Settings\CmsSettings;
+use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Traits\HasMeta;
 use FrankenCms\Traits\HasPermalinkUrl;
 use FrankenCms\Traits\HasTerms;
@@ -69,7 +69,7 @@ class Post extends Model
 
     public function getPublishedDateAttribute(): string
     {
-        return $this->post_published_at->format(app(CmsSettings::class)->date_format);
+        return $this->post_published_at->format(app(GeneralSettings::class)->date_format);
     }
 
     public function author()

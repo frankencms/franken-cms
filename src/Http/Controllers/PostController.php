@@ -4,14 +4,14 @@ namespace FrankenCms\Http\Controllers;
 
 use FrankenCms\Models\Post;
 use FrankenCms\Services\ContentResolver;
-use FrankenCms\Settings\CmsSettings;
+use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Http\Request;
 
 class PostController
 {
     public function __construct(
         private readonly ContentResolver $contentResolver,
-        private readonly CmsSettings $settings
+        private readonly ReadingSettings $settings
     ) {}
 
     public function index(Request $request)
