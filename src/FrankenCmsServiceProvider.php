@@ -4,8 +4,10 @@ namespace FrankenCms;
 
 use Composer\InstalledVersions;
 use FrankenCms\Commands\InstallCommand;
+use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\PostService;
+use FrankenCms\Services\SettingsTabService;
 use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
 use Illuminate\Foundation\Console\AboutCommand;
@@ -28,16 +30,30 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             ->hasViews()
             ->hasMigrations([
                 '00_create_settings_table',
-                '01_create_cms_settings',
-                '02_create_posts_table',
-                '03_create_usermeta_table',
-                '04_create_taxonomies_table',
-                '05_create_terms_table',
-                '06_create_termables_table',
+                '01_create_general_settings',
+                '02_create_reading_settings',
+                '03_create_media_settings',
+                '04_create_permalink_settings',
+                '05_create_posts_table',
+                '06_create_usermeta_table',
+                '07_create_taxonomies_table',
+                '08_create_terms_table',
+                '09_create_termables_table',
             ])
             ->hasTranslations()
 //            ->hasRoutes('web')
             ->hasCommand(InstallCommand::class);
+    }
+
+    public function packageRegistered(): void
+    {
+        // Register the settings tab registry as a singleton
+        $this->app->singleton(SettingsTabRegistry::class);
+
+        // Register the settings tab service
+        $this->app->singleton(SettingsTabService::class, function ($app) {
+            return new SettingsTabService($app->make(SettingsTabRegistry::class));
+        });
     }
 
     public function packageBooted(): void
@@ -47,6 +63,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
+
+        // Register the default tabs
+        $settingsTabService = $this->app->make(SettingsTabService::class);
+        $settingsTabService->registerDefaultTabs();
 
         $this->registerAboutInfo();
     }
