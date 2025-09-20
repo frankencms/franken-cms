@@ -6,6 +6,8 @@ namespace FrankenCms\Filament\Resources\Term\Schemas;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use FrankenCms\Models\Taxonomy;
 use FrankenCms\Models\Term;
@@ -21,7 +23,7 @@ class TermForm
                     ->live()
                     ->required(),
                 TextInput::make('slug')
-                    ->afterStateUpdated(fn ($set, $state) => $set('slug', Str::slug($state)))
+                    ->afterStateUpdated(fn (Set $set, $state) => $set('slug', Str::slug($state)))
                     ->unique(ignoreRecord: true),
                 Select::make('taxonomy_id')
                     ->label('Taxonomy')
@@ -29,7 +31,7 @@ class TermForm
                     ->required(),
                 Select::make('parent_id')
                     ->label('Parent Term')
-                    ->options(fn ($get) => Term::where('taxonomy_id', $get('taxonomy_id'))->pluck('name', 'id'))
+                    ->options(fn (Get $get) => Term::where('taxonomy_id', $get('taxonomy_id'))->pluck('name', 'id'))
                     ->searchable(),
             ]);
     }

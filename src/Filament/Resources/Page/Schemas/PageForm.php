@@ -6,8 +6,8 @@ namespace FrankenCms\Filament\Resources\Page\Schemas;
 
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Get;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Factories\TemplateFieldFactory;

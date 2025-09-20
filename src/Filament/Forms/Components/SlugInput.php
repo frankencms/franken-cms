@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FrankenCms\Filament\Forms\Components;
 
 use Closure;
@@ -44,7 +46,7 @@ class SlugInput extends TextInput
         return $this;
     }
 
-    public function getSlugInputUrlVisitLinkVisible(): ?string
+    public function getSlugInputUrlVisitLinkVisible(): bool
     {
         return $this->evaluate($this->slugInputUrlVisitLinkVisible);
     }
@@ -110,7 +112,7 @@ class SlugInput extends TextInput
         return $this;
     }
 
-    public function getReadOnly(): string
+    public function getReadOnly(): bool
     {
         return $this->evaluate($this->readOnly);
     }
@@ -180,7 +182,7 @@ class SlugInput extends TextInput
 
     public function getBaseUrl(): string
     {
-        return Str::of($this->evaluate($this->baseUrl))->rtrim('/');
+        return Str::of($this->evaluate($this->baseUrl))->rtrim('/')->toString();
     }
 
     public function slugInputShowUrl(bool $showUrl): static

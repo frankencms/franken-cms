@@ -7,6 +7,7 @@ namespace FrankenCms\Filament\Resources\Post\Schemas;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -60,12 +61,15 @@ class PostForm
                                             ],
                                         ),
 
-                                        TiptapEditor::make('post_content')
-                                            ->output(TiptapOutput::Json)
-                                            ->label('Content')
-                                            ->columnSpan('full')
-                                            ->collapseBlocksPanel()
-                                            ->extraInputAttributes(['style' => 'min-height: 24rem;']),
+                                        RichEditor::make('post_content')
+                                            ->json(),
+
+                                        //                                        TiptapEditor::make('post_content')
+                                        //                                            ->output(TiptapOutput::Json)
+                                        //                                            ->label('Content')
+                                        //                                            ->columnSpan('full')
+                                        //                                            ->collapseBlocksPanel()
+                                        //                                            ->extraInputAttributes(['style' => 'min-height: 24rem;']),
                                     ]),
                             ]),
 
@@ -88,7 +92,7 @@ class PostForm
 
                                         DateTimePicker::make('post_published_at')
                                             ->label('Publish Date')
-                                            ->timezone(fn (CmsSettings $settings) => $settings->timezone)
+                                            ->timezone(fn (CmsSettings $settings) => $settings->timezone) // TODO: UNKNOWN TIME ZONE
                                             ->default(now())
                                             ->required(),
 
@@ -104,8 +108,9 @@ class PostForm
                                     ->description('')
                                     ->columnSpanFull()
                                     ->schema([
-                                        CuratorPicker::make('featured_image_id')
-                                            ->relationship('featuredImage', 'id'),
+                                        // TODO: FIX OR REPLACE
+                                        //                                        CuratorPicker::make('featured_image_id')
+                                        //                                            ->relationship('featuredImage', 'id'),
                                     ]),
 
                                 Section::make(trans('filament-cms::messages.content.posts.sections.meta.title'))

@@ -18,7 +18,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use FrankenCms\Enums\DateFormat;
-use FrankenCms\Enums\DayOfWeek;
 use FrankenCms\Enums\PermalinkStructure;
 use FrankenCms\Enums\PermalinkTags;
 use FrankenCms\Enums\TimeFormat;
@@ -75,7 +74,6 @@ class CmsSettingsSchema
                                         ->label(__('franken-cms::messages.settings.general.form.default_user_role.label'))
                                         ->options(UserRole::class)
                                         ->selectablePlaceholder(false)
-                                        ->default(UserRole::SUBSCRIBER->value)
                                         ->columnSpan(2),
 
                                     Select::make('timezone')
@@ -92,10 +90,10 @@ class CmsSettingsSchema
                                         ->live()
                                         ->label(__('franken-cms::messages.settings.general.form.date_format.label'))
                                         ->options(DateFormat::class)
-                                        ->default(DateFormat::FULL_MONTH_DAY_YEAR->value)
+                                        ->default(DateFormat::FULL_MONTH_DAY_YEAR)
                                         ->helperText(function (Get $get, $state) {
                                             $format = $state instanceof BackedEnum ? $state->value : $state;
-                                            if ($format === DateFormat::CUSTOM->value) {
+                                            if ($format === DateFormat::CUSTOM) {
                                                 $custom = $get('custom_date_format');
                                                 if (is_string($custom) && $custom !== '') {
                                                     $format = $custom;
@@ -110,7 +108,7 @@ class CmsSettingsSchema
                                         ->inlineLabel()
                                         ->label(__('franken-cms::messages.settings.general.form.custom_date_format.label'))
                                         ->columnSpan(2)
-                                        ->visible(fn (Get $get) => $get('date_format') === DateFormat::CUSTOM->value),
+                                        ->visible(fn (Get $get) => $get('date_format') === DateFormat::CUSTOM),
 
                                     Radio::make('time_format')
                                         ->inlineLabel()
@@ -136,15 +134,6 @@ class CmsSettingsSchema
                                         ->label(__('franken-cms::messages.settings.general.form.custom_time_format.label'))
                                         ->columnSpan(2)
                                         ->visible(fn (Get $get) => $get('time_format') === TimeFormat::CUSTOM->value),
-
-                                    Select::make('week_starts_on')
-                                        ->inlineLabel()
-                                        ->label(__('franken-cms::messages.settings.general.form.week_starts_on.label'))
-                                        ->selectablePlaceholder(false)
-                                        ->options(DayOfWeek::class)
-                                        ->default(DayOfWeek::MONDAY->value)
-                                        ->required()
-                                        ->columnSpan(2),
                                 ]),
                         ]),
 
@@ -350,7 +339,12 @@ class CmsSettingsSchema
 
                                             Select::make('custom_permalink_structure')
                                                 ->label('Custom Structure')
-                                                ->visible(fn (Get $get) => $get('permalink_structure') === PermalinkStructure::CUSTOM->value)
+                                                ->visible(function (Get $get) {
+
+                                                    //                                                    dump($get('permalink_structure'));
+
+                                                    return $get('permalink_structure') === PermalinkStructure::CUSTOM;
+                                                })
                                                 ->inlineLabel()
                                                 ->rules(['required_if:permalink_structure,' . PermalinkStructure::CUSTOM->value, new PermalinkContainsPostPlaceholder])
                                                 ->options(PermalinkTags::class)

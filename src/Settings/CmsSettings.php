@@ -21,7 +21,6 @@ class CmsSettings extends Settings
     public ?string $custom_date_format = null;
     public ?string $time_format = TimeFormat::HOURS_12_MINUTES_LOWERCASE->value;
     public ?string $custom_time_format = null;
-    public ?string $week_starts_on = 'Monday';
 
     // Reading Settings (Reading Tab)
     public string $homepage_displays = 'latest_posts'; // radio: 'latest_posts' or 'static_page'
