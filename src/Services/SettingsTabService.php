@@ -5,6 +5,8 @@ namespace FrankenCms\Services;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\SettingsTabs\GeneralSettingsTabProvider;
+use FrankenCms\SettingsTabs\MediaSettingsTabProvider;
+use FrankenCms\SettingsTabs\PermalinkSettingsTabProvider;
 use FrankenCms\SettingsTabs\ReadingSettingsTabProvider;
 
 class SettingsTabService
@@ -21,10 +23,10 @@ class SettingsTabService
     {
         $this->registry->register(new GeneralSettingsTabProvider());
         $this->registry->register(new ReadingSettingsTabProvider());
+        $this->registry->register(new MediaSettingsTabProvider());
+        $this->registry->register(new PermalinkSettingsTabProvider());
 
         // TODO: Add other tab providers here as they're created
-        // $this->registry->register(new MediaSettingsTabProvider());
-        // $this->registry->register(new PermalinkSettingsTabProvider());
         // $this->registry->register(new WritingSettingsTabProvider());
         // $this->registry->register(new DiscussionSettingsTabProvider());
         // $this->registry->register(new PrivacySettingsTabProvider());
