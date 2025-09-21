@@ -102,7 +102,7 @@ class CmsSettings extends Page implements HasForms
                     ->footer([
                         \Filament\Schemas\Components\Actions::make([
                             \Filament\Actions\Action::make('save')
-                                ->label(__('filament-panels::pages/settings.form.actions.save.label'))
+                                ->label(__('filament-spatie-laravel-settings-plugin::pages/settings-page.form.actions.save.label'))
                                 ->submit('save')
                                 ->keyBindings(['mod+s']),
                         ]),
@@ -153,7 +153,7 @@ class CmsSettings extends Page implements HasForms
         }
 
         Notification::make()
-            ->title(__('filament-panels::pages/settings.notifications.saved.title'))
+            ->title(__('filament-spatie-laravel-settings-plugin::pages/settings-page.notifications.saved.title'))
             ->success()
             ->send();
     }

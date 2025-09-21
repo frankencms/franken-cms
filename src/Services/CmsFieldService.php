@@ -9,8 +9,6 @@ class CmsFieldService
 
         $params = json_decode($params);
 
-        dump($params);
-
         // If passed as single object
         if (is_object($params)) {
             // Handle single object
@@ -31,9 +29,6 @@ class CmsFieldService
 
     private function processObject($object)
     {
-
-        dump($object);
-
         // Your custom logic here
         return 'nul';
     }

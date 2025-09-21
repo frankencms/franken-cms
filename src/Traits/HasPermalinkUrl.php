@@ -87,10 +87,6 @@ trait HasPermalinkUrl
 
         $customStructure = implode('/', $settings->custom_permalink_structure) . '/';
 
-        dump($customStructure, $this->getFormattedUrl($customStructure));
-
-        //            $settings->custom_permalink_structure;
-
         // Use the same logic as `getFormattedUrl` to replace placeholders
         return $this->getFormattedUrl($customStructure);
     }

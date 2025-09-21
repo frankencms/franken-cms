@@ -81,7 +81,7 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                             ->default(DateFormat::FULL_MONTH_DAY_YEAR)
                             ->helperText(function (Get $get, $state) {
                                 $format = $state instanceof BackedEnum ? $state->value : $state;
-                                if ($format === DateFormat::CUSTOM) {
+                                if ($format === DateFormat::CUSTOM->value) {
                                     $custom = $get('custom_date_format');
                                     if (is_string($custom) && $custom !== '') {
                                         $format = $custom;
@@ -94,9 +94,10 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
 
                         TextInput::make('custom_date_format')
                             ->inlineLabel()
+                            ->live()
                             ->label(__('franken-cms::messages.settings.general.form.custom_date_format.label'))
                             ->columnSpan(2)
-                            ->visible(fn (Get $get) => $get('date_format') === DateFormat::CUSTOM),
+                            ->visible(fn (Get $get) => $get('date_format') === DateFormat::CUSTOM->value),
 
                         Radio::make('time_format')
                             ->inlineLabel()

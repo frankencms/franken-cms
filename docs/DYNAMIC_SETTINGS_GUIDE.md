@@ -555,6 +555,46 @@ Section::make('Settings')
 2. Verify field names match property names exactly
 3. Add appropriate validation rules
 
+#### "Unable to locate class or view for component [filament-panels::form]"
+
+**Problem:** Error when trying to render the settings page.
+
+**Solution:**
+This indicates an issue with the CmsSettings page view template. The view should use:
+```blade
+<x-filament-panels::page>
+    {{ $this->form }}
+
+    <x-filament-actions::modals />
+</x-filament-panels::page>
+```
+
+The form structure should include proper Filament 4 schema components:
+```php
+public function form(Schema $schema): Schema
+{
+    return $schema
+        ->components([
+            \Filament\Schemas\Components\Form::make([
+                Tabs::make('Tabs')
+                    ->persistTabInQueryString('settings-tab')
+                    ->columnSpanFull()
+                    ->tabs($settingsTabService->getRegistry()->getTabs()),
+            ])
+                ->livewireSubmitHandler('save')
+                ->footer([
+                    \Filament\Schemas\Components\Actions::make([
+                        \Filament\Actions\Action::make('save')
+                            ->label(__('filament-spatie-laravel-settings-plugin::pages/settings-page.form.actions.save.label'))
+                            ->submit('save')
+                            ->keyBindings(['mod+s']),
+                    ]),
+                ]),
+        ])
+        ->statePath('data');
+}
+```
+
 ### Debug Mode
 
 Enable debug logging to troubleshoot issues:

@@ -156,6 +156,24 @@ return new class extends SettingsMigration
 };
 ```
 
+## Translation Keys
+
+When creating custom settings pages that extend the core CmsSettings functionality, use the correct translation keys:
+
+```php
+// ✅ Correct - Use Spatie Laravel Settings plugin translations
+->label(__('filament-spatie-laravel-settings-plugin::pages/settings-page.form.actions.save.label'))
+->title(__('filament-spatie-laravel-settings-plugin::pages/settings-page.notifications.saved.title'))
+
+// ❌ Incorrect - These don't exist
+->label(__('filament-panels::pages/settings.form.actions.save.label'))
+->title(__('filament-panels::pages/settings.notifications.saved.title'))
+```
+
+The Spatie Laravel Settings plugin provides:
+- `form.actions.save.label` - "Save changes"
+- `notifications.saved.title` - "Saved"
+
 ## Compatibility with Spatie Laravel Settings
 
 ### Multiple Settings Classes
@@ -206,6 +224,21 @@ The core CMS includes these default tabs with `cms_` prefixed groups:
 - Include helpful descriptions with `->helperText()`
 - Group related fields using `Section` components
 - Use appropriate column spans for layout
+
+### Filament 4 Components
+When building the main CmsSettings page structure, use proper Filament 4 schema components:
+```php
+\Filament\Schemas\Components\Form::make([
+    // Your tab content here
+])
+    ->livewireSubmitHandler('save')
+    ->footer([
+        \Filament\Schemas\Components\Actions::make([
+            \Filament\Actions\Action::make('save')
+                ->submit('save'),
+        ]),
+    ])
+```
 
 ### Enum Handling
 - When using enums in forms, use the built-in enum options helper
