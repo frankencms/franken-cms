@@ -17,20 +17,38 @@ class TestCase extends Orchestra
         );
     }
 
+    /**
+     * Define database migrations.
+     */
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+    }
+
     public function getEnvironmentSetUp($app)
     {
         config()->set('database.default', 'testing');
-
-        /*
-         foreach (\Illuminate\Support\Facades\File::allFiles(__DIR__ . '/database/migrations') as $migration) {
-            (include $migration->getRealPath())->up();
-         }
-         */
+        config()->set('database.connections.testing', [
+            'driver'   => 'sqlite',
+            'database' => ':memory:',
+            'prefix'   => '',
+        ]);
     }
+
 
     protected function getPackageProviders($app)
     {
         return [
+            \Livewire\LivewireServiceProvider::class,
+            \Filament\FilamentServiceProvider::class,
+            \Filament\Actions\ActionsServiceProvider::class,
+            \Filament\Forms\FormsServiceProvider::class,
+            \Filament\Infolists\InfolistsServiceProvider::class,
+            \Filament\Notifications\NotificationsServiceProvider::class,
+            \Filament\Support\SupportServiceProvider::class,
+            \Filament\Tables\TablesServiceProvider::class,
+            \Filament\Widgets\WidgetsServiceProvider::class,
+            \Spatie\LaravelSettings\LaravelSettingsServiceProvider::class,
             FrankenCmsServiceProvider::class,
         ];
     }
