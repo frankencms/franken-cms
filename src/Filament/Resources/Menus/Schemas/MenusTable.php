@@ -26,9 +26,9 @@ class MenusTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('menuItems_count')
+                TextColumn::make('all_menu_items_count')
                     ->label('Items')
-                    ->counts('menuItems')
+                    ->counts('allMenuItems')
                     ->sortable(),
 
                 IconColumn::make('is_active')
