@@ -6,6 +6,7 @@ use Composer\InstalledVersions;
 use FrankenCms\Commands\InstallCommand;
 use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\CurrentPageService;
+use FrankenCms\Services\MenuService;
 use FrankenCms\Services\PostService;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\View\Components\CmsField;
@@ -39,6 +40,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '07_create_taxonomies_table',
                 '08_create_terms_table',
                 '09_create_termables_table',
+                '10_create_media_table',
+                '11_create_menus_table',
             ])
             ->hasTranslations()
 //            ->hasRoutes('web')
@@ -54,6 +57,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->app->singleton(SettingsTabService::class, function ($app) {
             return new SettingsTabService($app->make(SettingsTabRegistry::class));
         });
+
+        // Register the menu service
+        $this->app->singleton(MenuService::class);
     }
 
     public function packageBooted(): void
@@ -64,6 +70,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
 
+        // Register custom blade directives
+        $this->registerBladeDirectives();
+
         // Register the default tabs
         $settingsTabService = $this->app->make(SettingsTabService::class);
         $settingsTabService->registerDefaultTabs();
@@ -71,13 +80,30 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->registerAboutInfo();
     }
 
-    private function registerAboutInfo()
+    private function registerBladeDirectives(): void
+    {
+        // Register @menu directive
+        Blade::directive('menu', function ($expression) {
+            return "<?php
+                \$__menuSlug = {$expression};
+                \$__menuService = app(\FrankenCms\Services\MenuService::class);
+                \$menuItems = \$__menuService->getMenuItems(\$__menuSlug);
+            ?>";
+        });
+
+        // Register @endmenu directive
+        Blade::directive('endmenu', function () {
+            return '<?php unset($menuItems, $__menuSlug, $__menuService); ?>';
+        });
+    }
+
+    private function registerAboutInfo(): void
     {
 
         if ($this->app->runningInConsole()) {
             if (class_exists(AboutCommand::class) && class_exists(InstalledVersions::class)) {
 
-                AboutCommand::add('Franken CMS 🧟‍♂️', [
+                AboutCommand::add('Franken CMS', [
                     'Version' => InstalledVersions::getPrettyVersion('frankencms/franken-cms'),
                     //                    'Plugins' => collect()
                     //                        ->join(', '),
