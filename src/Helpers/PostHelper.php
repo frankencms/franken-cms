@@ -2,6 +2,8 @@
 
 namespace FrankenCms\Helpers;
 
+use FrankenCms\Settings\ReadingSettings;
+
 final class PostHelper
 {
     public static function calculate_read_time(string $htmlContent, int $averageReadingSpeed = 225): int
@@ -48,5 +50,10 @@ final class PostHelper
         }
 
         return trim($text);
+    }
+
+    public static function index_page(): ?string
+    {
+        return app(ReadingSettings::class)->post_page;
     }
 }

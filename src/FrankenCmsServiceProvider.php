@@ -103,7 +103,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         if ($this->app->runningInConsole()) {
             if (class_exists(AboutCommand::class) && class_exists(InstalledVersions::class)) {
 
-                AboutCommand::add('Franken CMS', [
+                AboutCommand::add('Franken CMS 🧟', [
                     'Version' => InstalledVersions::getPrettyVersion('frankencms/franken-cms'),
                     //                    'Plugins' => collect()
                     //                        ->join(', '),

@@ -22,7 +22,7 @@ class Menu extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'       => 'boolean',
         'additional_data' => 'array',
     ];
 
@@ -69,7 +69,7 @@ class Menu extends Model
     {
         return Cache::remember(
             "menu.{$this->slug}.items",
-            config('franken-cms.menu.cache_ttl', 3600),
+            config('franken-cms.menu_cache', 3600),
             fn () => $this->buildMenuTree()
         );
     }

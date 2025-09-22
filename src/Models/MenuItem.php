@@ -21,6 +21,8 @@ class MenuItem extends Model
         'sort_order'       => 'integer',
     ];
 
+    protected $with = ['linkable'];
+
     protected static function boot(): void
     {
         parent::boot();

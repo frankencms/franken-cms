@@ -29,47 +29,7 @@ return [
     |
     */
 
-    'menu' => [
-        // Cache TTL in seconds (default: 1 hour)
-        'cache_ttl' => 3600,
-
-        // Default template for menu rendering
-        'default_template' => 'default',
-
-        // Available menu templates
-        'templates' => [
-            'default' => 'Default Menu',
-            'bootstrap' => 'Bootstrap Navigation',
-        ],
-
-        // Linkable model types for menu items
-        'linkable_types' => [
-            \FrankenCms\Models\Post::class => [
-                'label' => 'Posts',
-                'title_attribute' => 'post_title',
-                'slug_attribute' => 'post_slug',
-                'route_name' => 'post.show',
-                'route_parameter' => 'slug',
-            ],
-            // Add other models here as needed
-        ],
-
-        // Additional menu item types for extensibility
-        'item_types' => [
-            'url' => [
-                'label' => 'Custom URL',
-                'icon' => 'heroicon-o-link',
-            ],
-            'route' => [
-                'label' => 'Route',
-                'icon' => 'heroicon-o-arrow-top-right-on-square',
-            ],
-            'model' => [
-                'label' => 'Content Link',
-                'icon' => 'heroicon-o-document-text',
-            ],
-        ],
-    ],
+    'menu_cache' => 3600, // Cache TTL in seconds (default: 1 hour)
 
     /*
 |--------------------------------------------------------------------------

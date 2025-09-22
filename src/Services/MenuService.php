@@ -17,7 +17,7 @@ class MenuService
     {
         return Cache::remember(
             "menu.{$slug}",
-            config('franken-cms.menu.cache_ttl', 3600),
+            config('franken-cms.menu_cache', 3600),
             fn () => Menu::findBySlug($slug)
         );
     }
@@ -29,7 +29,7 @@ class MenuService
     {
         $menu = $this->getMenu($slug);
 
-        if (!$menu) {
+        if (! $menu) {
             return [];
         }
 
@@ -46,26 +46,6 @@ class MenuService
     }
 
     /**
-     * Recursively flatten menu items
-     */
-    protected function flattenMenuItems(array $items): Collection
-    {
-        $flattened = collect();
-
-        foreach ($items as $item) {
-            $flattened->push($item);
-
-            if (!empty($item['children'])) {
-                $flattened = $flattened->merge(
-                    $this->flattenMenuItems($item['children'])
-                );
-            }
-        }
-
-        return $flattened;
-    }
-
-    /**
      * Find menu item by URL or route
      */
     public function findActiveMenuItem(string $slug, string $currentUrl): ?array
@@ -76,6 +56,65 @@ class MenuService
             return $item['url'] === $currentUrl ||
                    $this->isUrlMatch($item['url'], $currentUrl);
         });
+    }
+
+    /**
+     * Get breadcrumb from menu structure
+     */
+    public function getBreadcrumb(string $slug, string $currentUrl): array
+    {
+        $menuItems = $this->getMenuItems($slug);
+        return $this->findBreadcrumbPath($menuItems, $currentUrl);
+    }
+
+    /**
+     * Clear all menu caches
+     */
+    public function clearAllMenuCaches(): void
+    {
+        $menuSlugs = Menu::pluck('slug');
+
+        foreach ($menuSlugs as $slug) {
+            Cache::forget("menu.{$slug}");
+            Cache::forget("menu.{$slug}.items");
+        }
+    }
+    //
+    //    /**
+    //     * Render menu as HTML string
+    //     */
+    //    public function renderMenu(string $slug, string $template = 'default'): string
+    //    {
+    //        $menuItems = $this->getMenuItems($slug);
+    //
+    //        if (empty($menuItems)) {
+    //            return '';
+    //        }
+    //
+    //        return view("franken-cms::menu.{$template}", [
+    //            'menuItems' => $menuItems,
+    //            'slug'      => $slug,
+    //        ])->render();
+    //    }
+
+    /**
+     * Recursively flatten menu items
+     */
+    protected function flattenMenuItems(array $items): Collection
+    {
+        $flattened = collect();
+
+        foreach ($items as $item) {
+            $flattened->push($item);
+
+            if (! empty($item['children'])) {
+                $flattened = $flattened->merge(
+                    $this->flattenMenuItems($item['children'])
+                );
+            }
+        }
+
+        return $flattened;
     }
 
     /**
@@ -97,15 +136,6 @@ class MenuService
     }
 
     /**
-     * Get breadcrumb from menu structure
-     */
-    public function getBreadcrumb(string $slug, string $currentUrl): array
-    {
-        $menuItems = $this->getMenuItems($slug);
-        return $this->findBreadcrumbPath($menuItems, $currentUrl);
-    }
-
-    /**
      * Recursively find breadcrumb path
      */
     protected function findBreadcrumbPath(array $items, string $currentUrl, array $path = []): array
@@ -117,63 +147,14 @@ class MenuService
                 return $currentPath;
             }
 
-            if (!empty($item['children'])) {
+            if (! empty($item['children'])) {
                 $childPath = $this->findBreadcrumbPath($item['children'], $currentUrl, $currentPath);
-                if (!empty($childPath)) {
+                if (! empty($childPath)) {
                     return $childPath;
                 }
             }
         }
 
         return [];
-    }
-
-    /**
-     * Clear all menu caches
-     */
-    public function clearAllMenuCaches(): void
-    {
-        $menuSlugs = Menu::pluck('slug');
-
-        foreach ($menuSlugs as $slug) {
-            Cache::forget("menu.{$slug}");
-            Cache::forget("menu.{$slug}.items");
-        }
-    }
-
-    /**
-     * Render menu as HTML string
-     */
-    public function renderMenu(string $slug, string $template = 'default'): string
-    {
-        $menuItems = $this->getMenuItems($slug);
-
-        if (empty($menuItems)) {
-            return '';
-        }
-
-        return view("franken-cms::menu.{$template}", [
-            'menuItems' => $menuItems,
-            'slug' => $slug,
-        ])->render();
-    }
-
-    /**
-     * Get menu configuration
-     */
-    public function getMenuConfig(): array
-    {
-        return config('franken-cms.menu', []);
-    }
-
-    /**
-     * Register a custom menu item type
-     */
-    public function registerMenuItemType(string $type, array $config): void
-    {
-        $types = config('franken-cms.menu.item_types', []);
-        $types[$type] = $config;
-
-        config(['franken-cms.menu.item_types' => $types]);
     }
 }
