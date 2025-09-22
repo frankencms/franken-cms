@@ -5,6 +5,8 @@ namespace FrankenCms;
 use Composer\InstalledVersions;
 use FrankenCms\Commands\InstallCommand;
 use FrankenCms\Registries\SettingsTabRegistry;
+use FrankenCms\Services\BladeFormDirectiveProcessor;
+use FrankenCms\Services\BladeFormDirectiveRegistry;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\MenuService;
 use FrankenCms\Services\PostService;
@@ -60,6 +62,12 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         // Register the menu service
         $this->app->singleton(MenuService::class);
+
+        // Register the blade form directive registry
+        $this->app->singleton(BladeFormDirectiveRegistry::class);
+
+        // Register the blade form directive processor
+        $this->app->singleton(BladeFormDirectiveProcessor::class);
     }
 
     public function packageBooted(): void
@@ -72,6 +80,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         // Register custom blade directives
         $this->registerBladeDirectives();
+
+        // Initialize the blade form directive registry
+        $this->app->make(BladeFormDirectiveRegistry::class);
 
         // Register the default tabs
         $settingsTabService = $this->app->make(SettingsTabService::class);

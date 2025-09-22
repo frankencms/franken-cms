@@ -96,6 +96,31 @@ class PostForm
                                         RichEditor::make('post_content')
                                             ->live()
                                             ->json()
+                                            ->toolbarButtons([
+
+                                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link', 'table', 'lead', 'details', 'horizontalRule', 'small', 'highlight'],
+                                                ['h1', 'h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd', 'mergeTags'],
+                                                ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
+                                                ['table', 'attachFiles'],
+                                                ['undo', 'redo', 'clearFormatting'],
+                                            ])
+
+                                            ->floatingToolbars([
+                                                'paragraph' => [
+                                                    'bold', 'italic', 'underline', 'strike', 'subscript', 'superscript',
+                                                ],
+                                                'heading' => [
+                                                    'h1', 'h2', 'h3',
+                                                ],
+                                                'table' => [
+                                                    'tableAddColumnBefore', 'tableAddColumnAfter', 'tableDeleteColumn',
+                                                    'tableAddRowBefore', 'tableAddRowAfter', 'tableDeleteRow',
+                                                    'tableMergeCells', 'tableSplitCell',
+                                                    'tableToggleHeaderRow',
+                                                    'tableDelete',
+                                                ],
+                                            ])
+
                                             ->label('Content')
                                             ->extraInputAttributes(['style' => 'min-height: 16rem;'])
                                             ->afterStateUpdated(function ($state, $record): void {
