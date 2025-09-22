@@ -3,6 +3,7 @@
 namespace FrankenCms\Observers;
 
 use FrankenCms\Models\Post;
+use Illuminate\Support\Facades\Auth;
 
 class PostObserver
 {
