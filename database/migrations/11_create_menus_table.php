@@ -1,5 +1,6 @@
 <?php
 
+use FrankenCms\Enums\LinkTargets;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -27,9 +28,7 @@ return new class extends Migration
             $table->text('url')->nullable();
             $table->string('route_name')->nullable();
             $table->json('route_parameters')->nullable();
-            $table->string('target')->default('_self'); // _self, _blank, _parent, _top
-            $table->string('css_class')->nullable();
-            $table->string('icon')->nullable();
+            $table->string('target')->default(LinkTargets::_SELF);
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
 

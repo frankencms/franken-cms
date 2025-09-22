@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FrankenCms\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,31 +12,28 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class MenuItem extends Model
 {
-    use HasFactory;
-
-    protected $fillable = [
-        'menu_id',
-        'parent_id',
-        'label',
-        'url',
-        'route_name',
-        'route_parameters',
-        'target',
-        'css_class',
-        'icon',
-        'sort_order',
-        'is_active',
-        'linkable_type',
-        'linkable_id',
-        'additional_data',
-    ];
+    protected $guarded = ['id'];
 
     protected $casts = [
         'route_parameters' => 'array',
-        'is_active' => 'boolean',
-        'additional_data' => 'array',
-        'sort_order' => 'integer',
+        'is_active'        => 'boolean',
+        'additional_data'  => 'array',
+        'sort_order'       => 'integer',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        // Clear menu cache when menu items are modified
+        static::saved(function (MenuItem $menuItem) {
+            $menuItem->menu->clearCache();
+        });
+
+        static::deleted(function (MenuItem $menuItem) {
+            $menuItem->menu->clearCache();
+        });
+    }
 
     public function menu(): BelongsTo
     {
@@ -76,7 +73,7 @@ class MenuItem extends Model
         if ($this->route_name) {
             try {
                 return route($this->route_name, $this->route_parameters ?? []);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return '#';
             }
         }
@@ -87,6 +84,48 @@ class MenuItem extends Model
         }
 
         return '#';
+    }
+
+    /**
+     * Check if this menu item has children
+     */
+    public function hasChildren(): bool
+    {
+        return $this->children()->count() > 0;
+    }
+
+    /**
+     * Get breadcrumb path for this menu item
+     */
+    public function getBreadcrumb(): array
+    {
+        // TODO: Implement this with proper breadcrumb components
+
+        $breadcrumb = [];
+        $current = $this;
+
+        while ($current) {
+            array_unshift($breadcrumb, $current->label);
+            $current = $current->parent;
+        }
+
+        return $breadcrumb;
+    }
+
+    /**
+     * Scope to get only active menu items
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope to get only root level menu items
+     */
+    public function scopeRootLevel($query)
+    {
+        return $query->whereNull('parent_id');
     }
 
     /**
@@ -116,59 +155,5 @@ class MenuItem extends Model
         }
 
         return '#';
-    }
-
-    /**
-     * Check if this menu item has children
-     */
-    public function hasChildren(): bool
-    {
-        return $this->children()->count() > 0;
-    }
-
-    /**
-     * Get breadcrumb path for this menu item
-     */
-    public function getBreadcrumb(): array
-    {
-        $breadcrumb = [];
-        $current = $this;
-
-        while ($current) {
-            array_unshift($breadcrumb, $current->label);
-            $current = $current->parent;
-        }
-
-        return $breadcrumb;
-    }
-
-    /**
-     * Scope to get only active menu items
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
-
-    /**
-     * Scope to get only root level menu items
-     */
-    public function scopeRootLevel($query)
-    {
-        return $query->whereNull('parent_id');
-    }
-
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        // Clear menu cache when menu items are modified
-        static::saved(function (MenuItem $menuItem) {
-            $menuItem->menu->clearCache();
-        });
-
-        static::deleted(function (MenuItem $menuItem) {
-            $menuItem->menu->clearCache();
-        });
     }
 }

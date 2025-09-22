@@ -11,6 +11,7 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use FrankenCms\Enums\LinkTargets;
 use FrankenCms\Models\Post;
 
 class MenuItems
@@ -33,13 +34,8 @@ class MenuItems
                                                 ->columnSpan(1),
 
                                             Select::make('target')
-                                                ->options([
-                                                    '_self'   => 'Same Window',
-                                                    '_blank'  => 'New Window',
-                                                    '_parent' => 'Parent Frame',
-                                                    '_top'    => 'Top Frame',
-                                                ])
-                                                ->default('_self')
+                                                ->options(LinkTargets::class)
+                                                ->default(LinkTargets::_SELF->value)
                                                 ->columnSpan(1),
 
                                             Toggle::make('is_active')
@@ -67,7 +63,7 @@ class MenuItems
                                     Select::make('linkable_type')
                                         ->label('Link Type')
                                         ->options([
-                                            ''          => 'None',
+                                            ''          => 'No Link',
                                             Post::class => 'Post',
                                         ])
                                         ->live()
@@ -86,29 +82,17 @@ class MenuItems
                                         ->visible(fn (callable $get) => ! empty($get('linkable_type')))
                                         ->columnSpan(1),
 
-                                    Grid::make(3)
-                                        ->schema([
-                                            TextInput::make('css_class')
-                                                ->label('CSS Class')
-                                                ->placeholder('nav-link active')
-                                                ->columnSpan(1),
-
-                                            TextInput::make('icon')
-                                                ->label('Icon')
-                                                ->placeholder('heroicon-o-home')
-                                                ->columnSpan(1),
-
-                                            TextInput::make('parent_id')
-                                                ->label('Parent Item ID')
-                                                ->numeric()
-                                                ->helperText('Leave empty for top-level items')
-                                                ->columnSpan(1),
-                                        ]),
+                                    TextInput::make('parent_id')
+                                        ->label('Parent Item ID')
+                                        ->numeric()
+                                        ->helperText('Leave empty for top-level items')
+                                        ->columnSpan(1),
 
                                     KeyValue::make('additional_data')
                                         ->label('Additional Data')
                                         ->keyLabel('Key')
                                         ->valueLabel('Value')
+                                        ->helperText('Advanced: Add custom data for this menu item')
                                         ->columnSpanFull(),
                                 ])
                                 ->defaultItems(0)

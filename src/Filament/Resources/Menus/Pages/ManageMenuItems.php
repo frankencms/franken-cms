@@ -75,8 +75,6 @@ class ManageMenuItems extends Page implements HasSchemas
                     'route_name'       => $itemData['route_name'],
                     'route_parameters' => $itemData['route_parameters'] ?? [],
                     'target'           => $itemData['target'] ?? '_self',
-                    'css_class'        => $itemData['css_class'],
-                    'icon'             => $itemData['icon'],
                     'is_active'        => $itemData['is_active'] ?? true,
                     'linkable_type'    => $itemData['linkable_type'],
                     'linkable_id'      => $itemData['linkable_id'],
@@ -114,8 +112,6 @@ class ManageMenuItems extends Page implements HasSchemas
                         'route_name'       => $item->route_name,
                         'route_parameters' => $item->route_parameters,
                         'target'           => $item->target,
-                        'css_class'        => $item->css_class,
-                        'icon'             => $item->icon,
                         'is_active'        => $item->is_active,
                         'linkable_type'    => $item->linkable_type,
                         'linkable_id'      => $item->linkable_id,
@@ -132,12 +128,12 @@ class ManageMenuItems extends Page implements HasSchemas
     {
         return [
             Action::make('back')
-                ->label('Back to Menus')
+                ->label(__('Back to Menus'))
                 ->url($this->getResource()::getUrl('index'))
                 ->color('gray'),
 
             Action::make('save')
-                ->label('Save Menu Items')
+                ->label(__('Save Menu Items'))
                 ->action('save')
                 ->keyBindings(['mod+s']),
         ];

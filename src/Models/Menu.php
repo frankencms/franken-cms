@@ -24,6 +24,29 @@ class Menu extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Get menu by slug
+     */
+    public static function findBySlug(string $slug): ?self
+    {
+        return static::where('slug', $slug)
+            ->where('is_active', true)
+            ->first();
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saved(function (Menu $menu) {
+            $menu->clearCache();
+        });
+
+        static::deleted(function (Menu $menu) {
+            $menu->clearCache();
+        });
+    }
+
     public function menuItems(): HasMany
     {
         return $this->hasMany(MenuItem::class)
@@ -47,6 +70,14 @@ class Menu extends Model
             config('franken-cms.menu.cache_ttl', 3600),
             fn () => $this->buildMenuTree()
         );
+    }
+
+    /**
+     * Clear menu cache
+     */
+    public function clearCache(): void
+    {
+        Cache::forget("menu.{$this->slug}.items");
     }
 
     /**
@@ -76,15 +107,13 @@ class Menu extends Model
     protected function buildItemWithChildren(MenuItem $item, $allItems): array
     {
         $itemData = [
-            'id' => $item->id,
-            'label' => $item->label,
-            'url' => $item->getUrl(),
-            'target' => $item->target,
-            'is_active' => $item->is_active,
-            'css_class' => $item->css_class,
-            'icon' => $item->icon,
+            'id'              => $item->id,
+            'label'           => $item->label,
+            'url'             => $item->getUrl(),
+            'target'          => $item->target,
+            'is_active'       => $item->is_active,
             'additional_data' => $item->additional_data,
-            'children' => [],
+            'children'        => [],
         ];
 
         foreach ($allItems as $child) {
@@ -94,36 +123,5 @@ class Menu extends Model
         }
 
         return $itemData;
-    }
-
-    /**
-     * Clear menu cache
-     */
-    public function clearCache(): void
-    {
-        Cache::forget("menu.{$this->slug}.items");
-    }
-
-    /**
-     * Get menu by slug
-     */
-    public static function findBySlug(string $slug): ?self
-    {
-        return static::where('slug', $slug)
-            ->where('is_active', true)
-            ->first();
-    }
-
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::saved(function (Menu $menu) {
-            $menu->clearCache();
-        });
-
-        static::deleted(function (Menu $menu) {
-            $menu->clearCache();
-        });
     }
 }
