@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace FrankenCms\Filament\Resources\Post\Schemas;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use FilamentTiptapEditor\Enums\TiptapOutput;
-use FilamentTiptapEditor\TiptapEditor;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
+use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\ReadingSettings;
@@ -63,15 +67,45 @@ class PostForm
                                             ],
                                         ),
 
-                                        RichEditor::make('post_content')
-                                            ->json(),
+                                        Group::make()->schema([
+                                            Textarea::make('post_teaser')
+                                                ->helperText('A short excerpt or teaser for the blog post')
+                                                ->rows(3)
+                                                ->autosize()
+                                                ->afterStateHydrated(function ($component, $state, $record): void {
+                                                    if ($record) {
+                                                        $component->state($record->getMeta('post_teaser', ''));
+                                                    }
+                                                })
+                                                ->dehydrated(false)
+                                                ->afterStateUpdated(function ($state, $record): void {
+                                                    if ($record) {
+                                                        $record->setMeta('post_teaser', $state);
+                                                    }
+                                                }),
+                                            Actions::make([
+                                                Action::make('generate_teaser')
+                                                    ->label('Generate Teaser')
+                                                    ->icon('heroicon-o-sparkles')
+                                                // TODO: Abstract create teaser to action if prism is installed
+                                                ,
+                                            ]),
 
-                                        //                                        TiptapEditor::make('post_content')
-                                        //                                            ->output(TiptapOutput::Json)
-                                        //                                            ->label('Content')
-                                        //                                            ->columnSpan('full')
-                                        //                                            ->collapseBlocksPanel()
-                                        //                                            ->extraInputAttributes(['style' => 'min-height: 24rem;']),
+                                        ]),
+
+                                        RichEditor::make('post_content')
+                                            ->live()
+                                            ->json()
+                                            ->label('Content')
+                                            ->extraInputAttributes(['style' => 'min-height: 16rem;'])
+                                            ->afterStateUpdated(function ($state, $record): void {
+                                                if ($record) {
+                                                    // Calculate read time based on content
+                                                    $readTime = self::calculateReadTime($state);
+                                                    $record->setMeta('read_time', $readTime);
+                                                    $record->save();
+                                                }
+                                            }),
                                     ]),
                             ]),
 
@@ -94,7 +128,7 @@ class PostForm
 
                                         DateTimePicker::make('post_published_at')
                                             ->label('Publish Date')
-                                            ->timezone(fn (GeneralSettings $settings) => $settings->timezone) // TODO: UNKNOWN TIME ZONE
+                                            ->timezone(fn (GeneralSettings $settings) => $settings->timezone) // TODO: handle UNKNOWN TIME ZONE
                                             ->default(now())
                                             ->required(),
 
@@ -104,6 +138,19 @@ class PostForm
                                             ->required()
                                             ->default(fn () => auth()->id())
                                             ->label('Author'),
+
+                                        // TODO: FIX OR REPLACE
+                                        TextEntry::make('read_time')
+                                            ->label('Read Time')
+                                            ->icon('heroicon-o-clock')
+                                            ->html(function ($record): string {
+                                                //                                                if ($record) {
+                                                //                                                    $readTime = $record->getMeta('read_time', '');
+                                                //                                                    return $readTime ? "{$readTime} minutes" : 'Not calculated yet';
+                                                //                                                }
+                                                return '- Not calculated yet';
+                                            }),
+
                                     ]),
 
                                 Section::make('Featured Image')
@@ -115,12 +162,20 @@ class PostForm
                                         //                                            ->relationship('featuredImage', 'id'),
                                     ]),
 
-                                Section::make(trans('filament-cms::messages.content.posts.sections.meta.title'))
-                                    ->visible(fn ($record) => $record && ! empty($record->meta_url))
-                                    ->description(trans('filament-cms::messages.content.posts.sections.meta.description'))
-                                    ->columnSpanFull(),
                             ]),
                     ]),
             ]);
+    }
+
+    /**
+     * Calculate the estimated read time for a post based on its content
+     *
+     * @param  array|string  $content  The post content in JSON format
+     * @return int Estimated read time in minutes
+     */
+    private static function calculateReadTime(array | string $content): int
+    {
+        return PostHelper::calculate_read_time(PostHelper::convert_tip_tap_to_plain_text($content));
+
     }
 }

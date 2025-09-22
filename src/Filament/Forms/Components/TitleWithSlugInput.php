@@ -11,7 +11,6 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class TitleWithSlugInput
 {
@@ -100,7 +99,7 @@ class TitleWithSlugInput
         }
 
         if ($titlePlaceholder !== '') {
-            $textInput->placeholder($titlePlaceholder ?: fn () => Str::of($fieldTitle)->headline());
+            $textInput->placeholder($titlePlaceholder ?: fn () => str($fieldTitle)->headline()->toString());
         }
 
         if (! $titleLabel) {
@@ -126,7 +125,7 @@ class TitleWithSlugInput
             ->slugInputRecordSlug(fn (?Model $record) => data_get($record?->attributesToArray(), $fieldSlug))
             ->slugInputModelName(
                 fn (?Model $record) => $record
-                    ? Str::of(class_basename($record))->headline()
+                    ? str(class_basename($record))->headline()->toString()
                     : ''
             )
             ->slugInputLabelPrefix($slugLabel)
@@ -199,6 +198,6 @@ class TitleWithSlugInput
 
         return is_callable($slugifier)
             ? $slugifier($text)
-            : Str::slug($text);
+            : str($text)->slug()->toString();
     }
 }
