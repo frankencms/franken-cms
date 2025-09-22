@@ -84,11 +84,12 @@ class PostResource extends Resource
 
 ## How it Works
 
-1. The plugin adds a toolbar button to the RichEditor component
-2. When clicked, it opens a modal with a textarea containing the current HTML content
-3. You can edit the HTML source directly
-4. Clicking "Update" applies the changes to the RichEditor without saving to the database
-5. The changes are only saved when the parent form is submitted
+1. The plugin adds a "Source Code" toolbar button to the RichEditor component
+2. When clicked, it captures the current HTML content from the TipTap editor using `$getEditor().getHTML()`
+3. Opens a modal with a textarea containing the current HTML content
+4. You can edit the HTML source directly in the monospace textarea
+5. Clicking "Update" applies the changes back to the RichEditor using the `setContent` command
+6. The changes are only saved to the database when the parent form is submitted
 
 ## Customization
 

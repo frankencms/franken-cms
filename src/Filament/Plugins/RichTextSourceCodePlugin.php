@@ -2,6 +2,7 @@
 
 namespace FrankenCms\Filament\Plugins;
 
+use Error;
 use Filament\Actions\Action;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\RichEditor\EditorCommand;
@@ -47,10 +48,10 @@ class RichTextSourceCodePlugin implements RichContentPlugin
                 ->modalWidth(Width::FourExtraLarge)
                 ->modalSubmitActionLabel('Update')
                 ->modalCancelActionLabel('Cancel')
-                ->fillForm(function (array $arguments): array {
-                    return [
+                ->beforeFormFilled(function (array $arguments, Action $action): void {
+                    $action->fillForm([
                         'html_content' => $arguments['editorContent'] ?? '',
-                    ];
+                    ]);
                 })
                 ->form([
                     Textarea::make('html_content')
@@ -79,7 +80,7 @@ class RichTextSourceCodePlugin implements RichContentPlugin
         $existingButtons = [];
         try {
             $existingButtons = $component->getToolbarButtons() ?? ['bold', 'italic', 'link'];
-        } catch (\Error $e) {
+        } catch (Error $e) {
             $existingButtons = ['bold', 'italic', 'link'];
         }
 
