@@ -71,15 +71,15 @@ class ManageMenuItems extends Page implements HasSchemas
             foreach ($data['menu_items'] as $index => $itemData) {
                 $this->record->allMenuItems()->create([
                     'label'            => $itemData['label'],
-                    'url'              => $itemData['url'],
-                    'route_name'       => $itemData['route_name'],
+                    'url'              => $itemData['url'] ?? null,
+                    'route_name'       => $itemData['route_name'] ?? null,
                     'route_parameters' => $itemData['route_parameters'] ?? [],
                     'target'           => $itemData['target'] ?? '_self',
                     'is_active'        => $itemData['is_active'] ?? true,
-                    'linkable_type'    => $itemData['linkable_type'],
-                    'linkable_id'      => $itemData['linkable_id'],
+                    'linkable_type'    => $itemData['linkable_type'] ?? null,
+                    'linkable_id'      => $itemData['linkable_id'] ?? null,
                     'additional_data'  => $itemData['additional_data'] ?? [],
-                    'parent_id'        => $itemData['parent_id'],
+                    'parent_id'        => $itemData['parent_id'] ?? null,
                     'sort_order'       => $index,
                 ]);
             }
