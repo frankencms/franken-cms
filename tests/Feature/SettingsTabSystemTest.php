@@ -5,10 +5,8 @@ use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Settings\GeneralSettings;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\LaravelSettings\Settings;
 
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Configure Spatie Settings for testing
