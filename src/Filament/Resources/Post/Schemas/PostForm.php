@@ -20,6 +20,7 @@ use Filament\Schemas\Schema;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
+use FrankenCms\Filament\Plugins\RichTextSourceCodePlugin;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
@@ -96,13 +97,14 @@ class PostForm
                                         RichEditor::make('post_content')
                                             ->live()
                                             ->json()
+                                            ->plugins([RichTextSourceCodePlugin::make()])
                                             ->toolbarButtons([
 
                                                 ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link', 'table', 'lead', 'details', 'horizontalRule', 'small', 'highlight'],
                                                 ['h1', 'h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd', 'mergeTags'],
                                                 ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
                                                 ['table', 'attachFiles'],
-                                                ['undo', 'redo', 'clearFormatting'],
+                                                ['undo', 'redo', 'clearFormatting', 'sourceCode'],
                                             ])
 
                                             ->floatingToolbars([
