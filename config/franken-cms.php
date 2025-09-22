@@ -6,7 +6,7 @@ return [
     'navigation_group_name' => 'Franken CMS',
 
     // The folder where your templates are stored in the resources/views directory
-    'template_folder' => 'page-templates',
+    'template_folder' => 'templates',
 
     'models' => [
         'user' => \App\Models\User::class,
