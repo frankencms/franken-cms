@@ -18,10 +18,12 @@ class Menu extends Model
         'slug',
         'description',
         'is_active',
+        'additional_data',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'additional_data' => 'array',
     ];
 
     /**
