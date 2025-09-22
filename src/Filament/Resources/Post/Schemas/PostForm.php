@@ -19,12 +19,14 @@ use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
+use FrankenCms\Settings\ReadingSettings;
 
 class PostForm
 {
     public static function make(Schema $schema): Schema
     {
         $settings = app(GeneralSettings::class);
+        $readingSettings = app(ReadingSettings::class);
 
         return $schema
             ->components([
@@ -54,7 +56,7 @@ class PostForm
                                             fieldSlug: 'post_slug',
                                             titleLabel: 'Page Name',
                                             slugLabel: 'Permalink',
-                                            urlPath: sprintf('/%s/', $settings->post_page),
+                                            urlPath: sprintf('/%s/', $readingSettings->post_page ?? 'posts'),
                                             slugRules: [
                                                 'required',
                                                 fn (?Post $record) => 'unique:posts,post_slug,' . ($record?->id ?? 'NULL') . ',id',
