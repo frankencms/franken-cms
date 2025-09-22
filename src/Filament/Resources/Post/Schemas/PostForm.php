@@ -58,7 +58,7 @@ class PostForm
                                         TitleWithSlugInput::make(
                                             fieldTitle: 'post_title',
                                             fieldSlug: 'post_slug',
-                                            titleLabel: 'Page Name',
+                                            titleLabel: 'Post Name',
                                             slugLabel: 'Permalink',
                                             urlPath: sprintf('/%s/', $readingSettings->post_page ?? 'posts'),
                                             slugRules: [

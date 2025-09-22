@@ -36,23 +36,7 @@ class Post extends Model
      */
     protected $table = 'posts';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * Adjust this list as needed.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'post_author_id',
-        'post_title',
-        'post_slug',
-        'post_content',
-        'post_status',
-        'post_published_at',
-        'post_password',
-        'post_type',
-    ];
+    protected $guarded = ['id'];
 
     protected $with = ['meta'];
 

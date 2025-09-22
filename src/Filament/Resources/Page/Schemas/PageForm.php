@@ -29,7 +29,7 @@ class PageForm
                             ->default(PostType::PAGE->value),
 
                         TitleWithSlugInput::make(
-                            //                            fieldTitle: 'page_name',
+                            fieldTitle: 'post_title',
                             fieldSlug: 'post_slug',
                             titleLabel: 'Page Name',
                             slugLabel: 'Permalink',

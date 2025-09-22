@@ -19,8 +19,6 @@ class Page extends Post
 {
     use HasMeta;
 
-    protected $guarded = ['id'];
-
     protected $with = ['meta'];
     protected $appends = ['template'];
 
