@@ -1,10 +1,9 @@
 <?php
 
-namespace FrankenCms\Filament\Plugins;
+namespace FrankenCms\Filament\Plugins\RichEditor;
 
 use Filament\Forms\Components\RichEditor\Plugins\Contracts\RichContentPlugin;
 use Filament\Support\Facades\FilamentAsset;
-use FrankenCms\Filament\Forms\Actions\EnhancedImageAction;
 
 class EnhancedImagePlugin implements RichContentPlugin
 {
@@ -46,7 +45,9 @@ class EnhancedImagePlugin implements RichContentPlugin
         // method) when the toolbar button is clicked. This allows you to open a modal to
         // collect additional information from the user before running a command.
 
-        return [];
+        return [
+            EnhancedImageTool::make(),
+        ];
     }
 
     public function getEditorActions(): array

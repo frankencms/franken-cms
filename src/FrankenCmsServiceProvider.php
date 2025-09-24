@@ -100,10 +100,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             )
                 ->loadedOnRequest(),
 
-            AlpineComponent::make(
-                id: 'focal-point-picker',
-                path: __DIR__ . '/../resources/dist/focal-point-picker.js'
-            ),
+            //                    AlpineComponent::make(
+            //                        id: 'focal-point-picker',
+            //                        path: __DIR__ . '/../resources/dist/focal-point-picker.js'
+            //                    ),
 
         ], 'frankencms/franken-cms');
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace FrankenCms\Filament\Forms\Actions;
+namespace FrankenCms\Filament\Plugins\RichEditor;
 
 use Exception;
 use Filament\Actions\Action;
@@ -12,6 +12,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
 use Illuminate\Support\Str;
@@ -49,9 +50,8 @@ class EnhancedImageAction
                             ->required(blank($arguments['src'] ?? null))
                             ->hiddenLabel(blank($arguments['src'] ?? null))
                             ->live()
-                            ->afterStateUpdated(function ($state, callable $set) {
+                            ->afterStateUpdated(function ($state, Set $set) {
                                 if ($state) {
-                                    // Get image dimensions
                                     $dimensions = static::getImageDimensions($state);
                                     if ($dimensions) {
                                         $set('width', $dimensions['width']);
@@ -111,10 +111,13 @@ class EnhancedImageAction
                                     ->readonly(),
                             ]),
 
-                        static::makeFocalPointComponent(),
+                        //                        static::makeFocalPointComponent(),
                     ]),
             ])
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
+
+                dump($data);
+
                 if ($data['file'] ?? null) {
                     $id = (string) Str::orderedUuid();
 
@@ -123,13 +126,14 @@ class EnhancedImageAction
                 }
 
                 if (filled($arguments['src'] ?? null)) {
-                    // Handle updating existing image
+                    // Fixes an issue where the editor selection is sent as text instead of a node,
+                    // which causes the image update to fail when though the image is selected.
                     if ($arguments['editorSelection']['type'] !== 'node') {
                         $arguments['editorSelection']['type'] = 'node';
                         $arguments['editorSelection']['anchor']--;
+
                         unset($arguments['editorSelection']['head']);
                     }
-
                     $id ??= $arguments['id'] ?? null;
                     $src ??= $arguments['src'];
 
@@ -150,7 +154,6 @@ class EnhancedImageAction
                     return;
                 }
 
-                // Insert new enhanced image
                 $component->runCommands(
                     [
                         EditorCommand::make('insertContent', arguments: [[
@@ -160,7 +163,56 @@ class EnhancedImageAction
                     ],
                     editorSelection: $arguments['editorSelection'],
                 );
+
             });
+
+        //            ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
+        //                if ($data['file'] ?? null) {
+        //                    $id = (string) Str::orderedUuid();
+        //
+        //                    data_set($livewire, "componentFileAttachments.{$component->getStatePath()}.{$id}", $data['file']);
+        //                    $src = $component->getUploadedFileAttachmentTemporaryUrl($data['file']);
+        //                }
+        //
+        //                if (filled($arguments['src'] ?? null)) {
+        //                    // Handle updating existing image
+        //                    if ($arguments['editorSelection']['type'] !== 'node') {
+        //                        $arguments['editorSelection']['type'] = 'node';
+        //                        $arguments['editorSelection']['anchor']--;
+        //                        unset($arguments['editorSelection']['head']);
+        //                    }
+        //
+        //                    $id ??= $arguments['id'] ?? null;
+        //                    $src ??= $arguments['src'];
+        //
+        //                    $component->runCommands(
+        //                        [
+        //                            EditorCommand::make('updateAttributes', arguments: [
+        //                                'enhancedImage',
+        //                                static::prepareImageAttributes($data, $id, $src),
+        //                            ]),
+        //                        ],
+        //                        editorSelection: $arguments['editorSelection'],
+        //                    );
+        //
+        //                    return;
+        //                }
+        //
+        //                if (blank($id ?? null) || blank($src ?? null)) {
+        //                    return;
+        //                }
+        //
+        //                // Insert new enhanced image
+        //                $component->runCommands(
+        //                    [
+        //                        EditorCommand::make('insertContent', arguments: [[
+        //                            'type'  => 'enhancedImage',
+        //                            'attrs' => static::prepareImageAttributes($data, $id, $src),
+        //                        ]]),
+        //                    ],
+        //                    editorSelection: $arguments['editorSelection'],
+        //                );
+        //            });
     }
 
     protected static function makeFocalPointComponent(): View

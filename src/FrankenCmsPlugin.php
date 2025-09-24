@@ -3,10 +3,8 @@
 namespace FrankenCms;
 
 use Filament\Contracts\Plugin;
-use Filament\Forms\Components\RichEditor;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
-use FrankenCms\Filament\Forms\Components\EnhancedImageTool;
 use FrankenCms\Filament\Resources\CmsSettings\Pages\CmsSettings;
 use FrankenCms\Filament\Resources\Menus\MenuResource;
 use FrankenCms\Filament\Resources\Page\PageResource;
@@ -49,14 +47,5 @@ class FrankenCmsPlugin implements Plugin
 
     }
 
-    public function boot(Panel $panel): void
-    {
-
-        RichEditor::configureUsing(function (RichEditor $richEditor): void {
-            $richEditor->tools([
-                EnhancedImageTool::make(),
-            ]);
-        });
-
-    }
+    public function boot(Panel $panel): void {}
 }

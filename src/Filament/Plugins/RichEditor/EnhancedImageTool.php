@@ -1,6 +1,6 @@
 <?php
 
-namespace FrankenCms\Filament\Forms\Components;
+namespace FrankenCms\Filament\Plugins\RichEditor;
 
 use Filament\Forms\Components\RichEditor\RichEditorTool;
 use Filament\Support\Icons\Heroicon;
@@ -26,6 +26,6 @@ class EnhancedImageTool
             }')
             ->activeKey('enhancedImage')
             ->icon(Heroicon::Photo)
-            ->iconAlias('forms:components.rich-editor.toolbar.enhanced-image');
+            ->iconAlias('franken-cms::components.rich-editor.toolbar.enhanced-image');
     }
 }
