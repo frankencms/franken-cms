@@ -168,8 +168,8 @@ class EnhancedImageAction
         return View::make('franken-cms::components.focal-point-picker')
             ->viewData([
                 'statePaths' => [
-                    'focal_x' => 'focal_x',
-                    'focal_y' => 'focal_y',
+                    'focal_x' => 'data.focal_x',
+                    'focal_y' => 'data.focal_y',
                 ],
             ]);
     }
