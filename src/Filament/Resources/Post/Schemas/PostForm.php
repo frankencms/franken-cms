@@ -99,16 +99,30 @@ class PostForm
                                             ->json()
                                             ->plugins([RichTextSourceCodePlugin::make()])
                                             ->toolbarButtons([
-                                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link', 'table', 'lead', 'details', 'horizontalRule', 'small', 'highlight', 'textColor'],
-                                                ['h1', 'h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd', 'mergeTags'],
-                                                ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
+                                                // Text Formatting
+                                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'highlight', 'textColor'],
+
+                                                // Headings & Alignment
+                                                ['h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd'],
+
+                                                // Lists & Structure
+                                                ['bulletList', 'orderedList', 'blockquote', 'codeBlock', 'horizontalRule'],
+
+                                                // Advanced Elements
+                                                ['link', 'table', 'attachFiles', 'details'],
+
+                                                // Layout & Grid
                                                 ['grid', 'gridDelete'],
-                                                ['table', 'attachFiles'],
+
+                                                // Merge Tags (if using)
+                                                ['mergeTags'],
+
+                                                // Actions
                                                 ['undo', 'redo', 'clearFormatting', 'sourceCode'],
                                             ])
                                             ->floatingToolbars([
                                                 'paragraph' => [
-                                                    'bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'textColor',
+                                                    'bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'textColor',
                                                 ],
                                                 'heading' => [
                                                     'h1', 'h2', 'h3',

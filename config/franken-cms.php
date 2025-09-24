@@ -1,6 +1,8 @@
 <?php
 
 // config for Franken CMS/FrankenCms
+use Filament\Forms\Components\RichEditor\TextColor;
+
 return [
 
     'navigation_group_name' => 'Franken CMS',
@@ -13,7 +15,7 @@ return [
 
     ],
 
-    'media_disk' => 'public',
+    'media_disk_name' => 'public',
 
     'settings' => [
 
@@ -30,6 +32,13 @@ return [
     */
 
     'menu_cache' => 3600, // Cache TTL in seconds (default: 1 hour)
+
+    'rich_editor' => [
+        'custom_text_colors' => [
+            'brand'     => TextColor::make(label: 'Brand', color: '#919831'),
+            'brand_alt' => TextColor::make(label: 'Brand Alternate', color: '#715B1A', darkColor: '#E59F2F'),
+        ],
+    ],
 
     /*
 |--------------------------------------------------------------------------
@@ -52,5 +61,13 @@ return [
         // Add other mappings as needed...
 
     ],
+
+    /*
+|--------------------------------------------------------------------------
+| Prism Enable Prompts
+|--------------------------------------------------------------------------
+*/
+
+    'prism' => [],
 
 ];
