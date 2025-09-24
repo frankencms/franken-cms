@@ -79,7 +79,6 @@ class RichTextSourceCodePlugin implements RichContentPlugin
                         ->columnSpanFull()
 
                         ->extraInputAttributes([
-                            //                            'style'      => 'font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace; font-size: 12px;',
                             'style'      => 'font-size: 14px;',
                             'spellcheck' => 'false',
                         ])
