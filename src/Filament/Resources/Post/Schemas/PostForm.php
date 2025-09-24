@@ -102,10 +102,10 @@ class PostForm
                                                 ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link', 'table', 'lead', 'details', 'horizontalRule', 'small', 'highlight', 'textColor'],
                                                 ['h1', 'h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd', 'mergeTags'],
                                                 ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
+                                                ['grid', 'gridDelete'],
                                                 ['table', 'attachFiles'],
                                                 ['undo', 'redo', 'clearFormatting', 'sourceCode'],
                                             ])
-
                                             ->floatingToolbars([
                                                 'paragraph' => [
                                                     'bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'textColor',
