@@ -102,6 +102,8 @@ class PostForm
                                                 RichTextSourceCodePlugin::make(),
                                                 EnhancedImagePlugin::make(),
                                             ])
+                                            ->fileAttachmentsDirectory('posts/images')
+                                            ->fileAttachmentsVisibility('public')
                                             ->toolbarButtons([
                                                 // Text Formatting
                                                 ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'highlight', 'textColor'],
@@ -114,7 +116,7 @@ class PostForm
 
                                                 // Advanced Elements
                                                 //                                                ['link', 'table', 'enhancedImage', 'details', 'attachFiles'],
-                                                ['link', 'table', 'enhancedImage', 'details', 'attachFiles'],
+                                                ['link', 'table', 'enhancedImage', 'details'],
 
                                                 // Layout & Grid
                                                 ['grid', 'gridDelete'],
@@ -139,7 +141,7 @@ class PostForm
                                                     'tableToggleHeaderRow',
                                                     'tableDelete',
                                                 ],
-                                                'enhancedImage' => [
+                                                'image' => [
                                                     'enhancedImage',
                                                 ],
 

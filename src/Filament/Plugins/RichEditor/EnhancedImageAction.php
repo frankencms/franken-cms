@@ -111,12 +111,10 @@ class EnhancedImageAction
                                     ->readonly(),
                             ]),
 
-                        //                        static::makeFocalPointComponent(),
+                        static::makeFocalPointComponent(),
                     ]),
             ])
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
-
-                dump($data);
 
                 if ($data['file'] ?? null) {
                     $id = (string) Str::orderedUuid();
@@ -140,7 +138,7 @@ class EnhancedImageAction
                     $component->runCommands(
                         [
                             EditorCommand::make('updateAttributes', arguments: [
-                                'enhancedImage',
+                                'image',
                                 static::prepareImageAttributes($data, $id, $src),
                             ]),
                         ],
@@ -157,7 +155,7 @@ class EnhancedImageAction
                 $component->runCommands(
                     [
                         EditorCommand::make('insertContent', arguments: [[
-                            'type'  => 'enhancedImage',
+                            'type'  => 'image',
                             'attrs' => static::prepareImageAttributes($data, $id, $src),
                         ]]),
                     ],

@@ -1,7 +1,7 @@
 import { Node, nodeInputRule } from '@tiptap/core';
 
 export const EnhancedImage = Node.create({
-    name: 'enhancedImage',
+    name: 'image',
 
     addOptions() {
         return {
