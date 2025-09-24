@@ -31,7 +31,7 @@ class EnhancedImageAction
                 'title'       => $arguments['title'] ?? null,
                 'caption'     => $arguments['caption'] ?? null,
                 'attribution' => $arguments['attribution'] ?? null,
-                'loading'     => $arguments['loading'] ?? 'lazy',
+                'loading'     => ($arguments['loading'] ?? 'lazy') === 'lazy',
                 'focal_x'     => $arguments['focal_x'] ?? 50,
                 'focal_y'     => $arguments['focal_y'] ?? 50,
                 'width'       => $arguments['width'] ?? null,
@@ -95,8 +95,7 @@ class EnhancedImageAction
                                 Toggle::make('loading')
                                     ->label(__('Lazy Loading'))
                                     ->helperText(__('Load image when it comes into view'))
-                                    ->default(true)
-                                    ->formatStateUsing(fn ($state) => $state === 'lazy'),
+                                    ->default(true),
 
                                 TextInput::make('width')
                                     ->label(__('Width'))
