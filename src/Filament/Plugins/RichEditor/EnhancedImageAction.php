@@ -166,53 +166,6 @@ class EnhancedImageAction
 
             });
 
-        //            ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
-        //                if ($data['file'] ?? null) {
-        //                    $id = (string) Str::orderedUuid();
-        //
-        //                    data_set($livewire, "componentFileAttachments.{$component->getStatePath()}.{$id}", $data['file']);
-        //                    $src = $component->getUploadedFileAttachmentTemporaryUrl($data['file']);
-        //                }
-        //
-        //                if (filled($arguments['src'] ?? null)) {
-        //                    // Handle updating existing image
-        //                    if ($arguments['editorSelection']['type'] !== 'node') {
-        //                        $arguments['editorSelection']['type'] = 'node';
-        //                        $arguments['editorSelection']['anchor']--;
-        //                        unset($arguments['editorSelection']['head']);
-        //                    }
-        //
-        //                    $id ??= $arguments['id'] ?? null;
-        //                    $src ??= $arguments['src'];
-        //
-        //                    $component->runCommands(
-        //                        [
-        //                            EditorCommand::make('updateAttributes', arguments: [
-        //                                'enhancedImage',
-        //                                static::prepareImageAttributes($data, $id, $src),
-        //                            ]),
-        //                        ],
-        //                        editorSelection: $arguments['editorSelection'],
-        //                    );
-        //
-        //                    return;
-        //                }
-        //
-        //                if (blank($id ?? null) || blank($src ?? null)) {
-        //                    return;
-        //                }
-        //
-        //                // Insert new enhanced image
-        //                $component->runCommands(
-        //                    [
-        //                        EditorCommand::make('insertContent', arguments: [[
-        //                            'type'  => 'enhancedImage',
-        //                            'attrs' => static::prepareImageAttributes($data, $id, $src),
-        //                        ]]),
-        //                    ],
-        //                    editorSelection: $arguments['editorSelection'],
-        //                );
-        //            });
     }
 
     protected static function makeFocalPointComponent(): View
