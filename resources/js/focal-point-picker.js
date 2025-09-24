@@ -21,13 +21,17 @@ export default function focalPointPicker(existingImageSrc = null) {
                 this.imagePreview = existingImageSrc;
             }
 
-            // Initialize from Livewire data
-            if (this.$wire.data && this.$wire.data.focal_x !== undefined) {
-                this.focalX = parseFloat(this.$wire.data.focal_x) || 50;
-            }
-            if (this.$wire.data && this.$wire.data.focal_y !== undefined) {
-                this.focalY = parseFloat(this.$wire.data.focal_y) || 50;
-            }
+            // Initialize from Livewire data - wait a moment for Livewire to be ready
+            this.$nextTick(() => {
+                if (this.$wire.data && this.$wire.data.focal_x !== undefined) {
+                    this.focalX = parseFloat(this.$wire.data.focal_x) || 50;
+                    console.log('Initialized focalX from Livewire:', this.focalX);
+                }
+                if (this.$wire.data && this.$wire.data.focal_y !== undefined) {
+                    this.focalY = parseFloat(this.$wire.data.focal_y) || 50;
+                    console.log('Initialized focalY from Livewire:', this.focalY);
+                }
+            });
 
             // Watch for file input changes (new uploads)
             this.$watch('$wire.data.file', (newFile) => {
@@ -39,14 +43,26 @@ export default function focalPointPicker(existingImageSrc = null) {
 
             // Watch for focal point changes and sync to Livewire
             this.$watch('focalX', (value) => {
-                if (this.$wire.data) {
-                    this.$wire.data.focal_x = value;
+                console.log('FocalX changed to:', value);
+                console.log('$wire before set:', this.$wire.data);
+                try {
+                    this.$wire.set('data.focal_x', value);
+                    console.log('Successfully set data.focal_x to:', value);
+                    console.log('$wire after set:', this.$wire.data);
+                } catch (error) {
+                    console.error('Error setting focal_x:', error);
                 }
             });
 
             this.$watch('focalY', (value) => {
-                if (this.$wire.data) {
-                    this.$wire.data.focal_y = value;
+                console.log('FocalY changed to:', value);
+                console.log('$wire before set:', this.$wire.data);
+                try {
+                    this.$wire.set('data.focal_y', value);
+                    console.log('Successfully set data.focal_y to:', value);
+                    console.log('$wire after set:', this.$wire.data);
+                } catch (error) {
+                    console.error('Error setting focal_y:', error);
                 }
             });
 
@@ -164,13 +180,38 @@ export default function focalPointPicker(existingImageSrc = null) {
             this.focalX = Math.round(Math.max(0, Math.min(100, x)) * 10) / 10;
             this.focalY = Math.round(Math.max(0, Math.min(100, y)) * 10) / 10;
 
+            console.log('setFocalPoint called:', { x: this.focalX, y: this.focalY });
+
+            // Also directly trigger input events to ensure wire:model picks up the change
+            const focalXInput = document.querySelector('[wire\\:model*="focal_x"]');
+            const focalYInput = document.querySelector('[wire\\:model*="focal_y"]');
+
+            if (focalXInput) {
+                focalXInput.value = this.focalX;
+                focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (focalYInput) {
+                focalYInput.value = this.focalY;
+                focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
             this.updateFocalPoint();
         },
 
         updateFocalPoint() {
             // Ensure values are within bounds
+            const oldX = this.focalX;
+            const oldY = this.focalY;
+
             this.focalX = Math.max(0, Math.min(100, parseFloat(this.focalX) || 50));
             this.focalY = Math.max(0, Math.min(100, parseFloat(this.focalY) || 50));
+
+            console.log('updateFocalPoint called:', {
+                oldX, oldY,
+                newX: this.focalX,
+                newY: this.focalY,
+                wireData: this.$wire?.data
+            });
         },
 
         resetFocalPoint() {

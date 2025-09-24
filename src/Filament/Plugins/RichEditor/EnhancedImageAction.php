@@ -5,6 +5,7 @@ namespace FrankenCms\Filament\Plugins\RichEditor;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\RichEditor\EditorCommand;
 use Filament\Forms\Components\Textarea;
@@ -110,10 +111,24 @@ class EnhancedImageAction
                                     ->readonly(),
                             ]),
 
+                        Hidden::make('focal_x')
+                            ->default($arguments['focal_x'] ?? 50),
+
+                        Hidden::make('focal_y')
+                            ->default($arguments['focal_y'] ?? 50),
+
                         static::makeFocalPointComponent($arguments),
                     ]),
             ])
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
+
+                // Debug: Log all the data being received
+                \Log::info('EnhancedImageAction data received:', [
+                    'arguments' => $arguments,
+                    'data' => $data,
+                    'focal_x' => $data['focal_x'] ?? 'not set',
+                    'focal_y' => $data['focal_y'] ?? 'not set',
+                ]);
 
                 if ($data['file'] ?? null) {
                     $id = (string) Str::orderedUuid();
@@ -179,7 +194,7 @@ class EnhancedImageAction
 
     protected static function prepareImageAttributes(array $data, ?string $id, ?string $src): array
     {
-        return [
+        $attributes = [
             'id'          => $id,
             'src'         => $src,
             'alt'         => $data['alt'] ?? null,
@@ -192,6 +207,10 @@ class EnhancedImageAction
             'width'       => $data['width'] ?? null,
             'height'      => $data['height'] ?? null,
         ];
+
+        \Log::info('Prepared image attributes:', $attributes);
+
+        return $attributes;
     }
 
     protected static function getImageDimensions($file): ?array
