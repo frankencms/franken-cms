@@ -1,16 +1,18 @@
 // Alpine.js Focal Point Picker Component for Filament
-export default function focalPointPicker(existingImageSrc = null) {
+export default function focalPointPicker(existingImageSrc = null, existingFocalX = 50, existingFocalY = 50) {
     // Ensure this function is preserved by bundlers
     focalPointPicker.displayName = 'focalPointPicker';
 
     return {
-        focalX: 50,
-        focalY: 50,
+        focalX: existingFocalX,
+        focalY: existingFocalY,
         imagePreview: existingImageSrc,
 
         init() {
             console.log('Focal-picker-init', {
                 existingImageSrc: existingImageSrc,
+                existingFocalX: existingFocalX,
+                existingFocalY: existingFocalY,
                 imagePreview: this.imagePreview,
                 wire: this.$wire
             });

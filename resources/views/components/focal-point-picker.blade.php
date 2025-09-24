@@ -11,7 +11,11 @@
     <div
         x-load
         x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('focal-point-picker', 'frankencms/franken-cms') }}"
-        x-data="focalPointPicker(@if($existingImageSrc)'{{ $existingImageSrc }}'@else null @endif)"
+        x-data="focalPointPicker(
+            @if($existingImageSrc)'{{ $existingImageSrc }}'@else null @endif,
+            {{ $existingFocalX ?? 50 }},
+            {{ $existingFocalY ?? 50 }}
+        )"
         class="space-y-4"
     >
         <!-- Preview Area -->

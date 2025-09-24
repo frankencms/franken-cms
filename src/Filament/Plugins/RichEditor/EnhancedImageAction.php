@@ -189,6 +189,8 @@ class EnhancedImageAction
                     'focal_y' => 'data.focal_y',
                 ],
                 'existingImageSrc' => $arguments['src'] ?? null,
+                'existingFocalX' => $arguments['focal_x'] ?? 50,
+                'existingFocalY' => $arguments['focal_y'] ?? 50,
             ]);
     }
 
