@@ -20,8 +20,8 @@
     >
         <!-- Preview Area -->
         <div
-            class="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600"
-            style="height: 200px;"
+            class="select-none relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600"
+{{--            style="height: 250px;"--}}
             x-ref="previewArea"
             @click="setFocalPoint($event)"
         >
@@ -51,16 +51,6 @@
                     <div
                         class="absolute w-4 h-4 bg-red-500 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
                         :style="`left: ${focalX}%; top: ${focalY}%;`"
-                    ></div>
-
-                    <!-- Crosshairs -->
-                    <div
-                        class="absolute w-full h-0.5 bg-red-500 opacity-50"
-                        :style="`top: ${focalY}%;`"
-                    ></div>
-                    <div
-                        class="absolute h-full w-0.5 bg-red-500 opacity-50"
-                        :style="`left: ${focalX}%;`"
                     ></div>
                 </div>
             </template>
