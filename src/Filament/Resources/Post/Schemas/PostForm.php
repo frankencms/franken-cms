@@ -19,7 +19,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
+use FrankenCms\Filament\Forms\Components\EnhancedImageTool;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
+use FrankenCms\Filament\Plugins\EnhancedImagePlugin;
 use FrankenCms\Filament\Plugins\RichTextSourceCodePlugin;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
@@ -97,7 +99,14 @@ class PostForm
                                         RichEditor::make('post_content')
                                             ->live()
                                             ->json()
-                                            ->plugins([RichTextSourceCodePlugin::make()])
+                                            ->plugins([
+                                                RichTextSourceCodePlugin::make(),
+                                                EnhancedImagePlugin::make(),
+                                            ])
+                                            ->tools([
+                                                // Add the enhanced image tool
+                                                EnhancedImageTool::make(),
+                                            ])
                                             ->toolbarButtons([
                                                 // Text Formatting
                                                 ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'highlight', 'textColor'],
@@ -109,7 +118,7 @@ class PostForm
                                                 ['bulletList', 'orderedList', 'blockquote', 'codeBlock', 'horizontalRule'],
 
                                                 // Advanced Elements
-                                                ['link', 'table', 'attachFiles', 'details'],
+                                                ['link', 'table', 'enhancedImage', 'details', 'attachFiles'],
 
                                                 // Layout & Grid
                                                 ['grid', 'gridDelete'],
@@ -134,6 +143,10 @@ class PostForm
                                                     'tableToggleHeaderRow',
                                                     'tableDelete',
                                                 ],
+                                                'enhancedImage' => [
+                                                    'enhancedImage',
+                                                ],
+
                                             ])
 
                                             ->label('Content')

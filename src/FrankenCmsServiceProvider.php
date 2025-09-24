@@ -3,6 +3,9 @@
 namespace FrankenCms;
 
 use Composer\InstalledVersions;
+use Filament\Support\Assets\AlpineComponent;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
 use FrankenCms\Commands\InstallCommand;
 use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
@@ -89,6 +92,21 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $settingsTabService->registerDefaultTabs();
 
         $this->registerAboutInfo();
+
+        FilamentAsset::register([
+            Js::make(
+                id: 'enhanced-image',
+                path: __DIR__ . '/../resources/dist/filament/rich-content-plugins/enhanced-image.js'
+            )
+                ->loadedOnRequest(),
+
+            AlpineComponent::make(
+                id: 'focal-point-picker',
+                path: __DIR__ . '/../resources/dist/focal-point-picker.js'
+            ),
+
+        ], 'frankencms/franken-cms');
+
     }
 
     private function registerBladeDirectives(): void
