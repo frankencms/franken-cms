@@ -110,7 +110,7 @@ class EnhancedImageAction
                                     ->readonly(),
                             ]),
 
-                        static::makeFocalPointComponent(),
+                        static::makeFocalPointComponent($arguments),
                     ]),
             ])
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
@@ -165,7 +165,7 @@ class EnhancedImageAction
 
     }
 
-    protected static function makeFocalPointComponent(): View
+    protected static function makeFocalPointComponent(array $arguments = []): View
     {
         return View::make('franken-cms::components.focal-point-picker')
             ->viewData([
@@ -173,6 +173,7 @@ class EnhancedImageAction
                     'focal_x' => 'data.focal_x',
                     'focal_y' => 'data.focal_y',
                 ],
+                'existingImageSrc' => $arguments['src'] ?? null,
             ]);
     }
 

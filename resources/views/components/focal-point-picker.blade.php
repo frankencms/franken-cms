@@ -11,7 +11,7 @@
     <div
         x-load
         x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('focal-point-picker', 'frankencms/franken-cms') }}"
-        x-data="focalPointPicker"
+        x-data="focalPointPicker(@if($existingImageSrc)'{{ $existingImageSrc }}'@else null @endif)"
         class="space-y-4"
     >
         <!-- Preview Area -->
@@ -73,7 +73,7 @@
                     min="0"
                     max="100"
                     step="0.1"
-                    wire:model.defer="{{ $statePaths['focal_x'] }}"
+                    wire:model.live="{{ $statePaths['focal_x'] }}"
                     x-model="focalX"
                     @input="updateFocalPoint"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-600 focus:ring-primary-600 dark:bg-gray-900 dark:text-white text-sm"
@@ -88,7 +88,7 @@
                     min="0"
                     max="100"
                     step="0.1"
-                    wire:model.defer="{{ $statePaths['focal_y'] }}"
+                    wire:model.live="{{ $statePaths['focal_y'] }}"
                     x-model="focalY"
                     @input="updateFocalPoint"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-600 focus:ring-primary-600 dark:bg-gray-900 dark:text-white text-sm"
