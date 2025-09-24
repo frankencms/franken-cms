@@ -19,6 +19,25 @@ class RichTextSourceCodePlugin implements RichContentPlugin
         return app(static::class);
     }
 
+    public static function addToRichEditor(RichEditor $component): RichEditor
+    {
+        $existingButtons = [];
+        try {
+            $existingButtons = $component->getToolbarButtons() ?? ['bold', 'italic', 'link'];
+        } catch (Error $e) {
+            $existingButtons = ['bold', 'italic', 'link'];
+        }
+
+        return $component
+            ->toolbarButtons([
+                ...$existingButtons,
+                'sourceCode',
+            ])
+            ->plugins([
+                self::make(),
+            ]);
+    }
+
     public function getTipTapPhpExtensions(): array
     {
         return [];
@@ -58,8 +77,10 @@ class RichTextSourceCodePlugin implements RichContentPlugin
                         ->label('HTML Source')
                         ->rows(20)
                         ->columnSpanFull()
-                        ->extraAttributes([
-                            'style'      => 'font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace; font-size: 12px;',
+
+                        ->extraInputAttributes([
+                            //                            'style'      => 'font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace; font-size: 12px;',
+                            'style'      => 'font-size: 14px;',
                             'spellcheck' => 'false',
                         ])
                         ->helperText('Edit the HTML source code and click Update to apply changes.'),
@@ -73,24 +94,5 @@ class RichTextSourceCodePlugin implements RichContentPlugin
                     );
                 }),
         ];
-    }
-
-    public static function addToRichEditor(RichEditor $component): RichEditor
-    {
-        $existingButtons = [];
-        try {
-            $existingButtons = $component->getToolbarButtons() ?? ['bold', 'italic', 'link'];
-        } catch (Error $e) {
-            $existingButtons = ['bold', 'italic', 'link'];
-        }
-
-        return $component
-            ->toolbarButtons([
-                ...$existingButtons,
-                'sourceCode',
-            ])
-            ->plugins([
-                self::make(),
-            ]);
     }
 }

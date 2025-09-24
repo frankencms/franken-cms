@@ -44,7 +44,7 @@ final class PostHelper
                 if ($node['type'] === 'text' && isset($node['text'])) {
                     $text .= $node['text'] . ' ';
                 } elseif (isset($node['content'])) {
-                    $text .= self::convertTipTapToPlainText($node) . ' ';
+                    $text .= self::convert_tip_tap_to_plain_text($node) . ' ';
                 }
             }
         }

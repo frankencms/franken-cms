@@ -99,8 +99,7 @@ class PostForm
                                             ->json()
                                             ->plugins([RichTextSourceCodePlugin::make()])
                                             ->toolbarButtons([
-
-                                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link', 'table', 'lead', 'details', 'horizontalRule', 'small', 'highlight'],
+                                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link', 'table', 'lead', 'details', 'horizontalRule', 'small', 'highlight', 'textColor'],
                                                 ['h1', 'h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd', 'mergeTags'],
                                                 ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
                                                 ['table', 'attachFiles'],
@@ -109,7 +108,7 @@ class PostForm
 
                                             ->floatingToolbars([
                                                 'paragraph' => [
-                                                    'bold', 'italic', 'underline', 'strike', 'subscript', 'superscript',
+                                                    'bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'textColor',
                                                 ],
                                                 'heading' => [
                                                     'h1', 'h2', 'h3',
