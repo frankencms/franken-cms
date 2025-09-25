@@ -21,7 +21,7 @@ use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
-use FrankenCms\Filament\Plugins\RichTextSourceCodePlugin;
+use FrankenCms\Filament\Plugins\RichEditor\SourceCodePlugin;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
@@ -99,7 +99,7 @@ class PostForm
                                             ->live()
                                             ->json()
                                             ->plugins([
-                                                RichTextSourceCodePlugin::make(),
+                                                SourceCodePlugin::make(),
                                                 EnhancedImagePlugin::make(),
                                             ])
                                             ->fileAttachmentsDirectory('posts/images')

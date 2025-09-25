@@ -1,6 +1,6 @@
 <?php
 
-namespace FrankenCms\Filament\Plugins;
+namespace FrankenCms\Filament\Plugins\RichEditor;
 
 use Error;
 use Filament\Actions\Action;
@@ -12,7 +12,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 
-class RichTextSourceCodePlugin implements RichContentPlugin
+class SourceCodePlugin implements RichContentPlugin
 {
     public static function make(): static
     {

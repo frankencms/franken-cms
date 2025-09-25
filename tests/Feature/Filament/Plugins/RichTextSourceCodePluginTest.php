@@ -1,16 +1,16 @@
 <?php
 
 use Filament\Forms\Components\RichEditor;
-use FrankenCms\Filament\Plugins\RichTextSourceCodePlugin;
+use FrankenCms\Filament\Plugins\RichEditor\SourceCodePlugin;
 
 it('can create rich content plugin', function () {
-    $plugin = RichTextSourceCodePlugin::make();
+    $plugin = SourceCodePlugin::make();
 
-    expect($plugin)->toBeInstanceOf(RichTextSourceCodePlugin::class);
+    expect($plugin)->toBeInstanceOf(SourceCodePlugin::class);
 });
 
 it('plugin provides source code editor tool', function () {
-    $plugin = RichTextSourceCodePlugin::make();
+    $plugin = SourceCodePlugin::make();
     $tools = $plugin->getEditorTools();
 
     expect($tools)->toHaveCount(1);
@@ -18,7 +18,7 @@ it('plugin provides source code editor tool', function () {
 });
 
 it('plugin provides source code action', function () {
-    $plugin = RichTextSourceCodePlugin::make();
+    $plugin = SourceCodePlugin::make();
     $actions = $plugin->getEditorActions();
 
     expect($actions)->toHaveCount(1);
@@ -28,7 +28,7 @@ it('plugin provides source code action', function () {
 
 it('can add plugin to rich editor component', function () {
     $richEditor = RichEditor::make('content');
-    $enhancedEditor = RichTextSourceCodePlugin::addToRichEditor($richEditor);
+    $enhancedEditor = SourceCodePlugin::addToRichEditor($richEditor);
 
     expect($enhancedEditor)->toBeInstanceOf(RichEditor::class);
 });
