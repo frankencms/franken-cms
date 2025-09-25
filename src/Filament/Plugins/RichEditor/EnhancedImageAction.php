@@ -127,14 +127,12 @@ class EnhancedImageAction
                                             ->label(__('Width'))
                                             ->numeric()
                                             ->suffix('px')
-                                            ->disabled()
                                             ->dehydrated(),
 
                                         TextInput::make('height')
                                             ->label(__('Height'))
                                             ->numeric()
                                             ->suffix('px')
-                                            ->disabled()
                                             ->dehydrated(),
                                     ]),
                             ]),

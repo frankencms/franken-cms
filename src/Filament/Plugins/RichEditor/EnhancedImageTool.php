@@ -22,7 +22,8 @@ class EnhancedImageTool
                 width: $getEditor().getAttributes(\'image\')?.width ?? null,
                 height: $getEditor().getAttributes(\'image\')?.height ?? null,
                 src: $getEditor().getAttributes(\'image\')?.src ?? null,
-                id: $getEditor().getAttributes(\'image\')?.id ?? null
+                id: $getEditor().getAttributes(\'image\')?.id ?? null,
+                css: $getEditor().getAttributes(\'image\')?.css ?? null
             }')
             ->activeKey('image')
             ->icon(Heroicon::Photo)
