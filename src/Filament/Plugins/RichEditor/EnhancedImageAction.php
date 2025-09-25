@@ -16,7 +16,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -77,8 +76,7 @@ class EnhancedImageAction
                                             $temporaryUrl = $state;
                                         }
                                     } catch (\Exception $e) {
-                                        // Log the error but don't break
-                                        Log::warning('Could not get temporary URL: ' . $e->getMessage());
+                                        // Silent fail - continue without temporary URL
                                     }
 
                                     // Dispatch Livewire event with the new image data
@@ -150,15 +148,6 @@ class EnhancedImageAction
                     ]),
             ])
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
-
-                // Debug: Log all the data being received
-                Log::info('EnhancedImageAction data received:', [
-                    'arguments' => $arguments,
-                    'data'      => $data,
-                    'focal_x'   => $data['focal_x'] ?? 'not set',
-                    'focal_y'   => $data['focal_y'] ?? 'not set',
-                ]);
-
                 if ($data['file'] ?? null) {
                     $id = (string) Str::orderedUuid();
 
@@ -225,7 +214,7 @@ class EnhancedImageAction
 
     protected static function prepareImageAttributes(array $data, ?string $id, ?string $src): array
     {
-        $attributes = [
+        return [
             'id'          => $id,
             'src'         => $src,
             'alt'         => $data['alt'] ?? null,
@@ -238,10 +227,6 @@ class EnhancedImageAction
             'width'       => $data['width'] ?? null,
             'height'      => $data['height'] ?? null,
         ];
-
-        Log::info('Prepared image attributes:', $attributes);
-
-        return $attributes;
     }
 
     protected static function getImageDimensions($file): ?array
