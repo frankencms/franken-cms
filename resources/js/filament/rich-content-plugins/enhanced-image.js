@@ -85,6 +85,41 @@ export const EnhancedImage = Node.create({
         return [
             {
                 tag: 'figure[data-type="enhanced-image"]',
+                getAttrs: (element) => {
+                    const img = element.querySelector('img');
+                    const figcaption = element.querySelector('figcaption');
+                    const attribution = element.querySelector('.enhanced-image-attribution');
+
+                    return {
+                        src: img?.getAttribute('src') || null,
+                        alt: img?.getAttribute('alt') || null,
+                        title: img?.getAttribute('title') || null,
+                        loading: img?.getAttribute('loading') || 'lazy',
+                        width: img?.getAttribute('width') || null,
+                        height: img?.getAttribute('height') || null,
+                        css: img?.getAttribute('class') || null,
+                        caption: figcaption?.textContent || null,
+                        attribution: attribution?.textContent || null,
+                        focal_x: element.getAttribute('data-focal-x') || 50,
+                        focal_y: element.getAttribute('data-focal-y') || 50,
+                        id: element.getAttribute('data-id') || null,
+                    };
+                },
+            },
+            {
+                // Also parse regular img tags as enhanced images to maintain compatibility
+                tag: 'img[src]',
+                getAttrs: (element) => {
+                    return {
+                        src: element.getAttribute('src') || null,
+                        alt: element.getAttribute('alt') || null,
+                        title: element.getAttribute('title') || null,
+                        loading: element.getAttribute('loading') || 'lazy',
+                        width: element.getAttribute('width') || null,
+                        height: element.getAttribute('height') || null,
+                        css: element.getAttribute('class') || null,
+                    };
+                },
             },
         ];
     },
