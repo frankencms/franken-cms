@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
@@ -39,112 +40,129 @@ class EnhancedImageAction
                 'height'      => $arguments['height'] ?? null,
             ])
             ->schema(fn (array $arguments, RichEditor $component): array => [
-                Section::make('Image Upload')
-                    ->schema([
-                        FileUpload::make('file')
-                            ->imageEditor()
-                            ->previewable(false)
-                            ->label(filled($arguments['src'] ?? null)
-                                ? __('Replace Image')
-                                : __('Upload Image'))
-                            ->acceptedFileTypes($component->getFileAttachmentsAcceptedFileTypes())
-                            ->maxSize($component->getFileAttachmentsMaxSize())
-                            ->storeFiles(false)
-                            ->required(blank($arguments['src'] ?? null))
-                            ->hiddenLabel(blank($arguments['src'] ?? null))
-                            ->live()
-                            ->afterStateUpdated(function ($state, Set $set, Component $livewire) {
-                                if ($state) {
-                                    $dimensions = static::getImageDimensions($state);
-                                    if ($dimensions) {
-                                        $set('width', $dimensions['width']);
-                                        $set('height', $dimensions['height']);
-                                    }
+                FileUpload::make('file')
+                    ->imageEditor()
+                    ->previewable(false)
+                    ->label(filled($arguments['src'] ?? null)
+                        ? __('Replace Image')
+                        : __('Upload Image'))
+                    ->acceptedFileTypes($component->getFileAttachmentsAcceptedFileTypes())
+                    ->maxSize($component->getFileAttachmentsMaxSize())
+                    ->storeFiles(false)
+                    ->required(blank($arguments['src'] ?? null))
+                    ->hiddenLabel(blank($arguments['src'] ?? null))
+                    ->live()
+                    ->afterStateUpdated(function ($state, Set $set, Component $livewire) {
+                        if ($state) {
+                            $dimensions = static::getImageDimensions($state);
+                            if ($dimensions) {
+                                $set('width', $dimensions['width']);
+                                $set('height', $dimensions['height']);
+                            }
 
-                                    // Reset focal point to center for new uploads
-                                    $set('focal_x', 50);
-                                    $set('focal_y', 50);
+                            // Reset focal point to center for new uploads
+                            $set('focal_x', 50);
+                            $set('focal_y', 50);
 
-                                    // Get the temporary URL for the uploaded file
-                                    $temporaryUrl = null;
-                                    try {
-                                        // For Livewire file uploads, the temporary URL method is available
-                                        if (is_object($state) && method_exists($state, 'temporaryUrl')) {
-                                            $temporaryUrl = $state->temporaryUrl();
-                                        } elseif (is_string($state)) {
-                                            // If it's already a string, it might be the temporary URL
-                                            $temporaryUrl = $state;
-                                        }
-                                    } catch (\Exception $e) {
-                                        // Silent fail - continue without temporary URL
-                                    }
-
-                                    // Dispatch Livewire event with the new image data
-                                    $livewire->dispatch('enhancedImageUploaded', [
-                                        'temporaryUrl' => $temporaryUrl,
-                                        'focalX' => 50,
-                                        'focalY' => 50,
-                                    ]);
+                            // Get the temporary URL for the uploaded file
+                            $temporaryUrl = null;
+                            try {
+                                // For Livewire file uploads, the temporary URL method is available
+                                if (is_object($state) && method_exists($state, 'temporaryUrl')) {
+                                    $temporaryUrl = $state->temporaryUrl();
+                                } elseif (is_string($state)) {
+                                    // If it's already a string, it might be the temporary URL
+                                    $temporaryUrl = $state;
                                 }
-                            }),
-                    ]),
+                            } catch (Exception $e) {
+                                // Silent fail - continue without temporary URL
+                            }
+
+                            // Dispatch Livewire event with the new image data
+                            $livewire->dispatch('enhancedImageUploaded', [
+                                'temporaryUrl' => $temporaryUrl,
+                                'focalX'       => 50,
+                                'focalY'       => 50,
+                            ]);
+                        }
+                    }),
 
                 Section::make('Image Details')
+                    ->description('Essential information for accessibility and SEO')
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('alt')
-                                    ->label(__('Alt Text'))
-                                    ->helperText(__('Describe the image for accessibility'))
-                                    ->maxLength(255),
-
-                                TextInput::make('title')
-                                    ->label(__('Title'))
-                                    ->helperText(__('Image title (shown on hover)'))
-                                    ->maxLength(255),
-                            ]),
-
-                        Textarea::make('caption')
-                            ->label(__('Caption'))
-                            ->helperText(__('Caption displayed below the image'))
-                            ->maxLength(500)
-                            ->rows(2),
-
-                        TextInput::make('attribution')
-                            ->label(__('Attribution'))
-                            ->helperText(__('Photo credit or source'))
+                        TextInput::make('alt')
+                            ->label(__('Alt Text'))
+                            ->placeholder(__('Describe what the image shows'))
+                            ->helperText(__('Important for accessibility and SEO'))
                             ->maxLength(255),
-                    ]),
 
-                Section::make('Display Settings')
+                        TextInput::make('title')
+                            ->label(__('Title'))
+                            ->placeholder(__('Optional hover text'))
+                            ->helperText(__('Shown when hovering over the image'))
+                            ->maxLength(255),
+                    ])
+                    ->columns(2),
+
+                Section::make('Advanced Settings')
+                    ->description('Additional options for fine-tuning image display')
+                    ->collapsed()
                     ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                Toggle::make('loading')
-                                    ->label(__('Lazy Loading'))
-                                    ->helperText(__('Load image when it comes into view'))
-                                    ->default(true),
+                        Tabs::make('Advanced')
+                            ->tabs([
+                                Tabs\Tab::make('Display Options')
+                                    ->schema([
+                                        Toggle::make('loading')
+                                            ->label(__('Lazy Loading'))
+                                            ->helperText(__('Delays loading until image is in viewport'))
+                                            ->default(true)
+                                            ->inline(),
 
-                                TextInput::make('width')
-                                    ->label(__('Width'))
-                                    ->numeric()
-                                    ->suffix('px')
-                                    ->readonly(),
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('width')
+                                                    ->label(__('Width'))
+                                                    ->numeric()
+                                                    ->suffix('px')
+                                                    ->disabled()
+                                                    ->dehydrated(),
 
-                                TextInput::make('height')
-                                    ->label(__('Height'))
-                                    ->numeric()
-                                    ->suffix('px')
-                                    ->readonly(),
+                                                TextInput::make('height')
+                                                    ->label(__('Height'))
+                                                    ->numeric()
+                                                    ->suffix('px')
+                                                    ->disabled()
+                                                    ->dehydrated(),
+                                            ]),
+                                    ]),
+
+                                Tabs\Tab::make('Caption & Attribution')
+                                    ->schema([
+                                        Textarea::make('caption')
+                                            ->label(__('Caption'))
+                                            ->placeholder(__('Optional caption text'))
+                                            ->helperText(__('Displayed below the image'))
+                                            ->maxLength(500)
+                                            ->rows(2),
+
+                                        TextInput::make('attribution')
+                                            ->label(__('Attribution'))
+                                            ->placeholder(__('Photo credit or source'))
+                                            ->helperText(__('Credit the photographer or source'))
+                                            ->maxLength(255),
+                                    ]),
+
+                                Tabs\Tab::make('Focal Point')
+                                    ->schema([
+                                        Hidden::make('focal_x')
+                                            ->default($arguments['focal_x'] ?? 50),
+
+                                        Hidden::make('focal_y')
+                                            ->default($arguments['focal_y'] ?? 50),
+
+                                        static::makeFocalPointComponent($arguments),
+                                    ]),
                             ]),
-
-                        Hidden::make('focal_x')
-                            ->default($arguments['focal_x'] ?? 50),
-
-                        Hidden::make('focal_y')
-                            ->default($arguments['focal_y'] ?? 50),
-
-                        static::makeFocalPointComponent($arguments),
                     ]),
             ])
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
