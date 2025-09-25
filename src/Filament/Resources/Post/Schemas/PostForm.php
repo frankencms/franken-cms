@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FrankenCms\Filament\Resources\Post\Schemas;
 
-use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
@@ -208,9 +207,7 @@ class PostForm
                                     ->description('')
                                     ->columnSpanFull()
                                     ->schema([
-                                        // TODO: FIX OR REPLACE
-                                        //                                        CuratorPicker::make('featured_image_id')
-                                        //                                            ->relationship('featuredImage', 'id'),
+                                        // TODO add Featured Image upload schema
                                     ]),
 
                             ]),
