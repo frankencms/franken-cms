@@ -38,6 +38,7 @@ class EnhancedImageAction
                 'focal_y'     => $arguments['focal_y'] ?? 50,
                 'width'       => $arguments['width'] ?? null,
                 'height'      => $arguments['height'] ?? null,
+                'css_classes' => $arguments['css_classes'] ?? null,
             ])
             ->schema(fn (array $arguments, RichEditor $component): array => [
                 FileUpload::make('file')
@@ -108,6 +109,12 @@ class EnhancedImageAction
                     ->tabs([
                         Tabs\Tab::make('Display Options')
                             ->schema([
+                                TextInput::make('css_classes')
+                                    ->label(__('CSS Classes'))
+                                    ->placeholder(__('e.g., rounded shadow-lg mx-auto'))
+                                    ->helperText(__('Add custom CSS classes. Be sure to safelist any selectors when using a build tool'))
+                                    ->maxLength(255),
+
                                 Toggle::make('loading')
                                     ->label(__('Lazy Loading'))
                                     ->helperText(__('Delays loading until image is in viewport'))
@@ -239,6 +246,7 @@ class EnhancedImageAction
             'focal_y'     => $data['focal_y'] ?? 50,
             'width'       => $data['width'] ?? null,
             'height'      => $data['height'] ?? null,
+            'css_classes' => $data['css_classes'] ?? null,
         ];
     }
 
