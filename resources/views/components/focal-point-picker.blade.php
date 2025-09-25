@@ -21,7 +21,7 @@
         <!-- Preview Area -->
         <div
             class="select-none relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600"
-{{--            style="height: 250px;"--}}
+            style="min-height: 100px;"
             x-ref="previewArea"
             @click="setFocalPoint($event)"
         >

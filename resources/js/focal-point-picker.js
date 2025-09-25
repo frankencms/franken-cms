@@ -43,13 +43,8 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
                 }
             });
 
-            // Watch for file input changes (new uploads)
-            this.$watch('$wire.data.file', (newFile) => {
-                console.log('File changed:', newFile);
-                if (newFile) {
-                    this.loadImagePreview(newFile);
-                }
-            });
+            // Listen for Livewire events when new images are uploaded
+            this.setupLivewireEventListener();
 
             // Watch for focal point changes and sync to Livewire
             this.$watch('focalX', (value) => {
@@ -76,14 +71,14 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
                 }
             });
 
-            // Fallback: check for other image sources if we don't have an existing one
-            if (!existingImageSrc) {
+            // Always check for uploaded files, even if we have an existing image
+            this.checkForExistingImage();
+            setTimeout(() => {
+                console.log('Delayed check for existing image, $wire:', this.$wire);
                 this.checkForExistingImage();
-                setTimeout(() => {
-                    console.log('Delayed check for existing image, $wire:', this.$wire);
-                    this.checkForExistingImage();
-                }, 100);
-            }
+            }, 100);
+
+            // Note: Removed $wire.data watchers since they point to the wrong component
         },
 
         checkForExistingImage() {
@@ -230,6 +225,24 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
             this.updateFocalPoint();
         },
 
+        resetFocalPointToCenter() {
+            console.log('Resetting focal point to center for new upload');
+            this.focalX = 50;
+            this.focalY = 50;
+            // Trigger the manual input updates to sync with Livewire
+            const focalXInput = document.querySelector('[wire\\:model*="focal_x"]');
+            const focalYInput = document.querySelector('[wire\\:model*="focal_y"]');
+
+            if (focalXInput) {
+                focalXInput.value = 50;
+                focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (focalYInput) {
+                focalYInput.value = 50;
+                focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        },
+
         updateFromLivewireData() {
             if (this.$wire.data && this.$wire.data.focal_x !== undefined) {
                 this.focalX = parseFloat(this.$wire.data.focal_x) || 50;
@@ -239,6 +252,43 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
                 this.focalY = parseFloat(this.$wire.data.focal_y) || 50;
                 console.log('Initialized focalY from Livewire:', this.focalY);
             }
+        },
+
+        setupLivewireEventListener() {
+            console.log('Setting up Livewire event listener for image uploads');
+
+            // Listen for the Livewire event dispatched when a new image is uploaded
+            Livewire.on('enhancedImageUploaded', (eventData) => {
+                console.log('Received enhancedImageUploaded event:', eventData);
+
+                // Livewire events come as an array, get the first element
+                const data = Array.isArray(eventData) ? eventData[0] : eventData;
+
+                // Data should contain: temporaryUrl, focalX, focalY
+                if (data && data.temporaryUrl) {
+                    console.log('Loading new temporary image:', data.temporaryUrl);
+                    this.imagePreview = data.temporaryUrl;
+
+                    // Reset focal points to center
+                    this.focalX = data.focalX || 50;
+                    this.focalY = data.focalY || 50;
+
+                    // Update the hidden inputs to sync with Livewire
+                    const focalXInput = document.querySelector('[wire\\:model*="focal_x"]');
+                    const focalYInput = document.querySelector('[wire\\:model*="focal_y"]');
+
+                    if (focalXInput) {
+                        focalXInput.value = this.focalX;
+                        focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    if (focalYInput) {
+                        focalYInput.value = this.focalY;
+                        focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+
+                    console.log('Focal point reset to center for new upload');
+                }
+            });
         }
     };
 }

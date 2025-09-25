@@ -54,13 +54,39 @@ class EnhancedImageAction
                             ->required(blank($arguments['src'] ?? null))
                             ->hiddenLabel(blank($arguments['src'] ?? null))
                             ->live()
-                            ->afterStateUpdated(function ($state, Set $set) {
+                            ->afterStateUpdated(function ($state, Set $set, Component $livewire) {
                                 if ($state) {
                                     $dimensions = static::getImageDimensions($state);
                                     if ($dimensions) {
                                         $set('width', $dimensions['width']);
                                         $set('height', $dimensions['height']);
                                     }
+
+                                    // Reset focal point to center for new uploads
+                                    $set('focal_x', 50);
+                                    $set('focal_y', 50);
+
+                                    // Get the temporary URL for the uploaded file
+                                    $temporaryUrl = null;
+                                    try {
+                                        // For Livewire file uploads, the temporary URL method is available
+                                        if (is_object($state) && method_exists($state, 'temporaryUrl')) {
+                                            $temporaryUrl = $state->temporaryUrl();
+                                        } elseif (is_string($state)) {
+                                            // If it's already a string, it might be the temporary URL
+                                            $temporaryUrl = $state;
+                                        }
+                                    } catch (\Exception $e) {
+                                        // Log the error but don't break
+                                        Log::warning('Could not get temporary URL: ' . $e->getMessage());
+                                    }
+
+                                    // Dispatch Livewire event with the new image data
+                                    $livewire->dispatch('enhancedImageUploaded', [
+                                        'temporaryUrl' => $temporaryUrl,
+                                        'focalX' => 50,
+                                        'focalY' => 50,
+                                    ]);
                                 }
                             }),
                     ]),
