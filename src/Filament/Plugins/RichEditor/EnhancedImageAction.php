@@ -104,64 +104,59 @@ class EnhancedImageAction
                     ])
                     ->columns(2),
 
-                Section::make('Advanced Settings')
-                    ->description('Additional options for fine-tuning image display')
-                    ->collapsed()
-                    ->schema([
-                        Tabs::make('Advanced')
-                            ->tabs([
-                                Tabs\Tab::make('Display Options')
+                Tabs::make('Additional Settings')
+                    ->tabs([
+                        Tabs\Tab::make('Display Options')
+                            ->schema([
+                                Toggle::make('loading')
+                                    ->label(__('Lazy Loading'))
+                                    ->helperText(__('Delays loading until image is in viewport'))
+                                    ->default(true)
+                                    ->inline(),
+
+                                Grid::make(2)
                                     ->schema([
-                                        Toggle::make('loading')
-                                            ->label(__('Lazy Loading'))
-                                            ->helperText(__('Delays loading until image is in viewport'))
-                                            ->default(true)
-                                            ->inline(),
+                                        TextInput::make('width')
+                                            ->label(__('Width'))
+                                            ->numeric()
+                                            ->suffix('px')
+                                            ->disabled()
+                                            ->dehydrated(),
 
-                                        Grid::make(2)
-                                            ->schema([
-                                                TextInput::make('width')
-                                                    ->label(__('Width'))
-                                                    ->numeric()
-                                                    ->suffix('px')
-                                                    ->disabled()
-                                                    ->dehydrated(),
-
-                                                TextInput::make('height')
-                                                    ->label(__('Height'))
-                                                    ->numeric()
-                                                    ->suffix('px')
-                                                    ->disabled()
-                                                    ->dehydrated(),
-                                            ]),
+                                        TextInput::make('height')
+                                            ->label(__('Height'))
+                                            ->numeric()
+                                            ->suffix('px')
+                                            ->disabled()
+                                            ->dehydrated(),
                                     ]),
+                            ]),
 
-                                Tabs\Tab::make('Caption & Attribution')
-                                    ->schema([
-                                        Textarea::make('caption')
-                                            ->label(__('Caption'))
-                                            ->placeholder(__('Optional caption text'))
-                                            ->helperText(__('Displayed below the image'))
-                                            ->maxLength(500)
-                                            ->rows(2),
+                        Tabs\Tab::make('Caption & Attribution')
+                            ->schema([
+                                Textarea::make('caption')
+                                    ->label(__('Caption'))
+                                    ->placeholder(__('Optional caption text'))
+                                    ->helperText(__('Displayed below the image'))
+                                    ->maxLength(500)
+                                    ->rows(2),
 
-                                        TextInput::make('attribution')
-                                            ->label(__('Attribution'))
-                                            ->placeholder(__('Photo credit or source'))
-                                            ->helperText(__('Credit the photographer or source'))
-                                            ->maxLength(255),
-                                    ]),
+                                TextInput::make('attribution')
+                                    ->label(__('Attribution'))
+                                    ->placeholder(__('Photo credit or source'))
+                                    ->helperText(__('Credit the photographer or source'))
+                                    ->maxLength(255),
+                            ]),
 
-                                Tabs\Tab::make('Focal Point')
-                                    ->schema([
-                                        Hidden::make('focal_x')
-                                            ->default($arguments['focal_x'] ?? 50),
+                        Tabs\Tab::make('Focal Point')
+                            ->schema([
+                                Hidden::make('focal_x')
+                                    ->default($arguments['focal_x'] ?? 50),
 
-                                        Hidden::make('focal_y')
-                                            ->default($arguments['focal_y'] ?? 50),
+                                Hidden::make('focal_y')
+                                    ->default($arguments['focal_y'] ?? 50),
 
-                                        static::makeFocalPointComponent($arguments),
-                                    ]),
+                                static::makeFocalPointComponent($arguments),
                             ]),
                     ]),
             ])
