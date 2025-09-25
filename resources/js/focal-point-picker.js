@@ -25,13 +25,21 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
 
             // Initialize from Livewire data - wait a moment for Livewire to be ready
             this.$nextTick(() => {
-                if (this.$wire.data && this.$wire.data.focal_x !== undefined) {
-                    this.focalX = parseFloat(this.$wire.data.focal_x) || 50;
-                    console.log('Initialized focalX from Livewire:', this.focalX);
+                this.updateFromLivewireData();
+            });
+
+            // Watch for changes in Livewire data to reinitialize when switching images
+            this.$watch('$wire.data.focal_x', (newValue) => {
+                if (newValue !== undefined && newValue !== this.focalX) {
+                    console.log('Livewire focal_x changed from', this.focalX, 'to', newValue);
+                    this.focalX = parseFloat(newValue) || 50;
                 }
-                if (this.$wire.data && this.$wire.data.focal_y !== undefined) {
-                    this.focalY = parseFloat(this.$wire.data.focal_y) || 50;
-                    console.log('Initialized focalY from Livewire:', this.focalY);
+            });
+
+            this.$watch('$wire.data.focal_y', (newValue) => {
+                if (newValue !== undefined && newValue !== this.focalY) {
+                    console.log('Livewire focal_y changed from', this.focalY, 'to', newValue);
+                    this.focalY = parseFloat(newValue) || 50;
                 }
             });
 
@@ -220,6 +228,17 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
             this.focalX = 50;
             this.focalY = 50;
             this.updateFocalPoint();
+        },
+
+        updateFromLivewireData() {
+            if (this.$wire.data && this.$wire.data.focal_x !== undefined) {
+                this.focalX = parseFloat(this.$wire.data.focal_x) || 50;
+                console.log('Initialized focalX from Livewire:', this.focalX);
+            }
+            if (this.$wire.data && this.$wire.data.focal_y !== undefined) {
+                this.focalY = parseFloat(this.$wire.data.focal_y) || 50;
+                console.log('Initialized focalY from Livewire:', this.focalY);
+            }
         }
     };
 }
