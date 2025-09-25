@@ -16,9 +16,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Component;
-use Log;
 
 class EnhancedImageAction
 {
@@ -43,6 +43,7 @@ class EnhancedImageAction
                 Section::make('Image Upload')
                     ->schema([
                         FileUpload::make('file')
+                            ->imageEditor()
                             ->previewable(false)
                             ->label(filled($arguments['src'] ?? null)
                                 ? __('Replace Image')
