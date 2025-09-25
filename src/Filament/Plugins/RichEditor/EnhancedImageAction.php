@@ -18,6 +18,7 @@ use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Log;
 
 class EnhancedImageAction
 {
@@ -42,6 +43,7 @@ class EnhancedImageAction
                 Section::make('Image Upload')
                     ->schema([
                         FileUpload::make('file')
+                            ->previewable(false)
                             ->label(filled($arguments['src'] ?? null)
                                 ? __('Replace Image')
                                 : __('Upload Image'))
@@ -123,11 +125,11 @@ class EnhancedImageAction
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
 
                 // Debug: Log all the data being received
-                \Log::info('EnhancedImageAction data received:', [
+                Log::info('EnhancedImageAction data received:', [
                     'arguments' => $arguments,
-                    'data' => $data,
-                    'focal_x' => $data['focal_x'] ?? 'not set',
-                    'focal_y' => $data['focal_y'] ?? 'not set',
+                    'data'      => $data,
+                    'focal_x'   => $data['focal_x'] ?? 'not set',
+                    'focal_y'   => $data['focal_y'] ?? 'not set',
                 ]);
 
                 if ($data['file'] ?? null) {
@@ -189,8 +191,8 @@ class EnhancedImageAction
                     'focal_y' => 'data.focal_y',
                 ],
                 'existingImageSrc' => $arguments['src'] ?? null,
-                'existingFocalX' => $arguments['focal_x'] ?? 50,
-                'existingFocalY' => $arguments['focal_y'] ?? 50,
+                'existingFocalX'   => $arguments['focal_x'] ?? 50,
+                'existingFocalY'   => $arguments['focal_y'] ?? 50,
             ]);
     }
 
@@ -210,7 +212,7 @@ class EnhancedImageAction
             'height'      => $data['height'] ?? null,
         ];
 
-        \Log::info('Prepared image attributes:', $attributes);
+        Log::info('Prepared image attributes:', $attributes);
 
         return $attributes;
     }
