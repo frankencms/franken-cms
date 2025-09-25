@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace FrankenCms\Services;
 
+use Exception;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Str;
+use InvalidArgumentException;
+use RuntimeException;
 
 class BladeFormDirectiveProcessor
 {
@@ -19,7 +21,7 @@ class BladeFormDirectiveProcessor
     /**
      * Process a blade template to extract form field definitions
      */
-    public function processTemplate(string $templateContent, string $templatePath = null): array
+    public function processTemplate(string $templateContent, ?string $templatePath = null): array
     {
         // Clear any previous definitions
         $this->registry->clearDefinitions();
@@ -43,18 +45,18 @@ class BladeFormDirectiveProcessor
 
             // Return the collected definitions
             return [
-                'fields' => $this->registry->getFieldDefinitions(),
+                'fields'  => $this->registry->getFieldDefinitions(),
                 'layouts' => $this->registry->getLayoutDefinitions(),
-                'schema' => $this->registry->toFilamentSchema(),
+                'schema'  => $this->registry->toFilamentSchema(),
             ];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Clean up on error
             if (isset($tempPath) && file_exists($tempPath)) {
                 unlink($tempPath);
             }
 
-            throw new \RuntimeException("Failed to process blade template: " . $e->getMessage(), 0, $e);
+            throw new RuntimeException('Failed to process blade template: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -63,8 +65,8 @@ class BladeFormDirectiveProcessor
      */
     public function processTemplateFile(string $filePath): array
     {
-        if (!file_exists($filePath)) {
-            throw new \InvalidArgumentException("Template file not found: {$filePath}");
+        if (! file_exists($filePath)) {
+            throw new InvalidArgumentException("Template file not found: {$filePath}");
         }
 
         $content = file_get_contents($filePath);
@@ -77,11 +79,11 @@ class BladeFormDirectiveProcessor
     public function convertToStorableFormat(array $definitions): array
     {
         return [
-            'version' => '1.0',
+            'version'      => '1.0',
             'generated_at' => now()->toISOString(),
-            'fields' => $this->flattenFieldsForStorage($definitions['fields']),
-            'layouts' => $this->flattenLayoutsForStorage($definitions['layouts']),
-            'schema' => $definitions['schema'],
+            'fields'       => $this->flattenFieldsForStorage($definitions['fields']),
+            'layouts'      => $this->flattenLayoutsForStorage($definitions['layouts']),
+            'schema'       => $definitions['schema'],
         ];
     }
 
@@ -92,10 +94,10 @@ class BladeFormDirectiveProcessor
     {
         return array_map(function ($field) {
             return [
-                'type' => $field['type'],
-                'id' => $field['id'],
-                'component' => $field['component'],
-                'options' => $field['options'],
+                'type'         => $field['type'],
+                'id'           => $field['id'],
+                'component'    => $field['component'],
+                'options'      => $field['options'],
                 'section_path' => $this->buildSectionPath($field['section_stack'] ?? []),
             ];
         }, $fields);
@@ -123,16 +125,16 @@ class BladeFormDirectiveProcessor
         $path = $parentPath ? "{$parentPath}.{$layout['id']}" : $layout['id'];
 
         $result = [
-            'type' => $layout['type'],
-            'id' => $layout['id'],
-            'component' => $layout['component'],
-            'options' => $layout['options'],
-            'path' => $path,
+            'type'           => $layout['type'],
+            'id'             => $layout['id'],
+            'component'      => $layout['component'],
+            'options'        => $layout['options'],
+            'path'           => $path,
             'children_count' => count($layout['children'] ?? []),
         ];
 
         // Process children if they exist
-        if (!empty($layout['children'])) {
+        if (! empty($layout['children'])) {
             $result['children'] = [];
             foreach ($layout['children'] as $child) {
                 $result['children'][] = $this->flattenLayout($child, $path);
@@ -161,7 +163,7 @@ class BladeFormDirectiveProcessor
      */
     public function convertStoredToFilamentSchema(array $storedData): array
     {
-        if (!isset($storedData['schema'])) {
+        if (! isset($storedData['schema'])) {
             return [];
         }
 
@@ -179,7 +181,7 @@ class BladeFormDirectiveProcessor
             $code .= $this->generateComponentCode($component, 1);
         }
 
-        $code .= "]";
+        $code .= ']';
 
         return $code;
     }
@@ -201,7 +203,7 @@ class BladeFormDirectiveProcessor
         }
 
         // Add children if layout component
-        if (!empty($component['children'])) {
+        if (! empty($component['children'])) {
             $code .= "{$spaces}    ->schema([\n";
             foreach ($component['children'] as $child) {
                 $code .= $this->generateComponentCode($child, $indent + 2);
@@ -269,18 +271,18 @@ class BladeFormDirectiveProcessor
         $fieldIds = $this->extractFieldIds($templateContent);
         $duplicates = array_diff_assoc($fieldIds, array_unique($fieldIds));
 
-        if (!empty($duplicates)) {
-            $errors[] = "Duplicate field IDs found: " . implode(', ', array_unique($duplicates));
+        if (! empty($duplicates)) {
+            $errors[] = 'Duplicate field IDs found: ' . implode(', ', array_unique($duplicates));
         }
 
         // Check for empty field IDs
         if (preg_match('/@(?:textInput|textarea|select|toggle)[^(]*\(\s*[\'\"]\s*[\'\"]/m', $templateContent)) {
-            $warnings[] = "Empty field IDs detected - these will be auto-generated";
+            $warnings[] = 'Empty field IDs detected - these will be auto-generated';
         }
 
         return [
-            'valid' => empty($errors),
-            'errors' => $errors,
+            'valid'    => empty($errors),
+            'errors'   => $errors,
             'warnings' => $warnings,
         ];
     }

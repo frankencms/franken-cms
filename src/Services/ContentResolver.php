@@ -5,8 +5,8 @@ namespace FrankenCms\Services;
 use FrankenCms\Enums\PermalinkStructure;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
-use FrankenCms\Settings\ReadingSettings;
 use FrankenCms\Settings\PermalinkSettings;
+use FrankenCms\Settings\ReadingSettings;
 use Illuminate\View\View;
 
 readonly class ContentResolver

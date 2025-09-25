@@ -7,7 +7,6 @@ use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Settings\GeneralSettings;
 use Spatie\LaravelSettings\Settings;
 
-
 beforeEach(function () {
     // Configure Spatie Settings for testing
     config([

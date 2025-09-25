@@ -13,18 +13,17 @@ class SettingsTabService
 {
     public function __construct(
         protected SettingsTabRegistry $registry
-    ) {
-    }
+    ) {}
 
     /**
      * Register all default CMS settings tabs
      */
     public function registerDefaultTabs(): void
     {
-        $this->registry->register(new GeneralSettingsTabProvider());
-        $this->registry->register(new ReadingSettingsTabProvider());
-        $this->registry->register(new MediaSettingsTabProvider());
-        $this->registry->register(new PermalinkSettingsTabProvider());
+        $this->registry->register(new GeneralSettingsTabProvider);
+        $this->registry->register(new ReadingSettingsTabProvider);
+        $this->registry->register(new MediaSettingsTabProvider);
+        $this->registry->register(new PermalinkSettingsTabProvider);
 
         // TODO: Add other tab providers here as they're created
         // $this->registry->register(new WritingSettingsTabProvider());

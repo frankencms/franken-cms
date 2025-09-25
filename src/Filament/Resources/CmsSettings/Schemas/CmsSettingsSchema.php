@@ -19,5 +19,4 @@ class CmsSettingsSchema
                 ->tabs($settingsTabService->getRegistry()->getTabs()),
         ]);
     }
-
 }

@@ -28,7 +28,7 @@ class SettingsTabRegistry
      */
     public function getProviders(): Collection
     {
-        return $this->providers->sortBy(fn(SettingsTabProviderInterface $provider) => $provider->getOrder());
+        return $this->providers->sortBy(fn (SettingsTabProviderInterface $provider) => $provider->getOrder());
     }
 
     /**
@@ -53,7 +53,7 @@ class SettingsTabRegistry
     public function getTabs(): array
     {
         return $this->getProviders()
-            ->map(fn(SettingsTabProviderInterface $provider) => $provider->getTab())
+            ->map(fn (SettingsTabProviderInterface $provider) => $provider->getTab())
             ->values()
             ->toArray();
     }
@@ -64,7 +64,7 @@ class SettingsTabRegistry
     public function getSettingsClasses(): array
     {
         return $this->getProviders()
-            ->map(fn(SettingsTabProviderInterface $provider) => $provider->getSettingsClass())
+            ->map(fn (SettingsTabProviderInterface $provider) => $provider->getSettingsClass())
             ->values()
             ->toArray();
     }
