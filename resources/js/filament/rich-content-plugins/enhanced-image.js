@@ -71,11 +71,11 @@ export const EnhancedImage = Node.create({
                     };
                 },
             },
-            css_classes: {
+            css: {
                 default: null,
                 parseHTML: element => element.querySelector('img')?.className || null,
                 renderHTML: attributes => {
-                    return attributes.css_classes ? { class: attributes.css_classes } : {};
+                    return attributes.css ? { class: attributes.css } : {};
                 },
             },
         };
@@ -102,7 +102,7 @@ export const EnhancedImage = Node.create({
             width,
             height,
             id,
-            css_classes,
+            css,
             ...rest
         } = HTMLAttributes;
 
@@ -117,8 +117,8 @@ export const EnhancedImage = Node.create({
         };
 
         // Apply CSS classes if provided
-        if (css_classes) {
-            imageAttrs.class = css_classes;
+        if (css) {
+            imageAttrs.class = css;
         }
 
         // Apply focal point as object-position if supported
