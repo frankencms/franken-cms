@@ -42,6 +42,22 @@ compile({
     outfile: './resources/dist/focal-point-picker.js',
 })
 
+compile({
+    define: {
+        'process.env.NODE_ENV': `'production'`,
+    },
+    bundle: true,
+    mainFields: ['module', 'main'],
+    platform: 'neutral',
+    sourcemap: false,
+    sourcesContent: false,
+    treeShaking: true,
+    target: ['es2020'],
+    minify: true,
+    entryPoints: ['./resources/js/featured-image-focal-picker.js'],
+    outfile: './resources/dist/featured-image-focal-picker.js',
+})
+
 
 
 

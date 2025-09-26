@@ -395,8 +395,7 @@ class PostForm
                                                                     Hidden::make('modal_featured_image_focal_y')
                                                                         ->default(50),
 
-                                                                    View::make('franken-cms::components.focal-point-picker')
-                                                                        ->viewData([]),
+                                                                    View::make('franken-cms::components.featured-image-focal-point-picker'),
                                                                 ]),
                                                         ]),
 
