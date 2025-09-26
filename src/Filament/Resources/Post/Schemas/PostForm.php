@@ -230,16 +230,83 @@ class PostForm
                                             ->hidden(fn (?Post $record): bool => ($record?->hasMedia('featured') ?? false)),
 
                                         // Hidden fields to store the actual data
-                                        Hidden::make('featured_image_alt'),
-                                        Hidden::make('featured_image_title'),
-                                        Hidden::make('featured_image_caption'),
-                                        Hidden::make('featured_image_attribution'),
-                                        Hidden::make('featured_image_css'),
-                                        Hidden::make('featured_image_lazy_loading')->default(false),
-                                        Hidden::make('featured_image_width'),
-                                        Hidden::make('featured_image_height'),
-                                        Hidden::make('featured_image_focal_x')->default(50),
-                                        Hidden::make('featured_image_focal_y')->default(50),
+                                        // These fields are removed from the data in mutateFormDataBeforeSave/Create
+                                        // to prevent mass assignment errors, and saved to media custom properties instead
+                                        Hidden::make('featured_image_alt')
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $component->state($media->getCustomProperty('alt', ''));
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_title')
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $component->state($media->getCustomProperty('title', ''));
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_caption')
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $component->state($media->getCustomProperty('caption', ''));
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_attribution')
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $component->state($media->getCustomProperty('attribution', ''));
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_css')
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $component->state($media->getCustomProperty('css_classes', ''));
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_lazy_loading')
+                                            ->default(false)
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $component->state($media->getCustomProperty('lazy_loading', false));
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_width')
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $component->state($media->getCustomProperty('width', null));
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_height')
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $component->state($media->getCustomProperty('height', null));
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_focal_x')
+                                            ->default(50)
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+                                                    $component->state($focalPoint['x'] ?? 50);
+                                                }
+                                            }),
+                                        Hidden::make('featured_image_focal_y')
+                                            ->default(50)
+                                            ->afterStateHydrated(function ($component, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+                                                    $component->state($focalPoint['y'] ?? 50);
+                                                }
+                                            }),
 
                                         Actions::make([
                                             Action::make('edit_featured_image_details')
@@ -252,6 +319,7 @@ class PostForm
                                                 ->modalWidth(Width::ThreeExtraLarge)
                                                 ->fillForm(fn (?array $arguments, callable $get): array => [
                                                     'modal_featured_image_alt'          => $get('featured_image_alt') ?? '',
+                                                    'modal_featured_image_title'        => $get('featured_image_title') ?? '',
                                                     'modal_featured_image_caption'      => $get('featured_image_caption') ?? '',
                                                     'modal_featured_image_attribution'  => $get('featured_image_attribution') ?? '',
                                                     'modal_featured_image_css'          => $get('featured_image_css') ?? '',
