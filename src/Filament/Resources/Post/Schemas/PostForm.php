@@ -307,7 +307,6 @@ class PostForm
                                                         ->visibility('public')
                                                         ->multiple(false)
                                                         ->live()
-                                                        ->customProperties(self::getCustomProperties())
                                                         ->afterStateUpdated(function ($state, callable $set) {
                                                             if ($state) {
                                                                 // Reset focal point to center for new uploads
@@ -396,8 +395,8 @@ class PostForm
                                                                     Hidden::make('modal_featured_image_focal_y')
                                                                         ->default(50),
 
-                                                                    //                                                                    View::make('franken-cms::components.focal-point-picker')
-                                                                    //                                                                        ->viewData([]),
+                                                                    View::make('franken-cms::components.focal-point-picker')
+                                                                        ->viewData([]),
                                                                 ]),
                                                         ]),
 
@@ -422,23 +421,5 @@ class PostForm
     {
         return PostHelper::calculate_read_time(PostHelper::convert_tip_tap_to_plain_text($content));
 
-    }
-
-    private static function getCustomProperties(): array
-    {
-        return [
-            'alt'          => fn (callable $get) => $get('modal_featured_image_alt'),
-            'caption'      => fn (callable $get) => $get('modal_featured_image_caption'),
-            'title'        => fn (callable $get) => $get('modal_featured_image_title'),
-            'attribution'  => fn (callable $get) => $get('modal_featured_image_attribution'),
-            'css_classes'  => fn (callable $get) => $get('modal_featured_image_css'),
-            'lazy_loading' => fn (callable $get) => $get('modal_featured_image_lazy_loading'),
-            'width'        => fn (callable $get) => $get('modal_featured_image_width'),
-            'height'       => fn (callable $get) => $get('modal_featured_image_height'),
-            'focal_point'  => fn (callable $get) => [
-                'x' => $get('modal_featured_image_focal_x'),
-                'y' => $get('modal_featured_image_focal_y'),
-            ],
-        ];
     }
 }
