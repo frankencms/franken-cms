@@ -66,6 +66,7 @@
                     wire:model.live="{{ $statePaths['focal_x'] }}"
                     x-model="focalX"
                     @input="updateFocalPoint"
+                    value="{{ $existingFocalX ?? 50 }}"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-600 focus:ring-primary-600 dark:bg-gray-900 dark:text-white text-sm"
                 />
             </div>
@@ -81,6 +82,7 @@
                     wire:model.live="{{ $statePaths['focal_y'] }}"
                     x-model="focalY"
                     @input="updateFocalPoint"
+                    value="{{ $existingFocalY ?? 50 }}"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-600 focus:ring-primary-600 dark:bg-gray-900 dark:text-white text-sm"
                 />
             </div>

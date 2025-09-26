@@ -18,10 +18,23 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
                 this.imagePreview = existingImageSrc;
             }
 
+            // Set initial focal points from parameters (these come from existing image data)
+            this.focalX = parseFloat(existingFocalX) || 50;
+            this.focalY = parseFloat(existingFocalY) || 50;
+
+            // Force update Livewire data immediately with our parameter values
+            // This ensures each modal instance gets the correct focal points
+            if (this.$wire && this.$wire.set) {
+                this.$wire.set('data.focal_x', this.focalX);
+                this.$wire.set('data.focal_y', this.focalY);
+            }
+
             // Initialize from Livewire data - wait a moment for Livewire to be ready
             this.$nextTick(() => {
-                if (this.$wire && this.$wire.data) {
-                    this.updateFromLivewireData();
+                // Double-check our values are set correctly in Livewire
+                if (this.$wire && this.$wire.set) {
+                    this.$wire.set('data.focal_x', this.focalX);
+                    this.$wire.set('data.focal_y', this.focalY);
                 }
             });
 
@@ -196,12 +209,9 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
         },
 
         updateFromLivewireData() {
-            if (this.$wire?.data && this.$wire.data.focal_x !== undefined) {
-                this.focalX = parseFloat(this.$wire.data.focal_x) || 50;
-            }
-            if (this.$wire?.data && this.$wire.data.focal_y !== undefined) {
-                this.focalY = parseFloat(this.$wire.data.focal_y) || 50;
-            }
+            // This method is now handled in the init() method
+            // We keep it for backward compatibility but it's essentially a no-op
+            // since we handle Livewire data synchronization in init()
         },
 
         setupLivewireEventListener() {
