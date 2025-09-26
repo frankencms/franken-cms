@@ -4,11 +4,15 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
     focalPointPicker.displayName = 'focalPointPicker';
 
     return {
-        focalX: existingFocalX,
-        focalY: existingFocalY,
-        imagePreview: existingImageSrc,
+        focalX: existingFocalX || 50,
+        focalY: existingFocalY || 50,
+        imagePreview: existingImageSrc || null,
+        componentId: null,
 
         init() {
+            // Generate unique component ID for this instance
+            this.componentId = 'focal-picker-' + Math.random().toString(36).substr(2, 9);
+
             // If we have an existing image, load it immediately
             if (existingImageSrc) {
                 this.imagePreview = existingImageSrc;
@@ -16,32 +20,40 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
 
             // Initialize from Livewire data - wait a moment for Livewire to be ready
             this.$nextTick(() => {
-                this.updateFromLivewireData();
+                if (this.$wire && this.$wire.data) {
+                    this.updateFromLivewireData();
+                }
             });
 
             // Watch for changes in Livewire data to reinitialize when switching images
-            this.$watch('$wire.data.focal_x', (newValue) => {
-                if (newValue !== undefined && newValue !== this.focalX) {
-                    this.focalX = parseFloat(newValue) || 50;
-                }
-            });
+            if (this.$wire && this.$wire.data) {
+                this.$watch('$wire.data.focal_x', (newValue) => {
+                    if (newValue !== undefined && newValue !== this.focalX) {
+                        this.focalX = parseFloat(newValue) || 50;
+                    }
+                });
 
-            this.$watch('$wire.data.focal_y', (newValue) => {
-                if (newValue !== undefined && newValue !== this.focalY) {
-                    this.focalY = parseFloat(newValue) || 50;
-                }
-            });
+                this.$watch('$wire.data.focal_y', (newValue) => {
+                    if (newValue !== undefined && newValue !== this.focalY) {
+                        this.focalY = parseFloat(newValue) || 50;
+                    }
+                });
+            }
 
             // Listen for Livewire events when new images are uploaded
             this.setupLivewireEventListener();
 
             // Watch for focal point changes and sync to Livewire
             this.$watch('focalX', (value) => {
-                this.$wire.set('data.focal_x', value);
+                if (this.$wire && this.$wire.set) {
+                    this.$wire.set('data.focal_x', value);
+                }
             });
 
             this.$watch('focalY', (value) => {
-                this.$wire.set('data.focal_y', value);
+                if (this.$wire && this.$wire.set) {
+                    this.$wire.set('data.focal_y', value);
+                }
             });
 
             // Always check for uploaded files, even if we have an existing image
@@ -54,6 +66,11 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
         },
 
         checkForExistingImage() {
+            // Ensure we have proper wire context
+            if (!this.$wire) {
+                return;
+            }
+
             // Scenario 2: New upload - check data.file
             if (this.$wire?.data?.file) {
                 this.loadImagePreview(this.$wire.data.file);
@@ -179,10 +196,10 @@ export default function focalPointPicker(existingImageSrc = null, existingFocalX
         },
 
         updateFromLivewireData() {
-            if (this.$wire.data && this.$wire.data.focal_x !== undefined) {
+            if (this.$wire?.data && this.$wire.data.focal_x !== undefined) {
                 this.focalX = parseFloat(this.$wire.data.focal_x) || 50;
             }
-            if (this.$wire.data && this.$wire.data.focal_y !== undefined) {
+            if (this.$wire?.data && this.$wire.data.focal_y !== undefined) {
                 this.focalY = parseFloat(this.$wire.data.focal_y) || 50;
             }
         },

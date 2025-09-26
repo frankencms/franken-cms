@@ -137,6 +137,17 @@ class EnhancedImageAction
                                     ]),
                             ]),
 
+                        Tabs\Tab::make('Focal Point')
+                            ->schema([
+                                Hidden::make('focal_x')
+                                    ->default($arguments['focal_x'] ?? 50),
+
+                                Hidden::make('focal_y')
+                                    ->default($arguments['focal_y'] ?? 50),
+
+                                static::makeFocalPointComponent($arguments),
+                            ]),
+
                         Tabs\Tab::make('Caption & Attribution')
                             ->schema([
                                 Textarea::make('caption')
@@ -153,16 +164,6 @@ class EnhancedImageAction
                                     ->maxLength(255),
                             ]),
 
-                        Tabs\Tab::make('Focal Point')
-                            ->schema([
-                                Hidden::make('focal_x')
-                                    ->default($arguments['focal_x'] ?? 50),
-
-                                Hidden::make('focal_y')
-                                    ->default($arguments['focal_y'] ?? 50),
-
-                                static::makeFocalPointComponent($arguments),
-                            ]),
                     ]),
             ])
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
