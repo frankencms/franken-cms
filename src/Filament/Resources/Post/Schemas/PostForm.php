@@ -9,13 +9,17 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
+use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
@@ -207,7 +211,73 @@ class PostForm
                                     ->description('')
                                     ->columnSpanFull()
                                     ->schema([
-                                        // TODO add Featured Image upload schema
+
+                                        // Preview Image
+                                        SpatieMediaLibraryImageEntry::make('featured_image')
+                                            ->hiddenLabel()
+                                            ->extraImgAttributes(['class' => 'rounded-md'])
+                                            ->imageWidth('inherit')
+                                            ->imageHeight('inherit')
+                                            ->collection('featured')
+                                            ->hidden(fn (?Post $record): bool => ! ($record?->hasMedia('featured') ?? false)),
+
+                                        // Fallback image if preview is un available
+                                        View::make('franken-cms::components.image-placeholder')
+                                            ->hidden(fn (?Post $record): bool => ($record?->hasMedia('featured') ?? false)),
+
+                                        Actions::make([
+                                            Action::make('edit_featured_image_details')
+                                                ->label(__('Update Image'))
+                                                ->icon('heroicon-o-pencil-square')
+                                                ->color('gray')
+                                                ->size('sm')
+                                                ->modalHeading(__('Featured Image Details'))
+                                                ->modalDescription(__('Configure accessibility, display options, and metadata for your featured image.'))
+                                                ->modalWidth(Width::ThreeExtraLarge)
+                                                ->fillForm(fn (?array $arguments, callable $get): array => [
+                                                    'modal_featured_image_alt'          => $get('featured_image_alt') ?? '',
+                                                    'modal_featured_image_caption'      => $get('featured_image_caption') ?? '',
+                                                    'modal_featured_image_attribution'  => $get('featured_image_attribution') ?? '',
+                                                    'modal_featured_image_css'          => $get('featured_image_css') ?? '',
+                                                    'modal_featured_image_lazy_loading' => $get('featured_image_lazy_loading') ?? true,
+                                                    'modal_featured_image_width'        => $get('featured_image_width'),
+                                                    'modal_featured_image_height'       => $get('featured_image_height'),
+                                                    'modal_featured_image_focal_x'      => $get('featured_image_focal_x') ?? 50,
+                                                    'modal_featured_image_focal_y'      => $get('featured_image_focal_y') ?? 50,
+                                                ])
+                                                ->schema([
+
+                                                    SpatieMediaLibraryFileUpload::make('featured_image')
+                                                        ->label(__('Featured Image'))
+                                                        ->collection('featured')
+                                                        ->disk('public') // todo: make configurable
+                                                        ->image()
+                                                        ->imageEditor()
+                                                        ->previewable()
+                                                        ->maxSize(10240) // 10MB TODO: make configurable
+                                                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                                                        ->visibility('public')
+                                                        ->multiple(false)
+                                                        ->live()
+                                                        ->afterStateUpdated(function ($state, callable $set) {
+                                                            if ($state) {
+                                                                // Reset focal point to center for new uploads
+                                                                $set('featured_image_focal_x', 50);
+                                                                $set('featured_image_focal_y', 50);
+
+                                                                // Auto-populate width and height from uploaded file
+                                                                $dimensions = static::getImageDimensions($state);
+                                                                if ($dimensions) {
+                                                                    $set('featured_image_width', $dimensions['width']);
+                                                                    $set('featured_image_height', $dimensions['height']);
+                                                                }
+                                                            }
+                                                        }),
+
+                                                ]),
+
+                                        ]),
+
                                     ]),
 
                             ]),
