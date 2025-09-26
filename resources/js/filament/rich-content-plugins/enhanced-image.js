@@ -37,7 +37,11 @@ export const EnhancedImage = Node.create({
             },
             focal_x: {
                 default: 50,
-                parseHTML: element => element.getAttribute('data-focal-x') || 50,
+                parseHTML: element => {
+                    // Check both figure and img elements for data-focal-x
+                    const img = element.querySelector('img');
+                    return img?.getAttribute('data-focal-x') || element.getAttribute('data-focal-x') || 50;
+                },
                 renderHTML: attributes => {
                     if (!attributes.focal_x) return {};
                     return {
@@ -47,7 +51,11 @@ export const EnhancedImage = Node.create({
             },
             focal_y: {
                 default: 50,
-                parseHTML: element => element.getAttribute('data-focal-y') || 50,
+                parseHTML: element => {
+                    // Check both figure and img elements for data-focal-y
+                    const img = element.querySelector('img');
+                    return img?.getAttribute('data-focal-y') || element.getAttribute('data-focal-y') || 50;
+                },
                 renderHTML: attributes => {
                     if (!attributes.focal_y) return {};
                     return {
@@ -63,7 +71,11 @@ export const EnhancedImage = Node.create({
             },
             id: {
                 default: null,
-                parseHTML: element => element.getAttribute('data-id'),
+                parseHTML: element => {
+                    // Check both figure and img elements for data-id
+                    const img = element.querySelector('img');
+                    return img?.getAttribute('data-id') || element.getAttribute('data-id');
+                },
                 renderHTML: attributes => {
                     if (!attributes.id) return {};
                     return {
@@ -100,9 +112,9 @@ export const EnhancedImage = Node.create({
                         css: img?.getAttribute('class') || null,
                         caption: figcaption?.textContent || null,
                         attribution: attribution?.textContent || null,
-                        focal_x: element.getAttribute('data-focal-x') || 50,
-                        focal_y: element.getAttribute('data-focal-y') || 50,
-                        id: element.getAttribute('data-id') || null,
+                        focal_x: img?.getAttribute('data-focal-x') || element.getAttribute('data-focal-x') || 50,
+                        focal_y: img?.getAttribute('data-focal-y') || element.getAttribute('data-focal-y') || 50,
+                        id: img?.getAttribute('data-id') || element.getAttribute('data-id') || null,
                     };
                 },
             },
@@ -118,6 +130,9 @@ export const EnhancedImage = Node.create({
                         width: element.getAttribute('width') || null,
                         height: element.getAttribute('height') || null,
                         css: element.getAttribute('class') || null,
+                        focal_x: element.getAttribute('data-focal-x') || 50,
+                        focal_y: element.getAttribute('data-focal-y') || 50,
+                        id: element.getAttribute('data-id') || null,
                     };
                 },
             },
@@ -159,6 +174,17 @@ export const EnhancedImage = Node.create({
         // Apply focal point as object-position if supported
         if (focal_x && focal_y) {
             imageAttrs.style = `object-position: ${focal_x}% ${focal_y}%;`;
+        }
+
+        // Also add data attributes to the img element for consistency
+        if (id) {
+            imageAttrs['data-id'] = id;
+        }
+        if (focal_x) {
+            imageAttrs['data-focal-x'] = focal_x;
+        }
+        if (focal_y) {
+            imageAttrs['data-focal-y'] = focal_y;
         }
 
         // Clean up undefined/null attributes
