@@ -2,6 +2,7 @@
 
 namespace FrankenCms\Helpers;
 
+use Exception;
 use FrankenCms\Settings\ReadingSettings;
 
 final class PostHelper
@@ -55,5 +56,30 @@ final class PostHelper
     public static function index_page(): ?string
     {
         return app(ReadingSettings::class)->post_page;
+    }
+
+    public static function get_image_dimensions($file): ?array
+    {
+        try {
+            if (is_string($file)) {
+                $path = $file;
+            } elseif (method_exists($file, 'getRealPath')) {
+                $path = $file->getRealPath();
+            } else {
+                return null;
+            }
+
+            $imageInfo = getimagesize($path);
+            if ($imageInfo !== false) {
+                return [
+                    'width'  => $imageInfo[0],
+                    'height' => $imageInfo[1],
+                ];
+            }
+        } catch (Exception $e) {
+            // Silent fail - dimensions are optional
+        }
+
+        return null;
     }
 }

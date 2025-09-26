@@ -11,12 +11,16 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
@@ -225,6 +229,18 @@ class PostForm
                                         View::make('franken-cms::components.image-placeholder')
                                             ->hidden(fn (?Post $record): bool => ($record?->hasMedia('featured') ?? false)),
 
+                                        // Hidden fields to store the actual data
+                                        Hidden::make('featured_image_alt'),
+                                        Hidden::make('featured_image_title'),
+                                        Hidden::make('featured_image_caption'),
+                                        Hidden::make('featured_image_attribution'),
+                                        Hidden::make('featured_image_css'),
+                                        Hidden::make('featured_image_lazy_loading')->default(false),
+                                        Hidden::make('featured_image_width'),
+                                        Hidden::make('featured_image_height'),
+                                        Hidden::make('featured_image_focal_x')->default(50),
+                                        Hidden::make('featured_image_focal_y')->default(50),
+
                                         Actions::make([
                                             Action::make('edit_featured_image_details')
                                                 ->label(__('Update Image'))
@@ -245,6 +261,19 @@ class PostForm
                                                     'modal_featured_image_focal_x'      => $get('featured_image_focal_x') ?? 50,
                                                     'modal_featured_image_focal_y'      => $get('featured_image_focal_y') ?? 50,
                                                 ])
+                                                ->action(function (array $data, callable $set): void {
+                                                    // Update the main form fields with modal data
+                                                    $set('featured_image_alt', $data['modal_featured_image_alt'] ?? '');
+                                                    $set('featured_image_caption', $data['modal_featured_image_caption'] ?? '');
+                                                    $set('featured_image_title', $data['modal_featured_image_title'] ?? '');
+                                                    $set('featured_image_attribution', $data['modal_featured_image_attribution'] ?? '');
+                                                    $set('featured_image_css', $data['modal_featured_image_css'] ?? '');
+                                                    $set('featured_image_lazy_loading', $data['modal_featured_image_lazy_loading'] ?? true);
+                                                    $set('featured_image_width', $data['modal_featured_image_width']);
+                                                    $set('featured_image_height', $data['modal_featured_image_height']);
+                                                    $set('featured_image_focal_x', $data['modal_featured_image_focal_x'] ?? 50);
+                                                    $set('featured_image_focal_y', $data['modal_featured_image_focal_y'] ?? 50);
+                                                })
                                                 ->schema([
 
                                                     SpatieMediaLibraryFileUpload::make('featured_image')
@@ -259,20 +288,99 @@ class PostForm
                                                         ->visibility('public')
                                                         ->multiple(false)
                                                         ->live()
+                                                        ->customProperties(self::getCustomProperties())
                                                         ->afterStateUpdated(function ($state, callable $set) {
                                                             if ($state) {
                                                                 // Reset focal point to center for new uploads
-                                                                $set('featured_image_focal_x', 50);
-                                                                $set('featured_image_focal_y', 50);
+                                                                $set('modal_featured_image_focal_x', 50);
+                                                                $set('modal_featured_image_focal_y', 50);
 
                                                                 // Auto-populate width and height from uploaded file
-                                                                $dimensions = static::getImageDimensions($state);
+                                                                $dimensions = PostHelper::get_image_dimensions($state);
                                                                 if ($dimensions) {
-                                                                    $set('featured_image_width', $dimensions['width']);
-                                                                    $set('featured_image_height', $dimensions['height']);
+                                                                    $set('modal_featured_image_width', $dimensions['width']);
+                                                                    $set('modal_featured_image_height', $dimensions['height']);
                                                                 }
                                                             }
                                                         }),
+
+                                                    Section::make('Image Details')
+                                                        ->description('Essential information for accessibility and SEO')
+                                                        ->schema([
+                                                            TextInput::make('modal_featured_image_alt')
+                                                                ->label(__('Alt Text'))
+                                                                ->placeholder(__('Describe what the image shows'))
+                                                                ->helperText(__('Important for accessibility and SEO'))
+                                                                ->maxLength(255),
+
+                                                            TextInput::make('modal_featured_image_title')
+                                                                ->label(__('Title'))
+                                                                ->placeholder(__('Optional hover text'))
+                                                                ->helperText(__('Shown when hovering over the image'))
+                                                                ->maxLength(255),
+
+                                                        ]),
+
+                                                    Tabs::make('Advanced Settings')
+                                                        ->tabs([
+                                                            Tab::make('Display Options')
+                                                                ->schema([
+                                                                    TextInput::make('modal_featured_image_css')
+                                                                        ->label(__('CSS Classes'))
+                                                                        ->placeholder(__('e.g., rounded shadow-lg mx-auto'))
+                                                                        ->helperText(__('Custom CSS classes for styling'))
+                                                                        ->maxLength(255),
+
+                                                                    Toggle::make('modal_featured_image_lazy_loading')
+                                                                        ->label(__('Lazy Loading'))
+                                                                        ->helperText(__('Delays loading until image is in viewport'))
+                                                                        ->default(false)
+                                                                        ->inline(),
+
+                                                                    Grid::make(2)
+                                                                        ->schema([
+                                                                            TextInput::make('modal_featured_image_width')
+                                                                                ->label(__('Width'))
+                                                                                ->numeric()
+                                                                                ->suffix('px'),
+
+                                                                            TextInput::make('modal_featured_image_height')
+                                                                                ->label(__('Height'))
+                                                                                ->numeric()
+                                                                                ->suffix('px'),
+                                                                        ]),
+                                                                ]),
+
+                                                            Tab::make('Caption & Attribution')
+                                                                ->schema([
+
+                                                                    Textarea::make('modal_featured_image_caption')
+                                                                        ->label(__('Caption'))
+                                                                        ->placeholder(__('Optional caption text'))
+                                                                        ->helperText(__('Displayed below the image'))
+                                                                        ->maxLength(500)
+                                                                        ->rows(2),
+
+                                                                    TextInput::make('modal_featured_image_attribution')
+                                                                        ->label(__('Attribution'))
+                                                                        ->placeholder(__('Photo credit or source'))
+                                                                        ->helperText(__('Credit the photographer or source'))
+                                                                        ->maxLength(255),
+
+                                                                ]),
+
+                                                            Tab::make('Focal Point')
+                                                                ->schema([
+                                                                    Hidden::make('modal_featured_image_focal_x')
+                                                                        ->default(50),
+
+                                                                    Hidden::make('modal_featured_image_focal_y')
+                                                                        ->default(50),
+
+                                                                    //                                                                    View::make('franken-cms::components.focal-point-picker')
+                                                                    //                                                                        ->viewData([]),
+                                                                ]),
+                                                        ]),
 
                                                 ]),
 
@@ -295,5 +403,23 @@ class PostForm
     {
         return PostHelper::calculate_read_time(PostHelper::convert_tip_tap_to_plain_text($content));
 
+    }
+
+    private static function getCustomProperties(): array
+    {
+        return [
+            'alt'          => fn (callable $get) => $get('modal_featured_image_alt'),
+            'caption'      => fn (callable $get) => $get('modal_featured_image_caption'),
+            'title'        => fn (callable $get) => $get('modal_featured_image_title'),
+            'attribution'  => fn (callable $get) => $get('modal_featured_image_attribution'),
+            'css_classes'  => fn (callable $get) => $get('modal_featured_image_css'),
+            'lazy_loading' => fn (callable $get) => $get('modal_featured_image_lazy_loading'),
+            'width'        => fn (callable $get) => $get('modal_featured_image_width'),
+            'height'       => fn (callable $get) => $get('modal_featured_image_height'),
+            'focal_point'  => fn (callable $get) => [
+                'x' => $get('modal_featured_image_focal_x'),
+                'y' => $get('modal_featured_image_focal_y'),
+            ],
+        ];
     }
 }
