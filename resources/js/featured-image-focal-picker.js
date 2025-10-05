@@ -33,6 +33,9 @@ export default function featuredImageFocalPicker() {
 
             // Setup input change listeners
             this.setupInputListeners();
+
+            // Listen for Livewire events
+            this.setupLivewireEventListener();
         },
 
         initializeFocalPoints() {
@@ -52,18 +55,46 @@ export default function featuredImageFocalPicker() {
             const modalContainer = this.$el.closest('.fi-modal');
             if (!modalContainer) return;
 
-            // Look for an existing uploaded image in the modal
-            const uploadedImage = modalContainer.querySelector('[data-field-wrapper="featured_image"] img');
-            if (uploadedImage && uploadedImage.src) {
-                this.imagePreview = uploadedImage.src;
+            // Multiple strategies to find the uploaded image
+
+            // Strategy 1: Look for Filament file upload preview images
+            const uploadPreview = modalContainer.querySelector('[data-field-wrapper="featured_image"] img, [wire\\:key*="featured_image"] img');
+            if (uploadPreview && uploadPreview.src && !uploadPreview.src.includes('data:')) {
+                this.imagePreview = uploadPreview.src;
                 return;
             }
 
-            // Check for Livewire file upload preview
-            const filePreview = modalContainer.querySelector('[x-data*="fileUpload"] img[src]');
-            if (filePreview) {
-                this.imagePreview = filePreview.src;
-                return;
+            // Strategy 2: Look for any image in the file upload area
+            const fileUploadImages = modalContainer.querySelectorAll('[x-data*="fileUpload"] img[src], .fi-fo-file-upload img[src]');
+            for (const img of fileUploadImages) {
+                if (img.src && !img.src.includes('data:') && !img.src.includes('placeholder')) {
+                    this.imagePreview = img.src;
+                    return;
+                }
+            }
+
+            // Strategy 3: Look for Spatie Media Library images
+            const spatieImages = modalContainer.querySelectorAll('img[src*="/storage/"], img[src*="livewire-tmp"]');
+            for (const img of spatieImages) {
+                if (img.src) {
+                    this.imagePreview = img.src;
+                    return;
+                }
+            }
+
+            // Strategy 4: Check all images in the modal and pick the most likely candidate
+            const allImages = modalContainer.querySelectorAll('img[src]');
+            for (const img of allImages) {
+                // Skip placeholder, icon, or data URLs
+                if (img.src &&
+                    !img.src.includes('data:') &&
+                    !img.src.includes('placeholder') &&
+                    !img.src.includes('icon') &&
+                    img.naturalWidth > 50 && // Skip small icons
+                    img.naturalHeight > 50) {
+                    this.imagePreview = img.src;
+                    return;
+                }
             }
         },
 
@@ -162,6 +193,24 @@ export default function featuredImageFocalPicker() {
                 input.value = value;
                 // Trigger input event to notify any listeners
                 input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        },
+
+        setupLivewireEventListener() {
+            // Listen for custom Livewire event when featured image is uploaded/changed
+            if (window.Livewire) {
+                Livewire.on('featuredImageUploaded', (eventData) => {
+                    const data = Array.isArray(eventData) ? eventData[0] : eventData;
+
+                    if (data && data.imageUrl) {
+                        this.imagePreview = data.imageUrl;
+
+                        // Reset focal points to center or use provided values
+                        this.focalX = data.focalX || 50;
+                        this.focalY = data.focalY || 50;
+                        this.updateFocalPoint();
+                    }
+                });
             }
         },
 

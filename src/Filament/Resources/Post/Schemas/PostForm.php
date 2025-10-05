@@ -238,7 +238,7 @@ class PostForm
                                                 ->modalHeading(__('Featured Image Details'))
                                                 ->modalDescription(__('Configure accessibility, display options, and metadata for your featured image.'))
                                                 ->modalWidth(Width::ThreeExtraLarge)
-                                                ->fillForm(function (?Post $record): array {
+                                                ->fillForm(function (?Post $record, $livewire): array {
                                                     if (! $record || ! $record->hasMedia('featured')) {
                                                         return [
                                                             'modal_featured_image_alt'          => '',
@@ -256,6 +256,13 @@ class PostForm
 
                                                     $media = $record->getFirstMedia('featured');
                                                     $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+
+                                                    // Dispatch event to Alpine component with existing image
+                                                    $livewire->dispatch('featuredImageUploaded', [
+                                                        'imageUrl' => $media->getUrl(),
+                                                        'focalX' => $focalPoint['x'] ?? 50,
+                                                        'focalY' => $focalPoint['y'] ?? 50,
+                                                    ]);
 
                                                     return [
                                                         'modal_featured_image_alt'          => $media->getCustomProperty('alt', ''),
@@ -307,7 +314,7 @@ class PostForm
                                                         ->visibility('public')
                                                         ->multiple(false)
                                                         ->live()
-                                                        ->afterStateUpdated(function ($state, callable $set) {
+                                                        ->afterStateUpdated(function ($state, callable $set, $livewire) {
                                                             if ($state) {
                                                                 // Reset focal point to center for new uploads
                                                                 $set('modal_featured_image_focal_x', 50);
@@ -318,6 +325,23 @@ class PostForm
                                                                 if ($dimensions) {
                                                                     $set('modal_featured_image_width', $dimensions['width']);
                                                                     $set('modal_featured_image_height', $dimensions['height']);
+                                                                }
+
+                                                                // Get the image URL and dispatch event to Alpine component
+                                                                $imageUrl = null;
+                                                                if (is_array($state) && !empty($state)) {
+                                                                    $file = $state[0] ?? null;
+                                                                    if ($file && method_exists($file, 'getTemporaryUrl')) {
+                                                                        $imageUrl = $file->getTemporaryUrl();
+                                                                    }
+                                                                }
+
+                                                                if ($imageUrl) {
+                                                                    $livewire->dispatch('featuredImageUploaded', [
+                                                                        'imageUrl' => $imageUrl,
+                                                                        'focalX' => 50,
+                                                                        'focalY' => 50,
+                                                                    ]);
                                                                 }
                                                             }
                                                         }),
