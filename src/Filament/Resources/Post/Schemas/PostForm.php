@@ -321,7 +321,7 @@ class PostForm
                                                             }
 
                                                             // Handle file upload - state is the TemporaryUploadedFile object directly
-                                                            if (is_object($state) && method_exists($state, 'getTemporaryUrl')) {
+                                                            if (is_object($state)) {
                                                                 // Auto-populate width and height from uploaded file
                                                                 $dimensions = PostHelper::get_image_dimensions($state);
                                                                 if ($dimensions) {
@@ -335,7 +335,20 @@ class PostForm
 
                                                                 // Get the temporary URL and dispatch event to Alpine component
                                                                 try {
-                                                                    $imageUrl = $state->getTemporaryUrl();
+                                                                    // Try temporaryUrl() method (Livewire TemporaryUploadedFile)
+                                                                    if (method_exists($state, 'temporaryUrl')) {
+                                                                        $imageUrl = $state->temporaryUrl();
+                                                                    }
+                                                                    // Fallback to getTemporaryUrl()
+                                                                    elseif (method_exists($state, 'getTemporaryUrl')) {
+                                                                        $imageUrl = $state->getTemporaryUrl();
+                                                                    }
+                                                                    // Fallback to getRealPath() and convert to data URL
+                                                                    elseif (method_exists($state, 'getRealPath')) {
+                                                                        $imageUrl = 'data:image/' . $state->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($state->getRealPath()));
+                                                                    } else {
+                                                                        return;
+                                                                    }
 
                                                                     $livewire->dispatch('featuredImageUploaded', [
                                                                         'imageUrl' => $imageUrl,
