@@ -33,6 +33,7 @@ use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\ReadingSettings;
+use Livewire\Component;
 
 class PostForm
 {
@@ -260,8 +261,8 @@ class PostForm
                                                     // Dispatch event to Alpine component with existing image
                                                     $livewire->dispatch('featuredImageUploaded', [
                                                         'imageUrl' => $media->getUrl(),
-                                                        'focalX' => $focalPoint['x'] ?? 50,
-                                                        'focalY' => $focalPoint['y'] ?? 50,
+                                                        'focalX'   => $focalPoint['x'] ?? 50,
+                                                        'focalY'   => $focalPoint['y'] ?? 50,
                                                     ]);
 
                                                     return [
@@ -314,12 +315,13 @@ class PostForm
                                                         ->visibility('public')
                                                         ->multiple(false)
                                                         ->live()
-                                                        ->afterStateUpdated(function ($state, callable $set, $livewire) {
-                                                            if ($state) {
-                                                                // Reset focal point to center for new uploads
-                                                                $set('modal_featured_image_focal_x', 50);
-                                                                $set('modal_featured_image_focal_y', 50);
+                                                        ->afterStateUpdated(function ($state, callable $set, Component $livewire) {
+                                                            if (! $state) {
+                                                                return;
+                                                            }
 
+                                                            // Handle file upload - state is the TemporaryUploadedFile object directly
+                                                            if (is_object($state) && method_exists($state, 'getTemporaryUrl')) {
                                                                 // Auto-populate width and height from uploaded file
                                                                 $dimensions = PostHelper::get_image_dimensions($state);
                                                                 if ($dimensions) {
@@ -327,21 +329,21 @@ class PostForm
                                                                     $set('modal_featured_image_height', $dimensions['height']);
                                                                 }
 
-                                                                // Get the image URL and dispatch event to Alpine component
-                                                                $imageUrl = null;
-                                                                if (is_array($state) && !empty($state)) {
-                                                                    $file = $state[0] ?? null;
-                                                                    if ($file && method_exists($file, 'getTemporaryUrl')) {
-                                                                        $imageUrl = $file->getTemporaryUrl();
-                                                                    }
-                                                                }
+                                                                // Reset focal point to center for new uploads
+                                                                $set('modal_featured_image_focal_x', 50);
+                                                                $set('modal_featured_image_focal_y', 50);
 
-                                                                if ($imageUrl) {
+                                                                // Get the temporary URL and dispatch event to Alpine component
+                                                                try {
+                                                                    $imageUrl = $state->getTemporaryUrl();
+
                                                                     $livewire->dispatch('featuredImageUploaded', [
                                                                         'imageUrl' => $imageUrl,
-                                                                        'focalX' => 50,
-                                                                        'focalY' => 50,
+                                                                        'focalX'   => 50,
+                                                                        'focalY'   => 50,
                                                                     ]);
+                                                                } catch (\Exception $e) {
+                                                                    // Silent fail
                                                                 }
                                                             }
                                                         }),
@@ -421,9 +423,9 @@ class PostForm
 
                                                                     View::make('franken-cms::components.featured-image-focal-point-picker')
                                                                         ->viewData(function (?Post $record): array {
-                                                                            if (!$record || !$record->hasMedia('featured')) {
+                                                                            if (! $record || ! $record->hasMedia('featured')) {
                                                                                 return [
-                                                                                    'statePaths'       => [
+                                                                                    'statePaths' => [
                                                                                         'focal_x' => 'mountedActions.0.data.modal_featured_image_focal_x',
                                                                                         'focal_y' => 'mountedActions.0.data.modal_featured_image_focal_y',
                                                                                     ],
@@ -437,7 +439,7 @@ class PostForm
                                                                             $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
 
                                                                             return [
-                                                                                'statePaths'       => [
+                                                                                'statePaths' => [
                                                                                     'focal_x' => 'mountedActions.0.data.modal_featured_image_focal_x',
                                                                                     'focal_y' => 'mountedActions.0.data.modal_featured_image_focal_y',
                                                                                 ],
