@@ -69,11 +69,6 @@ export default function featuredImageFocalPicker(existingImageSrc = null, existi
                 }
             });
 
-            // Always check for uploaded files, even if we have an existing image
-            this.checkForExistingImage();
-            setTimeout(() => {
-                this.checkForExistingImage();
-            }, 100);
         },
 
         checkForExistingImage() {
