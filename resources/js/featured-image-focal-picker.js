@@ -1,158 +1,136 @@
 // Alpine.js Featured Image Focal Point Picker Component for Filament Modal
-function featuredImageFocalPicker() {
+export default function featuredImageFocalPicker(existingImageSrc = null, existingFocalX = 50, existingFocalY = 50) {
     // Ensure this function is preserved by bundlers
     featuredImageFocalPicker.displayName = 'featuredImageFocalPicker';
 
     return {
-        focalX: 50,
-        focalY: 50,
-        imagePreview: null,
+        focalX: existingFocalX || 50,
+        focalY: existingFocalY || 50,
+        imagePreview: existingImageSrc || null,
         componentId: null,
 
         init() {
             // Generate unique component ID for this instance
             this.componentId = 'featured-focal-picker-' + Math.random().toString(36).substr(2, 9);
 
-            // Initialize focal points from hidden inputs
-            this.initializeFocalPoints();
+            // If we have an existing image, load it immediately
+            if (existingImageSrc) {
+                this.imagePreview = existingImageSrc;
+            }
 
-            // Watch for modal inputs and sync with our display
-            this.$watch('focalX', (value) => {
-                this.updateHiddenInput('modal_featured_image_focal_x', value);
+            // Set initial focal points from parameters (these come from existing image data)
+            this.focalX = parseFloat(existingFocalX) || 50;
+            this.focalY = parseFloat(existingFocalY) || 50;
+
+            // Force update Livewire data immediately with our parameter values
+            // This ensures each modal instance gets the correct focal points
+            if (this.$wire && this.$wire.set) {
+                this.$wire.set('data.modal_featured_image_focal_x', this.focalX);
+                this.$wire.set('data.modal_featured_image_focal_y', this.focalY);
+            }
+
+            // Initialize from Livewire data - wait a moment for Livewire to be ready
+            this.$nextTick(() => {
+                // Double-check our values are set correctly in Livewire
+                if (this.$wire && this.$wire.set) {
+                    this.$wire.set('data.modal_featured_image_focal_x', this.focalX);
+                    this.$wire.set('data.modal_featured_image_focal_y', this.focalY);
+                }
             });
 
-            this.$watch('focalY', (value) => {
-                this.updateHiddenInput('modal_featured_image_focal_y', value);
-            });
+            // Watch for changes in Livewire data to reinitialize when switching images
+            if (this.$wire && this.$wire.data) {
+                this.$watch('$wire.data.modal_featured_image_focal_x', (newValue) => {
+                    if (newValue !== undefined && newValue !== this.focalX) {
+                        this.focalX = parseFloat(newValue) || 50;
+                    }
+                });
 
-            // Check for existing image in the modal
-            this.checkForExistingImage();
-
-            // Listen for file uploads in the modal
-            this.setupFileUploadListener();
-
-            // Setup input change listeners
-            this.setupInputListeners();
-
-            // Listen for Livewire events
-            this.setupLivewireEventListener();
-        },
-
-        initializeFocalPoints() {
-            // In Filament modals, inputs use ID attributes, not name attributes
-            const focalXInput = document.querySelector('[id*="modal_featured_image_focal_x"]');
-            const focalYInput = document.querySelector('[id*="modal_featured_image_focal_y"]');
-
-            if (focalXInput && focalXInput.value) {
-                this.focalX = parseFloat(focalXInput.value) || 50;
-            }
-            if (focalYInput && focalYInput.value) {
-                this.focalY = parseFloat(focalYInput.value) || 50;
-            }
-        },
-
-        checkForExistingImage() {
-            // Check if there's already an image in the featured image upload component
-            const modalContainer = this.$el.closest('.fi-modal');
-            if (!modalContainer) return;
-
-            // Multiple strategies to find the uploaded image
-
-            // Strategy 1: Look for FilePond hidden input with image URL
-            const filePondInput = modalContainer.querySelector('input[name="filepond"][type="hidden"]');
-            if (filePondInput && filePondInput.value && (filePondInput.value.startsWith('http') || filePondInput.value.startsWith('/'))) {
-                this.imagePreview = filePondInput.value;
-                return;
-            }
-
-            // Strategy 2: Look for Filament file upload preview images
-            const uploadPreview = modalContainer.querySelector('[data-field-wrapper="featured_image"] img, [wire\\:key*="featured_image"] img');
-            if (uploadPreview && uploadPreview.src && !uploadPreview.src.includes('data:')) {
-                this.imagePreview = uploadPreview.src;
-                return;
-            }
-
-            // Strategy 3: Look for any image in the file upload area
-            const fileUploadImages = modalContainer.querySelectorAll('[x-data*="fileUpload"] img[src], .fi-fo-file-upload img[src]');
-            for (const img of fileUploadImages) {
-                if (img.src && !img.src.includes('data:') && !img.src.includes('placeholder')) {
-                    this.imagePreview = img.src;
-                    return;
-                }
-            }
-
-            // Strategy 4: Look for Spatie Media Library images
-            const spatieImages = modalContainer.querySelectorAll('img[src*="/storage/"], img[src*="livewire-tmp"]');
-            for (const img of spatieImages) {
-                if (img.src) {
-                    this.imagePreview = img.src;
-                    return;
-                }
-            }
-
-            // Strategy 5: Check all images in the modal and pick the most likely candidate
-            const allImages = modalContainer.querySelectorAll('img[src]');
-            for (const img of allImages) {
-                // Skip placeholder, icon, or data URLs
-                if (img.src &&
-                    !img.src.includes('data:') &&
-                    !img.src.includes('placeholder') &&
-                    !img.src.includes('icon') &&
-                    img.naturalWidth > 50 && // Skip small icons
-                    img.naturalHeight > 50) {
-                    this.imagePreview = img.src;
-                    return;
-                }
-            }
-        },
-
-        setupFileUploadListener() {
-            // Watch for file upload changes in the modal
-            const modalContainer = this.$el.closest('.fi-modal');
-            if (!modalContainer) return;
-
-            const fileInput = modalContainer.querySelector('input[type="file"]');
-            if (fileInput) {
-                fileInput.addEventListener('change', (e) => {
-                    if (e.target.files && e.target.files.length > 0) {
-                        this.loadImagePreview(e.target.files[0]);
+                this.$watch('$wire.data.modal_featured_image_focal_y', (newValue) => {
+                    if (newValue !== undefined && newValue !== this.focalY) {
+                        this.focalY = parseFloat(newValue) || 50;
                     }
                 });
             }
 
-            // Also listen for Livewire file upload events
-            if (window.Livewire) {
-                window.Livewire.hook('message.processed', (message, component) => {
-                    // Small delay to let the DOM update
-                    setTimeout(() => {
-                        this.checkForExistingImage();
-                    }, 100);
-                });
-            }
+            // Listen for Livewire events when new images are uploaded
+            this.setupLivewireEventListener();
+
+            // Watch for focal point changes and sync to Livewire
+            this.$watch('focalX', (value) => {
+                if (this.$wire && this.$wire.set) {
+                    this.$wire.set('data.modal_featured_image_focal_x', value);
+                }
+            });
+
+            this.$watch('focalY', (value) => {
+                if (this.$wire && this.$wire.set) {
+                    this.$wire.set('data.modal_featured_image_focal_y', value);
+                }
+            });
+
+            // Always check for uploaded files, even if we have an existing image
+            this.checkForExistingImage();
+            setTimeout(() => {
+                this.checkForExistingImage();
+            }, 100);
         },
 
-        setupInputListeners() {
-            // Listen for changes to the hidden inputs (from external sources)
-            // In Filament modals, use ID selectors
-            const focalXInput = document.querySelector('[id*="modal_featured_image_focal_x"]');
-            const focalYInput = document.querySelector('[id*="modal_featured_image_focal_y"]');
-
-            if (focalXInput) {
-                focalXInput.addEventListener('input', (e) => {
-                    this.focalX = parseFloat(e.target.value) || 50;
-                });
+        checkForExistingImage() {
+            // Ensure we have proper wire context
+            if (!this.$wire) {
+                return;
             }
 
-            if (focalYInput) {
-                focalYInput.addEventListener('input', (e) => {
-                    this.focalY = parseFloat(e.target.value) || 50;
-                });
+            // Scenario 1: New upload - check data.featured_image
+            if (this.$wire?.data?.featured_image) {
+                this.loadImagePreview(this.$wire.data.featured_image);
+                return;
+            }
+
+            // Scenario 2: Check all data properties for potential file references
+            if (this.$wire?.data) {
+                const data = this.$wire.data;
+
+                // Look for any property that might contain file data
+                for (const [key, value] of Object.entries(data)) {
+                    if (value && typeof value === 'object' && (value.temporary_url || value.url)) {
+                        this.loadImagePreview(value);
+                        return;
+                    }
+                }
+            }
+
+            // Scenario 3: Look for Filament file upload preview
+            const filePreview = document.querySelector('[x-data*="fileUpload"] img[src]');
+            if (filePreview) {
+                this.loadImagePreview(filePreview.src);
+                return;
+            }
+
+            // Scenario 4: Try to find file upload component and its current value
+            const fileInput = document.querySelector('[wire\\:model*="featured_image"]');
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                this.loadImagePreview(fileInput.files[0]);
+                return;
             }
         },
 
         loadImagePreview(file) {
             if (!file) {
                 this.imagePreview = null;
+                return;
+            }
+
+            // Handle Livewire temporary file object (has temporary_url property)
+            if (typeof file === 'object' && file.temporary_url) {
+                this.imagePreview = file.temporary_url;
+                return;
+            }
+
+            // Handle Livewire temporary file (might have different structure)
+            if (typeof file === 'object' && file.url) {
+                this.imagePreview = file.url;
                 return;
             }
 
@@ -183,6 +161,19 @@ function featuredImageFocalPicker() {
             this.focalX = Math.round(Math.max(0, Math.min(100, x)) * 10) / 10;
             this.focalY = Math.round(Math.max(0, Math.min(100, y)) * 10) / 10;
 
+            // Also directly trigger input events to ensure wire:model picks up the change
+            const focalXInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_x"]');
+            const focalYInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_y"]');
+
+            if (focalXInput) {
+                focalXInput.value = this.focalX;
+                focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (focalYInput) {
+                focalYInput.value = this.focalY;
+                focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
             this.updateFocalPoint();
         },
 
@@ -190,39 +181,6 @@ function featuredImageFocalPicker() {
             // Ensure values are within bounds
             this.focalX = Math.max(0, Math.min(100, parseFloat(this.focalX) || 50));
             this.focalY = Math.max(0, Math.min(100, parseFloat(this.focalY) || 50));
-
-            // Update the hidden inputs
-            this.updateHiddenInput('modal_featured_image_focal_x', this.focalX);
-            this.updateHiddenInput('modal_featured_image_focal_y', this.focalY);
-        },
-
-        updateHiddenInput(fieldName, value) {
-            // In Filament modals, inputs use ID attributes with wire:model
-            // Look for inputs by ID pattern instead of name
-            const input = document.querySelector(`[id*="${fieldName}"]`);
-            if (input) {
-                input.value = value;
-                // Trigger input event to notify Livewire
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        },
-
-        setupLivewireEventListener() {
-            // Listen for custom Livewire event when featured image is uploaded/changed
-            if (window.Livewire) {
-                Livewire.on('featuredImageUploaded', (eventData) => {
-                    const data = Array.isArray(eventData) ? eventData[0] : eventData;
-
-                    if (data && data.imageUrl) {
-                        this.imagePreview = data.imageUrl;
-
-                        // Reset focal points to center or use provided values
-                        this.focalX = data.focalX || 50;
-                        this.focalY = data.focalY || 50;
-                        this.updateFocalPoint();
-                    }
-                });
-            }
         },
 
         resetFocalPoint() {
@@ -231,16 +189,51 @@ function featuredImageFocalPicker() {
             this.updateFocalPoint();
         },
 
-        // Helper to get current focal point values as percentage string for CSS
-        getFocalPointStyle() {
-            return `left: ${this.focalX}%; top: ${this.focalY}%;`;
+        resetFocalPointToCenter() {
+            this.focalX = 50;
+            this.focalY = 50;
+            // Trigger the manual input updates to sync with Livewire
+            const focalXInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_x"]');
+            const focalYInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_y"]');
+
+            if (focalXInput) {
+                focalXInput.value = 50;
+                focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (focalYInput) {
+                focalYInput.value = 50;
+                focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        },
+
+        setupLivewireEventListener() {
+            // Listen for the Livewire event dispatched when a featured image is uploaded
+            Livewire.on('featuredImageUploaded', (eventData) => {
+                // Livewire events come as an array, get the first element
+                const data = Array.isArray(eventData) ? eventData[0] : eventData;
+
+                // Data should contain: imageUrl, focalX, focalY
+                if (data && data.imageUrl) {
+                    this.imagePreview = data.imageUrl;
+
+                    // Reset focal points to center or use provided values
+                    this.focalX = data.focalX || 50;
+                    this.focalY = data.focalY || 50;
+
+                    // Update the inputs to sync with Livewire
+                    const focalXInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_x"]');
+                    const focalYInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_y"]');
+
+                    if (focalXInput) {
+                        focalXInput.value = this.focalX;
+                        focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    if (focalYInput) {
+                        focalYInput.value = this.focalY;
+                        focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }
+            });
         }
     };
 }
-
-// Make it globally available for x-load
-if (typeof window !== 'undefined') {
-    window.featuredImageFocalPicker = featuredImageFocalPicker;
-}
-
-export default featuredImageFocalPicker;
