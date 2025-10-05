@@ -1,5 +1,5 @@
 // Alpine.js Featured Image Focal Point Picker Component for Filament Modal
-export default function featuredImageFocalPicker() {
+function featuredImageFocalPicker() {
     // Ensure this function is preserved by bundlers
     featuredImageFocalPicker.displayName = 'featuredImageFocalPicker';
 
@@ -39,8 +39,9 @@ export default function featuredImageFocalPicker() {
         },
 
         initializeFocalPoints() {
-            const focalXInput = document.querySelector('[name="modal_featured_image_focal_x"]');
-            const focalYInput = document.querySelector('[name="modal_featured_image_focal_y"]');
+            // In Filament modals, inputs use ID attributes, not name attributes
+            const focalXInput = document.querySelector('[id*="modal_featured_image_focal_x"]');
+            const focalYInput = document.querySelector('[id*="modal_featured_image_focal_y"]');
 
             if (focalXInput && focalXInput.value) {
                 this.focalX = parseFloat(focalXInput.value) || 50;
@@ -57,14 +58,21 @@ export default function featuredImageFocalPicker() {
 
             // Multiple strategies to find the uploaded image
 
-            // Strategy 1: Look for Filament file upload preview images
+            // Strategy 1: Look for FilePond hidden input with image URL
+            const filePondInput = modalContainer.querySelector('input[name="filepond"][type="hidden"]');
+            if (filePondInput && filePondInput.value && (filePondInput.value.startsWith('http') || filePondInput.value.startsWith('/'))) {
+                this.imagePreview = filePondInput.value;
+                return;
+            }
+
+            // Strategy 2: Look for Filament file upload preview images
             const uploadPreview = modalContainer.querySelector('[data-field-wrapper="featured_image"] img, [wire\\:key*="featured_image"] img');
             if (uploadPreview && uploadPreview.src && !uploadPreview.src.includes('data:')) {
                 this.imagePreview = uploadPreview.src;
                 return;
             }
 
-            // Strategy 2: Look for any image in the file upload area
+            // Strategy 3: Look for any image in the file upload area
             const fileUploadImages = modalContainer.querySelectorAll('[x-data*="fileUpload"] img[src], .fi-fo-file-upload img[src]');
             for (const img of fileUploadImages) {
                 if (img.src && !img.src.includes('data:') && !img.src.includes('placeholder')) {
@@ -73,7 +81,7 @@ export default function featuredImageFocalPicker() {
                 }
             }
 
-            // Strategy 3: Look for Spatie Media Library images
+            // Strategy 4: Look for Spatie Media Library images
             const spatieImages = modalContainer.querySelectorAll('img[src*="/storage/"], img[src*="livewire-tmp"]');
             for (const img of spatieImages) {
                 if (img.src) {
@@ -82,7 +90,7 @@ export default function featuredImageFocalPicker() {
                 }
             }
 
-            // Strategy 4: Check all images in the modal and pick the most likely candidate
+            // Strategy 5: Check all images in the modal and pick the most likely candidate
             const allImages = modalContainer.querySelectorAll('img[src]');
             for (const img of allImages) {
                 // Skip placeholder, icon, or data URLs
@@ -125,8 +133,9 @@ export default function featuredImageFocalPicker() {
 
         setupInputListeners() {
             // Listen for changes to the hidden inputs (from external sources)
-            const focalXInput = document.querySelector('[name="modal_featured_image_focal_x"]');
-            const focalYInput = document.querySelector('[name="modal_featured_image_focal_y"]');
+            // In Filament modals, use ID selectors
+            const focalXInput = document.querySelector('[id*="modal_featured_image_focal_x"]');
+            const focalYInput = document.querySelector('[id*="modal_featured_image_focal_y"]');
 
             if (focalXInput) {
                 focalXInput.addEventListener('input', (e) => {
@@ -187,11 +196,13 @@ export default function featuredImageFocalPicker() {
             this.updateHiddenInput('modal_featured_image_focal_y', this.focalY);
         },
 
-        updateHiddenInput(name, value) {
-            const input = document.querySelector(`[name="${name}"]`);
+        updateHiddenInput(fieldName, value) {
+            // In Filament modals, inputs use ID attributes with wire:model
+            // Look for inputs by ID pattern instead of name
+            const input = document.querySelector(`[id*="${fieldName}"]`);
             if (input) {
                 input.value = value;
-                // Trigger input event to notify any listeners
+                // Trigger input event to notify Livewire
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             }
         },
@@ -226,3 +237,10 @@ export default function featuredImageFocalPicker() {
         }
     };
 }
+
+// Make it globally available for x-load
+if (typeof window !== 'undefined') {
+    window.featuredImageFocalPicker = featuredImageFocalPicker;
+}
+
+export default featuredImageFocalPicker;

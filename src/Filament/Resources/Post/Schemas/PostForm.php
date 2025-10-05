@@ -419,7 +419,33 @@ class PostForm
                                                                     Hidden::make('modal_featured_image_focal_y')
                                                                         ->default(50),
 
-                                                                    View::make('franken-cms::components.featured-image-focal-point-picker'),
+                                                                    View::make('franken-cms::components.featured-image-focal-point-picker')
+                                                                        ->viewData(function (?Post $record): array {
+                                                                            if (!$record || !$record->hasMedia('featured')) {
+                                                                                return [
+                                                                                    'statePaths'       => [
+                                                                                        'focal_x' => 'mountedActions.0.data.modal_featured_image_focal_x',
+                                                                                        'focal_y' => 'mountedActions.0.data.modal_featured_image_focal_y',
+                                                                                    ],
+                                                                                    'existingImageSrc' => null,
+                                                                                    'existingFocalX'   => 50,
+                                                                                    'existingFocalY'   => 50,
+                                                                                ];
+                                                                            }
+
+                                                                            $media = $record->getFirstMedia('featured');
+                                                                            $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+
+                                                                            return [
+                                                                                'statePaths'       => [
+                                                                                    'focal_x' => 'mountedActions.0.data.modal_featured_image_focal_x',
+                                                                                    'focal_y' => 'mountedActions.0.data.modal_featured_image_focal_y',
+                                                                                ],
+                                                                                'existingImageSrc' => $media->getUrl(),
+                                                                                'existingFocalX'   => $focalPoint['x'] ?? 50,
+                                                                                'existingFocalY'   => $focalPoint['y'] ?? 50,
+                                                                            ];
+                                                                        }),
                                                                 ]),
                                                         ]),
 

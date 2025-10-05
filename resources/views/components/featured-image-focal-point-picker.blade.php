@@ -10,14 +10,18 @@
 
     <div
         x-load
-        x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('featured-image-focal-picker', 'frankencms/franken-cms') }}"
-        x-data="featuredImageFocalPicker()"
+        x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('focal-point-picker', 'frankencms/franken-cms') }}"
+        x-data="focalPointPicker(
+            @if($existingImageSrc ?? null)'{{ $existingImageSrc }}'@else null @endif,
+            {{ $existingFocalX ?? 50 }},
+            {{ $existingFocalY ?? 50 }}
+        )"
         class="space-y-4"
     >
         <!-- Preview Area -->
         <div
             class="select-none relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600"
-            style="min-height: 200px; max-height: 300px;"
+{{--            style="min-height: 200px; max-height: 300px;"--}}
             x-ref="previewArea"
             @click="setFocalPoint($event)"
         >
@@ -42,8 +46,8 @@
 
                 <!-- Focal point indicator -->
                 <div
-                    class="absolute w-4 h-4 bg-red-500 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg z-10"
-                    :style="getFocalPointStyle()"
+                    class="absolute w-4 h-4 bg-red-500 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
+                    :style="`left: ${focalX}%; top: ${focalY}%;`"
                 ></div>
 
                 <!-- Crosshair lines for better precision -->
@@ -69,8 +73,10 @@
                     min="0"
                     max="100"
                     step="0.1"
+                    wire:model.live="{{ $statePaths['focal_x'] ?? 'mountedActions.0.data.modal_featured_image_focal_x' }}"
                     x-model="focalX"
                     @input="updateFocalPoint"
+                    value="{{ $existingFocalX ?? 50 }}"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-600 focus:ring-primary-600 dark:bg-gray-900 dark:text-white text-sm"
                 />
             </div>
@@ -83,8 +89,10 @@
                     min="0"
                     max="100"
                     step="0.1"
+                    wire:model.live="{{ $statePaths['focal_y'] ?? 'mountedActions.0.data.modal_featured_image_focal_y' }}"
                     x-model="focalY"
                     @input="updateFocalPoint"
+                    value="{{ $existingFocalY ?? 50 }}"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-600 focus:ring-primary-600 dark:bg-gray-900 dark:text-white text-sm"
                 />
             </div>
