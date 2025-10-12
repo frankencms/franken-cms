@@ -79,6 +79,14 @@ class Post extends Model implements HasMedia, HasRichContent
 
     protected $with = ['meta'];
     protected $appends = ['template'];
+
+    public function template(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->getMeta('template', $this->metaDefaults['template'] ?? 'post')
+        );
+    }
+
     public function isPublished(): bool
     {
         return $this->status === PostStatus::PUBLISH->value && $this->published_at <= now();

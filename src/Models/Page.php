@@ -7,6 +7,7 @@ use FrankenCms\Observers\PageObserver;
 use FrankenCms\Traits\HasMeta;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * @property ?int $post_author_id
@@ -27,4 +28,11 @@ class Page extends Post
 
     protected $with = ['meta'];
     protected $appends = ['template'];
+
+    public function template(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->getMeta('template', $this->metaDefaults['template'] ?? 'page-home')
+        );
+    }
 }
