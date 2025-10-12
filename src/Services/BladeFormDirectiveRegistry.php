@@ -98,7 +98,7 @@ class BladeFormDirectiveRegistry
     protected function registerLayoutComponents(): void
     {
         $layoutComponents = [
-            'section' => [
+            'formSection' => [
                 'component' => 'Filament\Schemas\Components\Section',
                 'closing' => true,
             ],
