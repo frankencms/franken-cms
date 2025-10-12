@@ -52,7 +52,7 @@ trait HasPermalinkUrl
         $readingSettings = app(ReadingSettings::class);
 
         // Replace placeholders with actual values from the post
-        return $readingSettings->post_page . str_replace([
+        return '/' . $readingSettings->post_page . str_replace([
             '%year%',
             '%monthnum%',
             '%day%',
