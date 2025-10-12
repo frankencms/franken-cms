@@ -2,8 +2,8 @@
 
 namespace FrankenCms\Services;
 
-use FrankenCMS\FrankenCms\Contracts\PostServiceInterface;
-use FrankenCMS\FrankenCms\Models\Post;
+use FrankenCms\Contracts\PostServiceInterface;
+use FrankenCms\Models\Post;
 
 class PostService implements PostServiceInterface
 {
