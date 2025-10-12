@@ -49,7 +49,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '11_create_menus_table',
             ])
             ->hasTranslations()
-//            ->hasRoutes('web')
+            ->hasRoutes('web')
             ->hasCommand(InstallCommand::class);
     }
 

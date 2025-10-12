@@ -1,13 +1,8 @@
 <?php
 
-use FrankenCms\Helpers\PostHelper;
-use FrankenCms\Http\Controllers\PostController;
 use FrankenCms\Http\Controllers\RouteController;
+use Illuminate\Support\Facades\Route;
 
-Route::get(PostHelper::index_page(), [PostController::class, 'index'])
-    ->name('post.index');
-
-Route::get('{any}', [RouteController::class, 'index'])
-    ->where('any', '.*')
-    ->name('route.handler')
-    ->fallback();
+// Catch-all route for FrankenCMS content (pages, posts, etc.)
+// This should be the last route registered
+Route::fallback([RouteController::class, 'index']);

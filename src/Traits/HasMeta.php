@@ -33,6 +33,33 @@ trait HasMeta
     }
 
     /**
+     * Override fill to intercept meta attributes during mass assignment
+     */
+    public function fill(array $attributes)
+    {
+        $metaAttributes = [];
+        $regularAttributes = [];
+
+        foreach ($attributes as $key => $value) {
+            if ($this->isMetaAttribute($key)) {
+                $metaAttributes[$key] = $value;
+            } else {
+                $regularAttributes[$key] = $value;
+            }
+        }
+
+        // Fill regular attributes first
+        parent::fill($regularAttributes);
+
+        // Set meta attributes (these will go to pendingMeta)
+        foreach ($metaAttributes as $key => $value) {
+            $this->setAttribute($key, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * Helper to fetch a meta value by key
      */
     public function getMeta(string $key, $default = null)

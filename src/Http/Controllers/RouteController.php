@@ -31,6 +31,11 @@ class RouteController
             return $this->contentResolver->resolveHomePage();
         }
 
+        // Check if this path is the homepage slug - redirect to root
+        if ($this->settings->home_page && $path === $this->settings->home_page) {
+            return redirect('/');
+        }
+
         if ($this->contentResolver->isPostPath($path)) {
 
             return $this->handlePostPath($path, $request);

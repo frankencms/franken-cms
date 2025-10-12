@@ -5,8 +5,9 @@ namespace FrankenCms\Services;
 use FrankenCms\Enums\PermalinkStructure;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
-use FrankenCms\Settings\ReadingSettings;
+use FrankenCms\Services\TemplateResolver;
 use FrankenCms\Settings\PermalinkSettings;
+use FrankenCms\Settings\ReadingSettings;
 use Illuminate\View\View;
 
 readonly class ContentResolver
@@ -50,9 +51,10 @@ readonly class ContentResolver
 
     }
 
-    public function resolvePage(string $slug): ?View
+    public function resolvePage(string $slug): View
     {
         $page = Page::where('post_slug', $slug)->firstOrFail();
+
         return TemplateResolver::resolve($page);
     }
 

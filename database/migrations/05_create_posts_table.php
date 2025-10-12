@@ -27,9 +27,14 @@ return new class extends Migration
             $table->foreignId('post_id')
                 ->constrained()
                 ->onDelete('cascade');
-            $table->string('meta_key')->unique();
+            $table->string('meta_key');
             $table->json('meta_value');
             $table->timestamps();
+
+            // Unique constraint on post_id + meta_key combination
+            // This allows multiple posts to have the same meta_key,
+            // but prevents duplicate meta_keys for the same post
+            $table->unique(['post_id', 'meta_key']);
         });
 
     }
