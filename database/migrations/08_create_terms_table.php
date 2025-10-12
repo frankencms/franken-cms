@@ -11,10 +11,15 @@ return new class extends Migration
         Schema::create('terms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('slug')->unique();
-            $table->foreignId('taxonomy_id')->constrained()->onDelete('cascade'); // Links to taxonomies table
-            $table->foreignId('parent_id')->nullable()->constrained('terms')->onDelete('cascade'); // For hierarchical terms
+            $table->string('slug');
+            $table->text('description')->nullable();
+            $table->foreignId('taxonomy_id')->constrained()->onDelete('cascade');
+            $table->foreignId('parent_id')->nullable()->constrained('terms')->onDelete('cascade');
             $table->timestamps();
+
+            // Unique constraint: slug must be unique within each taxonomy
+            // This allows "news" as both a category and a tag
+            $table->unique(['taxonomy_id', 'slug']);
         });
     }
 };

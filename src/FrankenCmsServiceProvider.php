@@ -45,8 +45,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '07_create_taxonomies_table',
                 '08_create_terms_table',
                 '09_create_termables_table',
-                '10_create_media_table',
-                '11_create_menus_table',
+                '10_seed_default_taxonomies',
+                '11_create_media_table',
+                '12_create_menus_table',
             ])
             ->hasTranslations()
             ->hasRoutes('web')

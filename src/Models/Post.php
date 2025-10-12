@@ -102,6 +102,26 @@ class Post extends Model implements HasMedia, HasRichContent
         return $this->belongsTo(config('franken-cms.models.user'), 'post_author_id');
     }
 
+    /**
+     * Get only the categories for this post
+     */
+    public function categories()
+    {
+        return $this->terms()->whereHas('taxonomy', function ($query) {
+            $query->where('name', 'category');
+        });
+    }
+
+    /**
+     * Get only the tags for this post
+     */
+    public function tags()
+    {
+        return $this->terms()->whereHas('taxonomy', function ($query) {
+            $query->where('name', 'tag');
+        });
+    }
+
     public function setUpRichContent(): void
     {
         $this->registerRichContent('post_content')

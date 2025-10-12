@@ -208,6 +208,66 @@ class PostForm
                                             ->placeholder('Select a template')
                                             ->helperText('Optional: Use a specific template for this post. Defaults to "post" template.'),
 
+                                        Select::make('categories')
+                                            ->label('Categories')
+                                            ->relationship(
+                                                name: 'terms',
+                                                titleAttribute: 'name',
+                                                modifyQueryUsing: fn ($query) => $query->whereHas('taxonomy', fn ($q) => $q->where('name', 'category'))
+                                            )
+                                            ->multiple()
+                                            ->searchable()
+                                            ->preload()
+                                            ->createOptionForm([
+                                                TextInput::make('name')
+                                                    ->required()
+                                                    ->live(onBlur: true)
+                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                                                TextInput::make('slug')
+                                                    ->required()
+                                                    ->unique('terms', 'slug', ignoreRecord: true),
+                                                Textarea::make('description')
+                                                    ->rows(2),
+                                            ])
+                                            ->createOptionUsing(function (array $data) {
+                                                $taxonomy = \FrankenCms\Models\Taxonomy::where('name', 'category')->first();
+                                                $term = \FrankenCms\Models\Term::create([
+                                                    ...$data,
+                                                    'taxonomy_id' => $taxonomy->id,
+                                                ]);
+                                                return $term->id;
+                                            }),
+
+                                        Select::make('tags')
+                                            ->label('Tags')
+                                            ->relationship(
+                                                name: 'terms',
+                                                titleAttribute: 'name',
+                                                modifyQueryUsing: fn ($query) => $query->whereHas('taxonomy', fn ($q) => $q->where('name', 'tag'))
+                                            )
+                                            ->multiple()
+                                            ->searchable()
+                                            ->preload()
+                                            ->createOptionForm([
+                                                TextInput::make('name')
+                                                    ->required()
+                                                    ->live(onBlur: true)
+                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                                                TextInput::make('slug')
+                                                    ->required()
+                                                    ->unique('terms', 'slug', ignoreRecord: true),
+                                                Textarea::make('description')
+                                                    ->rows(2),
+                                            ])
+                                            ->createOptionUsing(function (array $data) {
+                                                $taxonomy = \FrankenCms\Models\Taxonomy::where('name', 'tag')->first();
+                                                $term = \FrankenCms\Models\Term::create([
+                                                    ...$data,
+                                                    'taxonomy_id' => $taxonomy->id,
+                                                ]);
+                                                return $term->id;
+                                            }),
+
                                         // TODO: FIX OR REPLACE
                                         TextEntry::make('read_time')
                                             ->label('Read Time')
