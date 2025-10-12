@@ -8,10 +8,15 @@ use Illuminate\Support\Facades\Log;
 
 final class TemplateHelper
 {
-    public static function getTemplates(): array
+    /**
+     * Get all templates, optionally filtered by prefix
+     *
+     * @param  string|null  $prefix  Filter templates by prefix (e.g., 'page-', 'post-')
+     */
+    public static function getTemplates(?string $prefix = null): array
     {
-        $templateFolder = config('franken-cms.template_folder');
-        $templatePath = resource_path("views/{$templateFolder}");
+        $themeFolder = config('franken-cms.theme_folder');
+        $templatePath = resource_path("views/{$themeFolder}");
 
         if (! is_dir($templatePath) || ! is_readable($templatePath)) {
             Log::warning("Template directory not found or not readable: {$templatePath}");
@@ -28,11 +33,15 @@ final class TemplateHelper
 
             // Map filenames to key-value pairs for select options
             return collect($files)
-                ->mapWithKeys(function ($file) {
-                    $baseName = str(pathinfo($file, PATHINFO_FILENAME))
+                ->map(function ($file) {
+                    return str(pathinfo($file, PATHINFO_FILENAME))
                         ->beforeLast('.blade')
                         ->toString();
-
+                })
+                ->when($prefix, function ($collection) use ($prefix) {
+                    return $collection->filter(fn ($baseName) => str($baseName)->startsWith($prefix));
+                })
+                ->mapWithKeys(function ($baseName) {
                     $label = str($baseName)
                         ->replace(['-', '_'], ' ')
                         ->title()
@@ -46,5 +55,25 @@ final class TemplateHelper
             Log::error('Error processing template files: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /**
+     * Get page templates (prefixed with 'page-')
+     */
+    public static function getPageTemplates(): array
+    {
+        return self::getTemplates('page-');
+    }
+
+    /**
+     * Get post templates (prefixed with 'post-' or exactly 'post')
+     */
+    public static function getPostTemplates(): array
+    {
+        $templates = self::getTemplates('post');
+
+        return collect($templates)
+            ->filter(fn ($label, $key) => $key === 'post' || str($key)->startsWith('post-'))
+            ->toArray();
     }
 }

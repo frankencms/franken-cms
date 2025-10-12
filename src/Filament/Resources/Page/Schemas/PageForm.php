@@ -68,6 +68,6 @@ class PageForm
 
     private static function getTemplates(): array
     {
-        return TemplateHelper::getTemplates();
+        return TemplateHelper::getPageTemplates();
     }
 }

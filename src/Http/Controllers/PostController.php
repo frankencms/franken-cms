@@ -21,9 +21,9 @@ class PostController
             ->orderBy('post_published_at', 'desc')
             ->paginate($this->settings->posts_per_page);
 
-        $templateFolder = config('franken-cms.template_folder');
+        $themeFolder = config('franken-cms.theme_folder');
 
-        return view($templateFolder . '.post-index', compact('posts'));
+        return view($themeFolder . '.post-index', compact('posts'));
 
     }
 }

@@ -46,11 +46,16 @@ class RouteController
         $slug = $this->contentResolver->extractSlugFromPostPath($path);
         $post = $this->contentResolver->resolvePost($slug, $request->query('p'));
 
-        // TODO: template folder settings
+        $themeFolder = config('franken-cms.theme_folder');
+        $template = $post->template ?? 'post';
+        $view = sprintf('%s.%s', $themeFolder, $template);
 
-        return view('page-templates.post', compact('post'));
+        // Fallback to default post template if specific template doesn't exist
+        if (! view()->exists($view)) {
+            $view = sprintf('%s.post', $themeFolder);
+        }
 
-        //        return view('franken-cms::post.show', compact('post'));
+        return view($view, compact('post'));
     }
 
     private function isRootPath(string $path): bool

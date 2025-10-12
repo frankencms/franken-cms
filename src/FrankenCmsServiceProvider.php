@@ -81,6 +81,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
 
+        // Register theme components directory
+        // This allows themes to have their own self-contained components
+        $this->registerThemeComponents();
+
         // Register custom blade directives
         $this->registerBladeDirectives();
 
@@ -112,6 +116,20 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         ], 'frankencms/franken-cms');
 
+    }
+
+    private function registerThemeComponents(): void
+    {
+        $themeFolder = config('franken-cms.theme_folder', 'theme');
+        $componentsPath = resource_path("views/{$themeFolder}/components");
+
+        // Only register if the components directory exists
+        if (is_dir($componentsPath)) {
+            Blade::anonymousComponentPath(
+                $componentsPath,
+                "theme"
+            );
+        }
     }
 
     private function registerBladeDirectives(): void

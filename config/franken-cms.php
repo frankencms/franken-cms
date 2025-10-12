@@ -7,8 +7,8 @@ return [
 
     'navigation_group_name' => 'Franken CMS',
 
-    // The folder where your templates are stored in the resources/views directory
-    'template_folder' => 'templates',
+    // The folder where your theme is stored in the resources/views directory
+    'theme_folder' => 'theme',
 
     'models' => [
         'user' => \App\Models\User::class,

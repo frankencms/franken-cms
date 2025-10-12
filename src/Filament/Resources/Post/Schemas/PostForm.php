@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrankenCms\Filament\Resources\Post\Schemas;
 
+use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
@@ -30,6 +31,7 @@ use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
 use FrankenCms\Filament\Plugins\RichEditor\SourceCodePlugin;
 use FrankenCms\Helpers\PostHelper;
+use FrankenCms\Helpers\TemplateHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\ReadingSettings;
@@ -198,6 +200,14 @@ class PostForm
                                             ->default(fn () => auth()->id())
                                             ->label('Author'),
 
+                                        Select::make('template')
+                                            ->label('Post Template')
+                                            ->options(fn () => self::getTemplates())
+                                            ->searchable()
+                                            ->default('post')
+                                            ->placeholder('Select a template')
+                                            ->helperText('Optional: Use a specific template for this post. Defaults to "post" template.'),
+
                                         // TODO: FIX OR REPLACE
                                         TextEntry::make('read_time')
                                             ->label('Read Time')
@@ -355,7 +365,7 @@ class PostForm
                                                                         'focalX'   => 50,
                                                                         'focalY'   => 50,
                                                                     ]);
-                                                                } catch (\Exception $e) {
+                                                                } catch (Exception $e) {
                                                                     // Silent fail
                                                                 }
                                                             }
@@ -485,5 +495,10 @@ class PostForm
     {
         return PostHelper::calculate_read_time(PostHelper::convert_tip_tap_to_plain_text($content));
 
+    }
+
+    private static function getTemplates(): array
+    {
+        return TemplateHelper::getPostTemplates();
     }
 }

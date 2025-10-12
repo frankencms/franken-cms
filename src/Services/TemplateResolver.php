@@ -13,10 +13,10 @@ class TemplateResolver
         // Get template from meta, default to 'default-template'
         $template = $page->template;
 
-        $templateFolder = config('franken-cms.template_folder');
+        $themeFolder = config('franken-cms.theme_folder');
 
         // Build the view path
-        $view = sprintf('%s.%s', $templateFolder, $template);
+        $view = sprintf('%s.%s', $themeFolder, $template);
 
         // TODO: Do we want to fallback to a default template od just 404?
         // maybe we can have a default Franken CMS Message Template Screen to show the error or what to do next

@@ -15,8 +15,8 @@ class TemplateFieldFactory
             return [];
         }
 
-        $templateFolder = config('franken-cms.template_folder');
-        $templatePath = resource_path("views/{$templateFolder}/{$templateName}.blade.php");
+        $themeFolder = config('franken-cms.theme_folder');
+        $templatePath = resource_path("views/{$themeFolder}/{$templateName}.blade.php");
 
         $parser = new CmsFieldParser;
         $parser->parse($templatePath);
