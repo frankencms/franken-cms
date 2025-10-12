@@ -3,6 +3,8 @@
 namespace FrankenCms\Http\Controllers;
 
 use FrankenCms\Models\Page;
+use FrankenCms\Models\Taxonomy;
+use FrankenCms\Models\Term;
 use FrankenCms\Services\ContentResolver;
 use FrankenCms\Services\RouteHandler;
 use FrankenCms\Settings\ReadingSettings;
@@ -41,6 +43,11 @@ class RouteController
             return $this->handleBlogListingPage();
         }
 
+        // Check if this is a taxonomy archive (category/slug or tag/slug)
+        if ($this->isTaxonomyArchivePath($path)) {
+            return $this->handleTaxonomyArchive($path);
+        }
+
         // Check if this is a specific post (post_page with a slug)
         if ($this->contentResolver->isPostPath($path)) {
             return $this->handlePostPath($path, $request);
@@ -71,6 +78,7 @@ class RouteController
         // Get posts for the listing
         $posts = \FrankenCms\Models\Post::where('post_type', 'post')
             ->where('post_status', 'published')
+            ->with(['author', 'categories', 'media'])
             ->orderBy('post_published_at', 'desc')
             ->paginate($this->settings->posts_per_page ?? 10);
 
@@ -97,5 +105,53 @@ class RouteController
     private function isRootPath(string $path): bool
     {
         return $path === '' || $path === '/';
+    }
+
+    private function isTaxonomyArchivePath(string $path): bool
+    {
+        // Check if path matches {taxonomy}/{slug} pattern
+        $parts = explode('/', $path);
+
+        if (count($parts) !== 2) {
+            return false;
+        }
+
+        [$taxonomyName, $slug] = $parts;
+
+        // Check if the taxonomy exists
+        $taxonomy = Taxonomy::where('name', $taxonomyName)->first();
+
+        return $taxonomy !== null;
+    }
+
+    private function handleTaxonomyArchive(string $path)
+    {
+        [$taxonomyName, $slug] = explode('/', $path);
+
+        // Find the taxonomy and term
+        $taxonomy = Taxonomy::where('name', $taxonomyName)->firstOrFail();
+        $term = Term::where('taxonomy_id', $taxonomy->id)
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        // Get posts that have this term
+        $posts = $term->posts()
+            ->where('post_status', 'published')
+            ->with(['author', 'categories', 'media'])
+            ->orderBy('post_published_at', 'desc')
+            ->paginate($this->settings->posts_per_page ?? 10);
+
+        $themeFolder = config('franken-cms.theme_folder');
+
+        // Try taxonomy-specific template first (e.g., 'archive-category', 'archive-tag')
+        $specificView = sprintf('%s.archive-%s', $themeFolder, $taxonomyName);
+
+        // Then try generic archive template
+        $genericView = sprintf('%s.archive', $themeFolder);
+
+        // Determine which view to use
+        $view = view()->exists($specificView) ? $specificView : $genericView;
+
+        return view($view, compact('term', 'taxonomy', 'posts'));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace FrankenCms\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +11,8 @@ class Term extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'slug', 'taxonomy_id', 'parent_id', 'description'];
+
+    protected $appends = ['url'];
 
     public function taxonomy()
     {
@@ -40,6 +43,26 @@ class Term extends Model
     public function pages()
     {
         return $this->morphedByMany(Page::class, 'termable');
+    }
+
+    /**
+     * Get the URL for the term's archive page
+     */
+    public function url(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                // Load taxonomy if not already loaded
+                if (! $this->relationLoaded('taxonomy')) {
+                    $this->load('taxonomy');
+                }
+
+                $taxonomyName = $this->taxonomy->name ?? 'term';
+
+                // Generate URL like /category/slug or /tag/slug
+                return url("/{$taxonomyName}/{$this->slug}");
+            }
+        );
     }
 
     /**
