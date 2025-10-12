@@ -36,14 +36,45 @@ class RouteController
             return redirect('/');
         }
 
-        if ($this->contentResolver->isPostPath($path)) {
+        // Check if this is the blog listing page (post_page without a slug)
+        if ($this->settings->post_page && $path === $this->settings->post_page) {
+            return $this->handleBlogListingPage();
+        }
 
+        // Check if this is a specific post (post_page with a slug)
+        if ($this->contentResolver->isPostPath($path)) {
             return $this->handlePostPath($path, $request);
         }
 
         // Attempt to resolve as a page
         return $this->contentResolver->resolvePage($path);
 
+    }
+
+    private function handleBlogListingPage()
+    {
+        // Get the page set as the post_page to determine its template
+        $postPageSlug = $this->settings->post_page;
+        $page = Page::where('post_slug', $postPageSlug)->first();
+
+        $themeFolder = config('franken-cms.theme_folder');
+
+        // Use the page's template if it exists, otherwise default to 'page-blog'
+        $template = $page?->template ?? 'page-blog';
+        $view = sprintf('%s.%s', $themeFolder, $template);
+
+        // Fallback to page-blog if the specific template doesn't exist
+        if (! view()->exists($view)) {
+            $view = sprintf('%s.page-blog', $themeFolder);
+        }
+
+        // Get posts for the listing
+        $posts = \FrankenCms\Models\Post::where('post_type', 'post')
+            ->where('post_status', 'published')
+            ->orderBy('post_published_at', 'desc')
+            ->paginate($this->settings->posts_per_page ?? 10);
+
+        return view($view, compact('posts', 'page'));
     }
 
     private function handlePostPath(string $path, Request $request)
