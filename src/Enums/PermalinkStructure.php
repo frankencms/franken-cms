@@ -9,11 +9,10 @@ use Filament\Support\Contracts\HasLabel;
 
 enum PermalinkStructure: string implements HasDescription, HasLabel
 {
-    case PLAIN = '?p=123';                          // Example: ?p=123
+    case POST_NAME = '/%postname%/';                // Example: /sample-post/
     case DAY_AND_NAME = '/%year%/%monthnum%/%day%/%postname%/'; // Example: /2025/01/26/sample-post/
     case MONTH_AND_NAME = '/%year%/%monthnum%/%postname%/';      // Example: /2025/01/sample-post/
-    case NUMERIC = '/archives/%post_id%';           // Example: /archives/123
-    case POST_NAME = '/%postname%/';                // Example: /sample-post/
+    case NUMERIC = '/%post_id%';                    // Example: /123
     case CUSTOM = 'custom';                               // Custom structure defined dynamically
 
     /**
@@ -42,11 +41,10 @@ enum PermalinkStructure: string implements HasDescription, HasLabel
     public function getExample(): string
     {
         return match ($this) {
-            self::PLAIN          => '/?p=123',
+            self::POST_NAME      => '/sample-post/',
             self::DAY_AND_NAME   => '/2025/01/26/sample-post/',
             self::MONTH_AND_NAME => '/2025/01/sample-post/',
-            self::NUMERIC        => '/archives/123',
-            self::POST_NAME      => '/sample-post/',
+            self::NUMERIC        => '/123',
             self::CUSTOM         => '/your-custom-structure/',
         };
     }
@@ -54,11 +52,10 @@ enum PermalinkStructure: string implements HasDescription, HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::PLAIN          => 'Plain',
+            self::POST_NAME      => 'Post Name',
             self::DAY_AND_NAME   => 'Day and Name',
             self::MONTH_AND_NAME => 'Month and Name',
             self::NUMERIC        => 'Numeric',
-            self::POST_NAME      => 'Post Name',
             self::CUSTOM         => 'Custom',
         };
 
@@ -67,11 +64,10 @@ enum PermalinkStructure: string implements HasDescription, HasLabel
     public function getDescription(): ?string
     {
         return match ($this) {
-            self::PLAIN          => url('/?p=123'),
+            self::POST_NAME      => url('/sample-post/'),
             self::DAY_AND_NAME   => url('/2025/01/26/sample-post/'),
             self::MONTH_AND_NAME => url('/2025/01/sample-post/'),
-            self::NUMERIC        => url('/archives/123'),
-            self::POST_NAME      => url('/sample-post/'),
+            self::NUMERIC        => url('/123'),
             self::CUSTOM         => 'Custom structure defined dynamically',
         };
     }

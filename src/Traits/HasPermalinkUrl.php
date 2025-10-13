@@ -27,11 +27,10 @@ trait HasPermalinkUrl
 
                 // Switch to format the URL based on the structure
                 return match ($permalinkStructure) {
-                    PermalinkStructure::PLAIN->value          => $this->getPlainUrl(),
+                    PermalinkStructure::POST_NAME->value      => $this->getFormattedUrl('/%postname%/'),
                     PermalinkStructure::DAY_AND_NAME->value   => $this->getFormattedUrl('/%year%/%monthnum%/%day%/%postname%'),
                     PermalinkStructure::MONTH_AND_NAME->value => $this->getFormattedUrl('/%year%/%monthnum%/%postname%'),
-                    PermalinkStructure::NUMERIC->value        => $this->getFormattedUrl('/archives/%post_id%'),
-                    PermalinkStructure::POST_NAME->value      => $this->getFormattedUrl('/%postname%/'),
+                    PermalinkStructure::NUMERIC->value        => $this->getFormattedUrl('/%post_id%'),
                     PermalinkStructure::CUSTOM->value         => $this->getCustomUrl(),
                     default                                   => url('/'), // Fallback to base URL
                 };
@@ -45,15 +44,6 @@ trait HasPermalinkUrl
     private function getPageUrl(): string
     {
         return $this->getHierarchicalPath();
-    }
-
-    /**
-     * Generate "Plain" permalink structure: ?p=123
-     */
-    private function getPlainUrl(): string
-    {
-        //        return url('/?p=' . $this->id); // Use the post ID for plain URLs
-        return '/?p=' . $this->id; // Use the post ID for plain URLs
     }
 
     /**

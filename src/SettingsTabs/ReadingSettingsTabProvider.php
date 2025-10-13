@@ -32,7 +32,7 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
                             )
                             ->searchable()
                             ->nullable()
-                            ->helperText('Select which page should be your homepage. If none is selected, the theme will determine the homepage content.')
+                            ->helperText('Select which page should be your homepage. If none is selected, the theme\'s welcome page will be displayed.')
                             ->columnSpan(2),
 
                         Select::make('post_page')

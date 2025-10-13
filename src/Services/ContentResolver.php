@@ -20,25 +20,35 @@ readonly class ContentResolver
     public function resolveHomePage(): View
     {
         $homePage = $this->readingSettings->home_page;
-        if (! $homePage) {
-            abort(404);
+
+        // If a specific homepage is set, use it
+        if ($homePage) {
+            $page = Page::where('post_slug', $homePage)->firstOrFail();
+            return TemplateResolver::resolve($page);
         }
 
-        $page = Page::where('post_slug', $homePage)->firstOrFail();
-        return TemplateResolver::resolve($page);
+        // If no homepage is set, look for the theme's welcome/setup template
+        $themeFolder = config('franken-cms.theme_folder');
+        $welcomeView = sprintf('%s.welcome', $themeFolder);
+
+        if (view()->exists($welcomeView)) {
+            return view($welcomeView);
+        }
+
+        // If no welcome template exists, 404
+        abort(404, 'No homepage configured. Please set a homepage in Settings > Reading.');
     }
 
     public function resolvePost(string $slug, ?string $queryId = null): ?Post
     {
 
         $post = match ($this->permalinkSettings->permalink_structure) {
-            PermalinkStructure::PLAIN->value => $this->findPostById($queryId),
-            PermalinkStructure::DAY_AND_NAME->value,
-            PermalinkStructure::MONTH_AND_NAME->value,
-            PermalinkStructure::POST_NAME->value => $this->findPostBySlug($slug),
-            PermalinkStructure::NUMERIC->value   => $this->findPostById($this->getLastSegment($slug)),
-            PermalinkStructure::CUSTOM->value    => $this->findByCustomPermalink($slug),
-            default                              => null,
+            PermalinkStructure::POST_NAME->value      => $this->findPostBySlug($slug),
+            PermalinkStructure::DAY_AND_NAME->value   => $this->findPostBySlug($this->getLastSegment($slug)),
+            PermalinkStructure::MONTH_AND_NAME->value => $this->findPostBySlug($this->getLastSegment($slug)),
+            PermalinkStructure::NUMERIC->value        => $this->findPostById($this->getLastSegment($slug)),
+            PermalinkStructure::CUSTOM->value         => $this->findByCustomPermalink($slug),
+            default                                   => null,
         };
 
         if (! $post) {
