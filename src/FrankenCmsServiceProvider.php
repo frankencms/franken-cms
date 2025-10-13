@@ -12,6 +12,7 @@ use FrankenCms\Services\BladeFormDirectiveProcessor;
 use FrankenCms\Services\BladeFormDirectiveRegistry;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\MenuService;
+use FrankenCms\Services\PageRouteService;
 use FrankenCms\Services\PostService;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\View\Components\CmsField;
@@ -48,6 +49,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '10_seed_default_taxonomies',
                 '11_create_media_table',
                 '12_create_menus_table',
+                '13_add_hierarchy_and_routes_to_posts',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
@@ -72,12 +74,20 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         // Register the blade form directive processor
         $this->app->singleton(BladeFormDirectiveProcessor::class);
+
+        // Register the page route service
+        $this->app->singleton(PageRouteService::class);
     }
 
     public function packageBooted(): void
     {
         $this->app->singleton(CurrentPageService::class);
         $this->app->singleton(PostService::class);
+
+        // Register page routes
+        if (! $this->app->runningInConsole()) {
+            $this->app->make(PageRouteService::class)->registerPageRoutes();
+        }
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);

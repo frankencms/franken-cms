@@ -57,6 +57,8 @@ class Post extends Model implements HasMedia, HasRichContent
         'post_author_id',
         'post_type',
         'post_parent',
+        'parent_id',
+        'route_name',
     ];
 
     /**
@@ -120,6 +122,49 @@ class Post extends Model implements HasMedia, HasRichContent
         return $this->terms()->whereHas('taxonomy', function ($query) {
             $query->where('name', 'tag');
         });
+    }
+
+    /**
+     * Get the parent page (for hierarchical pages)
+     */
+    public function parent()
+    {
+        return $this->belongsTo(Post::class, 'parent_id');
+    }
+
+    /**
+     * Get all child pages (for hierarchical pages)
+     */
+    public function children()
+    {
+        return $this->hasMany(Post::class, 'parent_id');
+    }
+
+    /**
+     * Get all ancestors (parents, grandparents, etc.) in hierarchical order
+     */
+    public function ancestors()
+    {
+        $ancestors = collect();
+        $parent = $this->parent;
+
+        while ($parent) {
+            $ancestors->prepend($parent);
+            $parent = $parent->parent;
+        }
+
+        return $ancestors;
+    }
+
+    /**
+     * Get the full hierarchical path (e.g., /about/team/leadership)
+     */
+    public function getHierarchicalPath(): string
+    {
+        $segments = $this->ancestors()->pluck('post_slug')->toArray();
+        $segments[] = $this->post_slug;
+
+        return '/' . implode('/', $segments);
     }
 
     public function setUpRichContent(): void

@@ -16,6 +16,11 @@ trait HasPermalinkUrl
     {
         return Attribute::make(
             get: function () {
+                // Pages use hierarchical URLs (e.g., /about/team/leadership)
+                if ($this->post_type === 'page') {
+                    return $this->getPageUrl();
+                }
+
                 $settings = app(PermalinkSettings::class);
                 // Get the active permalink structure (you may need to load this from a config or settings table)
                 $permalinkStructure = $settings->permalink_structure;
@@ -32,6 +37,14 @@ trait HasPermalinkUrl
                 };
             }
         );
+    }
+
+    /**
+     * Generate hierarchical URL for pages
+     */
+    private function getPageUrl(): string
+    {
+        return $this->getHierarchicalPath();
     }
 
     /**

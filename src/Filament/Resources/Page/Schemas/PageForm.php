@@ -6,6 +6,7 @@ namespace FrankenCms\Filament\Resources\Page\Schemas;
 
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -48,6 +49,30 @@ class PageForm
                             ->required()
                             ->placeholder('Select a template')
                             ->helperText('The template cannot be changed once the page is saved since each template has its own set of custom fields.'),
+
+                        Select::make('parent_id')
+                            ->label('Parent Page')
+                            ->relationship('parent', 'post_title', function ($query, $record) {
+                                $query->where('post_type', 'page')
+                                    ->where('post_status', 'published');
+
+                                // Exclude current page from being its own parent
+                                if ($record) {
+                                    $query->where('id', '!=', $record->id);
+                                }
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->nullable()
+                            ->helperText('Select a parent page to create a hierarchical structure (e.g., /about/team).'),
+
+                        TextInput::make('route_name')
+                            ->label('Route Name (Optional)')
+                            ->unique('posts', 'route_name', ignoreRecord: true)
+                            ->nullable()
+                            ->alphaDash()
+                            ->helperText('Optional: Define a named route for this page (e.g., "about.team"). You can then use route("about.team") in templates.')
+                            ->placeholder('e.g., about.team'),
                     ]),
 
                 Section::make('Custom Template Fields')
