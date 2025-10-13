@@ -27,7 +27,7 @@ class PageRouteService
     protected function registerPage(array $page): void
     {
         Route::get($page['path'], function () use ($page) {
-            $post = Post::findOrFail($page['id']);
+            $post = Post::withoutGlobalScopes()->findOrFail($page['id']);
 
             $themeFolder = config('franken-cms.theme_folder');
             $template = $post->template ?? 'page';
@@ -48,7 +48,8 @@ class PageRouteService
     protected function getCachedPages(): array
     {
         return Cache::remember('franken_cms_page_routes', now()->addDay(), function () {
-            return Post::where('post_type', 'page')
+            return Post::withoutGlobalScopes()
+                ->where('post_type', 'page')
                 ->whereNotNull('route_name')
                 ->where('post_status', 'published')
                 ->get()

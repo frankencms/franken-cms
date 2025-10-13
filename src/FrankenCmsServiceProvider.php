@@ -84,11 +84,6 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->app->singleton(CurrentPageService::class);
         $this->app->singleton(PostService::class);
 
-        // Register page routes
-        if (! $this->app->runningInConsole()) {
-            $this->app->make(PageRouteService::class)->registerPageRoutes();
-        }
-
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
 

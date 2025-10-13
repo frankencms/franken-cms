@@ -52,15 +52,15 @@ class PageForm
 
                         Select::make('parent_id')
                             ->label('Parent Page')
-                            ->relationship('parent', 'post_title', function ($query, $record) {
-                                $query->where('post_type', 'page')
-                                    ->where('post_status', 'published');
-
-                                // Exclude current page from being its own parent
-                                if ($record) {
-                                    $query->where('id', '!=', $record->id);
-                                }
-                            })
+                            ->relationship(
+                                name: 'parent',
+                                titleAttribute: 'post_title',
+                                modifyQueryUsing: fn ($query, $livewire) => $query
+                                    ->where('post_type', 'page')
+                                    ->where('post_status', 'published')
+                                    ->when($livewire->record, fn ($q) => $q->where('id', '!=', $livewire->record->id))
+                            )
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->post_title)
                             ->searchable()
                             ->preload()
                             ->nullable()
@@ -71,7 +71,7 @@ class PageForm
                             ->unique('posts', 'route_name', ignoreRecord: true)
                             ->nullable()
                             ->alphaDash()
-                            ->helperText('Optional: Define a named route for this page (e.g., "about.team"). You can then use route("about.team") in templates.')
+                            ->helperText('Optional: Define a named route for this page (e.g., "about.team"). You can then use route("about.team") in templates. Note: Routes are only active for published pages.')
                             ->placeholder('e.g., about.team'),
                     ]),
 
