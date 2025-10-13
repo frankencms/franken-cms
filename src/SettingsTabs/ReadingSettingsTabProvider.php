@@ -8,7 +8,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Utilities\Get;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Models\Page;
 use FrankenCms\Settings\ReadingSettings;
@@ -25,38 +24,26 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
                     ->columns(3)
                     ->columnSpanFull()
                     ->schema([
-                        Radio::make('homepage_displays')
-                            ->live()
-                            ->inlineLabel()
-                            ->label('Your Homepage Displays')
-                            ->options([
-                                'latest_posts' => 'Your latest posts',
-                                'static_page'  => 'A static page (select below)',
-                            ])
-                            ->default('latest_posts')
-                            ->required()
-                            ->columnSpan(2),
-
                         Select::make('home_page')
                             ->label('Homepage')
                             ->inlineLabel()
-                            ->required(fn (Get $get) => $get('homepage_displays') === 'static_page')
-                            ->visible(fn (Get $get) => $get('homepage_displays') === 'static_page')
                             ->options(
                                 Page::query()->pluck('post_title', 'post_slug')
                             )
                             ->searchable()
+                            ->nullable()
+                            ->helperText('Select which page should be your homepage. If none is selected, the theme will determine the homepage content.')
                             ->columnSpan(2),
 
                         Select::make('post_page')
                             ->label('Posts Page')
                             ->inlineLabel()
-                            ->required(fn (Get $get) => $get('homepage_displays') === 'static_page')
-                            ->visible(fn (Get $get) => $get('homepage_displays') === 'static_page')
                             ->options(
                                 Page::query()->pluck('post_title', 'post_slug')->toArray()
                             )
                             ->searchable()
+                            ->nullable()
+                            ->helperText('Select which page should display your blog posts listing.')
                             ->columnSpan(2),
 
                         TextInput::make('posts_per_page')
