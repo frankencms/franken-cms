@@ -49,7 +49,7 @@ class PermalinkSettingsTabProvider implements SettingsTabProviderInterface
                                 Select::make('custom_permalink_structure')
                                     ->label('Custom Structure')
                                     ->visible(function (Get $get) {
-                                        return $get('permalink_structure') === PermalinkStructure::CUSTOM;
+                                        return $get('permalink_structure') === PermalinkStructure::CUSTOM->value;
                                     })
                                     ->inlineLabel()
                                     ->rules(['required_if:permalink_structure,' . PermalinkStructure::CUSTOM->value, new PermalinkContainsPostPlaceholder])

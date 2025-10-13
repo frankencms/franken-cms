@@ -55,7 +55,7 @@ trait HasPermalinkUrl
         $readingSettings = app(ReadingSettings::class);
 
         // Replace placeholders with actual values from the post
-        return '/' . $readingSettings->post_page . str_replace([
+        $url = str_replace([
             '%year%',
             '%monthnum%',
             '%day%',
@@ -78,6 +78,9 @@ trait HasPermalinkUrl
             $this->category->slug ?? 'uncategorized', // %category% (assuming a category relationship)
             str($this->author->name)->slug() ?? 'guest',           // %author% (assuming an author relationship)
         ], $structure);
+
+        // Build the final URL with proper slashes
+        return '/' . $readingSettings->post_page . '/' . ltrim($url, '/');
     }
 
     /**
