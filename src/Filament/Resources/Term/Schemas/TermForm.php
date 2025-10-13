@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Filament\Resources\Term\Schemas;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -25,6 +26,11 @@ class TermForm
                 TextInput::make('slug')
                     ->afterStateUpdated(fn (Set $set, $state) => $set('slug', Str::slug($state)))
                     ->unique(ignoreRecord: true),
+                Textarea::make('description')
+                    ->label('Description')
+                    ->rows(3)
+                    ->nullable()
+                    ->columnSpanFull(),
                 Select::make('taxonomy_id')
                     ->label('Taxonomy')
                     ->options(Taxonomy::all()->pluck('name', 'id'))

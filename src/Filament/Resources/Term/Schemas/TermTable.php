@@ -14,6 +14,10 @@ class TermTable
         return $table
             ->columns([
                 TextColumn::make('name')->sortable()->searchable(),
+                TextColumn::make('description')
+                    ->limit(50)
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('taxonomy.name')->label('Taxonomy')->sortable(),
                 TextColumn::make('parent.name')->label('Parent Term')->sortable(),
             ])
