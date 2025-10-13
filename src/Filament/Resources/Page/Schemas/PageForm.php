@@ -7,6 +7,7 @@ namespace FrankenCms\Filament\Resources\Page\Schemas;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -52,15 +53,17 @@ class PageForm
 
                         Select::make('parent_id')
                             ->label('Parent Page')
-                            ->relationship(
-                                name: 'parent',
-                                titleAttribute: 'post_title',
-                                modifyQueryUsing: fn ($query, $livewire) => $query
+                            ->options(function ($livewire) {
+                                $query = \FrankenCms\Models\Post::withoutGlobalScopes()
                                     ->where('post_type', 'page')
-                                    ->where('post_status', 'published')
-                                    ->when($livewire->record, fn ($q) => $q->where('id', '!=', $livewire->record->id))
-                            )
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->post_title)
+                                    ->where('post_status', 'published');
+
+                                if ($livewire->record) {
+                                    $query->where('id', '!=', $livewire->record->id);
+                                }
+
+                                return $query->pluck('post_title', 'id');
+                            })
                             ->searchable()
                             ->preload()
                             ->nullable()
