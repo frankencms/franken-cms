@@ -8,6 +8,8 @@ use Illuminate\View\View;
 
 class CmsFieldComposer
 {
+    protected static array $parsedFields = [];
+
     public function __construct(
         protected TemplateFieldParser $parser
     ) {}
@@ -26,8 +28,13 @@ class CmsFieldComposer
             return;
         }
 
-        // Parse the template to find all @cmsField directives
-        $fields = $this->parser->parseTemplate($viewPath);
+        // Use static in-memory cache for this request to avoid re-parsing
+        // (We can't use Laravel cache because field options contain closures)
+        if (! isset(static::$parsedFields[$viewPath])) {
+            static::$parsedFields[$viewPath] = $this->parser->parseTemplate($viewPath);
+        }
+
+        $fields = static::$parsedFields[$viewPath];
 
         if (empty($fields)) {
             return;

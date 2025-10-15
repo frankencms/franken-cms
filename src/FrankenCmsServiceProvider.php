@@ -186,16 +186,24 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                     // Repeater: add to collection but don't echo
                     return "<?php
                         if (!isset(\$cmsFields)) { \$cmsFields = collect(); view()->share('cmsFields', \$cmsFields); }
-                        \$cmsFields['{$varName}'] = _renderCmsField({$expression});
-                        view()->share('cmsFields', \$cmsFields);
+                        // Only render if not already populated by view composer
+                        if (!\$cmsFields->has('{$varName}')) {
+                            \$cmsFields['{$varName}'] = _renderCmsField({$expression});
+                            view()->share('cmsFields', \$cmsFields);
+                        }
                     ?>";
                 } else {
                     // Non-repeater: add to collection AND echo
                     return "<?php
                         if (!isset(\$cmsFields)) { \$cmsFields = collect(); view()->share('cmsFields', \$cmsFields); }
-                        \$_fieldValue = _renderCmsField({$expression});
-                        \$cmsFields['{$varName}'] = \$_fieldValue;
-                        view()->share('cmsFields', \$cmsFields);
+                        // Only render if not already populated by view composer
+                        if (!\$cmsFields->has('{$varName}')) {
+                            \$_fieldValue = _renderCmsField({$expression});
+                            \$cmsFields['{$varName}'] = \$_fieldValue;
+                            view()->share('cmsFields', \$cmsFields);
+                        } else {
+                            \$_fieldValue = \$cmsFields->get('{$varName}');
+                        }
                         echo \$_fieldValue;
                     ?>";
                 }
