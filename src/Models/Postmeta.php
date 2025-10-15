@@ -4,12 +4,10 @@ namespace FrankenCms\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PostMeta extends Model
+class Postmeta extends Model
 {
     /**
      * The table associated with the model.
-     *
-     * Since the table name is "postmeta", we define it explicitly.
      *
      * @var string
      */

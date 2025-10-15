@@ -14,10 +14,16 @@ class PageRouteService
      */
     public function registerPageRoutes(): void
     {
-        $pages = $this->getCachedPages();
+        try {
+            $pages = $this->getCachedPages();
 
-        foreach ($pages as $page) {
-            $this->registerPage($page);
+            foreach ($pages as $page) {
+                $this->registerPage($page);
+            }
+        } catch (\Throwable $e) {
+            // Silently fail if database tables don't exist yet (e.g., during tests or fresh install)
+            // This can happen when routes are registered before migrations run
+            return;
         }
     }
 

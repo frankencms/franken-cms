@@ -33,6 +33,8 @@ class TestCase extends Orchestra
             'database' => ':memory:',
             'prefix'   => '',
         ]);
+
+        config()->set('app.timezone', 'UTC');
     }
 
 
@@ -50,6 +52,7 @@ class TestCase extends Orchestra
             \Filament\Widgets\WidgetsServiceProvider::class,
             \Spatie\LaravelSettings\LaravelSettingsServiceProvider::class,
             FrankenCmsServiceProvider::class,
+            \FrankenCms\Tests\Support\TestPanelProvider::class,
         ];
     }
 }

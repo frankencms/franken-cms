@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Filament\Resources\Page\Schemas;
 
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -52,6 +53,7 @@ class PageForm
 
                         Select::make('parent_id')
                             ->label('Parent Page')
+                            ->live()
                             ->options(function ($livewire) {
                                 $query = \FrankenCms\Models\Post::withoutGlobalScopes()
                                     ->where('post_type', 'page')
@@ -67,6 +69,42 @@ class PageForm
                             ->preload()
                             ->nullable()
                             ->helperText('Select a parent page to create a hierarchical structure (e.g., /about/team).'),
+
+                        Placeholder::make('page_url_preview')
+                            ->label('Page URL')
+                            ->content(function (Get $get, $livewire) {
+                                $slug = $get('post_slug');
+                                $parentId = $get('parent_id');
+
+                                if (!$slug) {
+                                    return 'Enter a permalink to see the URL';
+                                }
+
+                                // Build hierarchical path
+                                $segments = [];
+                                if ($parentId) {
+                                    $parent = Page::withoutGlobalScopes()->find($parentId);
+                                    if ($parent) {
+                                        // Get all parent segments
+                                        $ancestors = $parent->ancestors();
+                                        foreach ($ancestors as $ancestor) {
+                                            $segments[] = $ancestor->post_slug;
+                                        }
+                                        $segments[] = $parent->post_slug;
+                                    }
+                                }
+                                $segments[] = $slug;
+
+                                $path = '/' . implode('/', $segments);
+                                $fullUrl = url($path);
+
+                                return new \Illuminate\Support\HtmlString(
+                                    '<a href="' . $fullUrl . '" target="_blank" class="text-primary-600 hover:underline">' .
+                                    $fullUrl .
+                                    '</a>'
+                                );
+                            })
+                            ->columnSpanFull(),
 
                         TextInput::make('route_name')
                             ->label('Route Name (Optional)')

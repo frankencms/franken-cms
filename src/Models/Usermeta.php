@@ -4,7 +4,7 @@ namespace FrankenCms\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserMeta extends Model
+class Usermeta extends Model
 {
     /**
      * The table associated with the model.

@@ -21,21 +21,5 @@ return new class extends Migration
             $table->unsignedBigInteger('post_parent')->default(0);
             $table->timestamps();
         });
-
-        Schema::create('post_metas', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('post_id')
-                ->constrained()
-                ->onDelete('cascade');
-            $table->string('meta_key');
-            $table->json('meta_value');
-            $table->timestamps();
-
-            // Unique constraint on post_id + meta_key combination
-            // This allows multiple posts to have the same meta_key,
-            // but prevents duplicate meta_keys for the same post
-            $table->unique(['post_id', 'meta_key']);
-        });
-
     }
 };

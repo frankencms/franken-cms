@@ -61,11 +61,59 @@ readonly class ContentResolver
 
     }
 
-    public function resolvePage(string $slug): View
+    public function resolvePage(string $path): View
     {
-        $page = Page::where('post_slug', $slug)->firstOrFail();
+        // Handle hierarchical pages (e.g., /about/team)
+        $segments = array_filter(explode('/', $path));
+
+        if (count($segments) === 1) {
+            // Simple single-level page
+            $page = Page::withoutGlobalScopes()
+                ->where('post_slug', $path)
+                ->where('post_status', 'published')
+                ->firstOrFail();
+        } else {
+            // Hierarchical page - traverse the path
+            $page = $this->resolveHierarchicalPage($segments);
+        }
+
+        // Ensure the final page is published
+        if ($page->post_status->value !== 'published') {
+            abort(404);
+        }
 
         return TemplateResolver::resolve($page);
+    }
+
+    /**
+     * Resolve a hierarchical page by traversing the path segments
+     */
+    private function resolveHierarchicalPage(array $segments): Page
+    {
+        $currentParentId = null;
+        $currentPage = null;
+
+        foreach ($segments as $slug) {
+            $query = Page::withoutGlobalScopes()->where('post_slug', $slug);
+
+            if ($currentParentId === null) {
+                // First segment - find root page with no parent
+                $query->whereNull('parent_id');
+            } else {
+                // Subsequent segments - find page with correct parent
+                $query->where('parent_id', $currentParentId);
+            }
+
+            $currentPage = $query->first();
+
+            if (!$currentPage) {
+                abort(404, "Page not found in hierarchy: {$slug}");
+            }
+
+            $currentParentId = $currentPage->id;
+        }
+
+        return $currentPage;
     }
 
     public function isPostPath(string $path): bool

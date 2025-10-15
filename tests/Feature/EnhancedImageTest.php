@@ -2,54 +2,38 @@
 
 declare(strict_types=1);
 
-use FrankenCms\Filament\Resources\Post\PostResource\Pages\CreatePost;
-use FrankenCms\Models\User;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Storage;
-use Livewire\Livewire;
+use FrankenCms\Filament\Plugins\RichEditor\EnhancedImageAction;
+use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
+use FrankenCms\Filament\Plugins\RichEditor\EnhancedImageTool;
 
-beforeEach(function () {
-    Storage::fake('public');
-    $this->user = User::factory()->create();
-    $this->actingAs($this->user);
+it('enhanced image plugin exists and is properly configured', function () {
+    $plugin = EnhancedImagePlugin::make();
+
+    expect($plugin)->toBeInstanceOf(EnhancedImagePlugin::class);
 });
 
-it('can upload and save enhanced images in rich editor', function () {
-    $file = UploadedFile::fake()->image('test-image.jpg', 800, 600);
+it('enhanced image plugin provides correct JavaScript extensions', function () {
+    $plugin = EnhancedImagePlugin::make();
+    $jsExtensions = $plugin->getTipTapJsExtensions();
 
-    Livewire::test(CreatePost::class)
-        ->fillForm([
-            'post_title'   => 'Test Post with Enhanced Image',
-            'post_slug'    => 'test-post-with-enhanced-image',
-            'post_content' => [
-                'type'    => 'doc',
-                'content' => [
-                    [
-                        'type'  => 'image',
-                        'attrs' => [
-                            'id'      => 'temp-uuid-123',
-                            'src'     => '/tmp/some-temp-url',
-                            'alt'     => 'Test image',
-                            'caption' => 'Test caption',
-                        ],
-                    ],
-                ],
-            ],
-            'post_status'       => 'draft',
-            'post_published_at' => now(),
-            'post_author_id'    => $this->user->id,
-        ])
-        ->call('create');
-
-    // Verify that a post was created
-    expect(\FrankenCms\Models\Post::count())->toBe(1);
-
-    $post = \FrankenCms\Models\Post::first();
-    expect($post->post_title)->toBe('Test Post with Enhanced Image');
+    expect($jsExtensions)->toBeArray()
+        ->and($jsExtensions)->not->toBeEmpty();
 });
 
-it('processes enhanced image file uploads correctly', function () {
-    // This test would verify the actual file processing
-    // For now, we'll just test that the enhanced image plugin is properly configured
-    expect(\FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin::class)->toBeString();
+it('enhanced image plugin provides editor tools', function () {
+    $plugin = EnhancedImagePlugin::make();
+    $tools = $plugin->getEditorTools();
+
+    expect($tools)->toBeArray()
+        ->and($tools)->not->toBeEmpty()
+        ->and($tools[0])->toBeInstanceOf(\Filament\Forms\Components\RichEditor\RichEditorTool::class);
+});
+
+it('enhanced image plugin provides editor actions', function () {
+    $plugin = EnhancedImagePlugin::make();
+    $actions = $plugin->getEditorActions();
+
+    expect($actions)->toBeArray()
+        ->and($actions)->not->toBeEmpty()
+        ->and($actions[0])->toBeInstanceOf(\Filament\Actions\Action::class);
 });

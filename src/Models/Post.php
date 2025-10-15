@@ -37,7 +37,7 @@ class Post extends Model implements HasMedia, HasRichContent
     /**
      * The model to use for meta data.
      */
-    protected string $metaModel = PostMeta::class;
+    protected string $metaModel = Postmeta::class;
 
     /**
      * The table associated with the model.
@@ -129,7 +129,7 @@ class Post extends Model implements HasMedia, HasRichContent
      */
     public function parent()
     {
-        return $this->belongsTo(Post::class, 'parent_id');
+        return $this->belongsTo(Post::class, 'parent_id')->withoutGlobalScopes();
     }
 
     /**
@@ -137,7 +137,7 @@ class Post extends Model implements HasMedia, HasRichContent
      */
     public function children()
     {
-        return $this->hasMany(Post::class, 'parent_id');
+        return $this->hasMany(Post::class, 'parent_id')->withoutGlobalScopes();
     }
 
     /**

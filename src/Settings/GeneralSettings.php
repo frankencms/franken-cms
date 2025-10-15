@@ -15,7 +15,7 @@ class GeneralSettings extends Settings
     public bool $membership = false;
     public ?string $new_user_default_role = UserRole::SUBSCRIBER->value;
     public ?string $language = null;
-    public ?string $timezone = 'UTC+0';
+    public ?string $timezone = 'UTC';
     public ?string $date_format = DateFormat::FULL_MONTH_DAY_YEAR->value;
     public ?string $custom_date_format = null;
     public ?string $time_format = TimeFormat::HOURS_12_MINUTES_LOWERCASE->value;
