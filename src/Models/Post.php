@@ -52,6 +52,7 @@ class Post extends Model implements HasMedia, HasRichContent
         'post_title',
         'post_slug',
         'post_content',
+        'custom_fields',
         'post_status',
         'post_published_at',
         'post_author_id',
@@ -80,13 +81,65 @@ class Post extends Model implements HasMedia, HasRichContent
     ];
 
     protected $with = ['meta'];
-    protected $appends = ['template'];
+    protected $appends = ['template', 'custom_fields'];
 
     public function template(): Attribute
     {
         return Attribute::make(
             get: fn () => $this->getMeta('template', $this->metaDefaults['template'] ?? 'post')
         );
+    }
+
+    /**
+     * Accessor for custom_fields
+     * Retrieves custom fields from within post_content
+     */
+    public function customFields(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $content = $this->post_content;
+
+                // If post_content is already an array with custom_fields, return it
+                if (is_array($content) && isset($content['custom_fields'])) {
+                    return $content['custom_fields'];
+                }
+
+                return [];
+            }
+        );
+    }
+
+    /**
+     * Boot the model and register model events
+     */
+    protected static function booted(): void
+    {
+        // Before saving, merge custom_fields into post_content
+        static::saving(function ($post) {
+            if ($post->isDirty('custom_fields')) {
+                $customFields = $post->getAttributes()['custom_fields'] ?? null;
+
+                if ($customFields !== null) {
+                    // Get existing post_content or initialize as empty array
+                    $content = $post->post_content ?? [];
+
+                    // Ensure post_content is an array
+                    if (! is_array($content)) {
+                        $content = [];
+                    }
+
+                    // Merge custom_fields into post_content
+                    $content['custom_fields'] = $customFields;
+
+                    // Set the updated post_content
+                    $post->post_content = $content;
+
+                    // Remove custom_fields from attributes since it's now in post_content
+                    unset($post->attributes['custom_fields']);
+                }
+            }
+        });
     }
 
     public function isPublished(): bool

@@ -30,7 +30,7 @@ class Page extends Post
     ];
 
     protected $with = ['meta'];
-    protected $appends = ['template'];
+    protected $appends = ['template', 'custom_fields'];
 
     public function template(): Attribute
     {

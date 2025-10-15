@@ -53,13 +53,21 @@ return [
 */
 
     'cms_fields' => [
-        //        'TextInput'    => \Filament\Forms\Components\TextInput::class,
-        //        'Textarea'     => \Filament\Forms\Components\Textarea::class,
-        //        'Select'       => \Filament\Forms\Components\Select::class,
-        //        'Checkbox'     => \Filament\Forms\Components\Checkbox::class,
-        //        'DatePicker'   => \Filament\Forms\Components\DatePicker::class,
-        // Add other mappings as needed...
-
+        'text'       => \Filament\Forms\Components\TextInput::class,
+        'textarea'   => \Filament\Forms\Components\Textarea::class,
+        'email'      => \Filament\Forms\Components\TextInput::class,
+        'url'        => \Filament\Forms\Components\TextInput::class,
+        'number'     => \Filament\Forms\Components\TextInput::class,
+        'select'     => \Filament\Forms\Components\Select::class,
+        'checkbox'   => \Filament\Forms\Components\Checkbox::class,
+        'toggle'     => \Filament\Forms\Components\Toggle::class,
+        'radio'      => \Filament\Forms\Components\Radio::class,
+        'file'       => \Filament\Forms\Components\FileUpload::class,
+        'image'      => \Filament\Forms\Components\FileUpload::class,
+        'repeater'   => \Filament\Forms\Components\Repeater::class,
+        'richEditor' => \Filament\Forms\Components\RichEditor::class,
+        'datePicker' => \Filament\Forms\Components\DatePicker::class,
+        'dateTimePicker' => \Filament\Forms\Components\DateTimePicker::class,
     ],
 
     /*

@@ -2,10 +2,12 @@
 
 namespace FrankenCms\Factories;
 
+use Filament\Schemas\Components\Section;
 use FilamentTiptapEditor\Enums\TiptapOutput;
 use FrankenCms\Registries\FieldRegistry;
 use FrankenCms\Services\CmsFieldParser;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TemplateFieldFactory
 {
@@ -24,41 +26,82 @@ class TemplateFieldFactory
         // Retrieve fields from the Field Registry.
         $fields = FieldRegistry::getFields();
 
-        $fieldMapping = config('franken-cms.cms_fields');
-        $formFields = [];
-
-        foreach ($fields as $identifier => $field) {
-            $type = $field['type'];
-            $properties = $field['properties'];
-
-            // Check if this field type has a mapped Filament class
-            if (! isset($fieldMapping[$type])) {
-                Log::warning("No mapping found for field type: {$type}");
-                continue;
-            }
-
-            // Get the class from the mapping and create an instance
-            $filamentClass = $fieldMapping[$type];
-            $fieldInstance = $filamentClass::make("post_content.{$identifier}");
-
-            // Add special properties for specific field types
-
-            // TODO: Update to use new editor
-
-            //            if ($type === 'TipTapEditor') {
-            //                $fieldInstance = $fieldInstance->output(TiptapOutput::Json);
-            //            }
-
-            // Configure field properties if supported
-            foreach ($properties as $method => $value) {
-                if (method_exists($fieldInstance, $method)) {
-                    $fieldInstance = $fieldInstance->$method($value);
-                }
-            }
-
-            $formFields[] = $fieldInstance;
+        if (empty($fields)) {
+            return [];
         }
 
-        return $formFields;
+        // Group fields by section (based on dot notation prefix)
+        $sections = static::groupFieldsBySection($fields);
+
+        $fieldMapping = config('franken-cms.cms_fields');
+        $formComponents = [];
+
+        foreach ($sections as $sectionName => $sectionFields) {
+            $sectionFieldComponents = [];
+
+            foreach ($sectionFields as $identifier => $field) {
+                $type = $field['type'];
+                $properties = $field['properties'];
+
+                // Check if this field type has a mapped Filament class
+                if (! isset($fieldMapping[$type])) {
+                    Log::warning("No mapping found for field type: {$type}");
+                    continue;
+                }
+
+                // Get the class from the mapping and create an instance
+                $filamentClass = $fieldMapping[$type];
+                $fieldInstance = $filamentClass::make("custom_fields.{$identifier}");
+
+                // Configure field properties if supported
+                foreach ($properties as $method => $value) {
+                    if (method_exists($fieldInstance, $method)) {
+                        // Handle special cases where value is an array that should be spread
+                        if (is_array($value) && in_array($method, ['schema', 'columns'])) {
+                            $fieldInstance = $fieldInstance->$method($value);
+                        } else {
+                            $fieldInstance = $fieldInstance->$method($value);
+                        }
+                    }
+                }
+
+                $sectionFieldComponents[] = $fieldInstance;
+            }
+
+            // Create a Filament Section for each group
+            if ($sectionName === 'general') {
+                // Don't wrap general fields in a section, add them directly
+                $formComponents = array_merge($formComponents, $sectionFieldComponents);
+            } else {
+                $formComponents[] = Section::make(Str::title(str_replace(['-', '_'], ' ', $sectionName)))
+                    ->schema($sectionFieldComponents)
+                    ->columns(2)
+                    ->collapsible();
+            }
+        }
+
+        return $formComponents;
+    }
+
+    /**
+     * Group fields by their section prefix (based on dot notation)
+     */
+    protected static function groupFieldsBySection(array $fields): array
+    {
+        $sections = [];
+
+        foreach ($fields as $identifier => $field) {
+            // Check if field uses dot notation
+            if (str_contains($identifier, '.')) {
+                $parts = explode('.', $identifier, 2);
+                $sectionName = $parts[0];
+            } else {
+                $sectionName = 'general';
+            }
+
+            $sections[$sectionName][$identifier] = $field;
+        }
+
+        return $sections;
     }
 }

@@ -25,37 +25,121 @@ class CmsFieldParser
             throw new Exception("Unable to read template file: {$templatePath}");
         }
 
-        // Regex pattern to match @cmsField directives.
-        $pattern = '/@cmsField\(\s*([\'"])(.*?)\1\s*,\s*([\'"])(.*?)\3\s*,\s*(\[[^\)]*\])\s*\)/ms';
+        // Parse @cmsField directives using a more robust method
+        $this->parseDirectives($templateContent);
+    }
 
-        // Regex pattern to match anonymous Blade component directives.
-        $anonymousPattern = '/<x-cms-field\s+name="([^"]+)"\s+type="([^"]+)"\s+:\s*properties="([^"]+)"\s*\/>/ms';
+    /**
+     * Parse @cmsField directives from template content
+     */
+    protected function parseDirectives(string $content): void
+    {
+        // Find all @cmsField( occurrences
+        $offset = 0;
+        while (($pos = strpos($content, '@cmsField(', $offset)) !== false) {
+            // Move past '@cmsField('
+            $start = $pos + 10;
 
-        // Match and process @cmsField directives.
-        if (preg_match_all($pattern, $templateContent, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
-                $identifier = $match[2];
-                $type = $match[4];
-                $arrayCode = $match[5];
+            // Extract the directive arguments by finding balanced parentheses
+            $result = $this->extractBalancedParentheses($content, $start);
 
-                // Evaluate the array code safely.
-                $properties = eval("return {$arrayCode};");
-                FieldRegistry::register($identifier, $type, $properties);
+            if ($result === null) {
+                $offset = $start;
+                continue;
+            }
+
+            [$arguments, $endPos] = $result;
+
+            // Parse the extracted arguments
+            $this->parseFieldArguments($arguments);
+
+            $offset = $endPos;
+        }
+    }
+
+    /**
+     * Extract content within balanced parentheses
+     */
+    protected function extractBalancedParentheses(string $content, int $start): ?array
+    {
+        $depth = 1;
+        $length = strlen($content);
+        $inString = false;
+        $stringChar = null;
+        $escaped = false;
+
+        for ($i = $start; $i < $length; $i++) {
+            $char = $content[$i];
+
+            // Handle escape sequences
+            if ($escaped) {
+                $escaped = false;
+                continue;
+            }
+
+            if ($char === '\\') {
+                $escaped = true;
+                continue;
+            }
+
+            // Handle string boundaries
+            if (($char === '"' || $char === "'") && !$inString) {
+                $inString = true;
+                $stringChar = $char;
+                continue;
+            }
+
+            if ($inString && $char === $stringChar) {
+                $inString = false;
+                $stringChar = null;
+                continue;
+            }
+
+            // Only count parentheses outside of strings
+            if (!$inString) {
+                if ($char === '(') {
+                    $depth++;
+                } elseif ($char === ')') {
+                    $depth--;
+                    if ($depth === 0) {
+                        // Found the closing parenthesis
+                        return [substr($content, $start, $i - $start), $i + 1];
+                    }
+                }
             }
         }
 
-        // Match and process anonymous Blade component directives.
-        if (preg_match_all($anonymousPattern, $templateContent, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
-                $identifier = $match[1];
-                $type = $match[2];
-                $arrayCode = $match[3];
+        return null;
+    }
 
+    /**
+     * Parse field arguments (name, type, options)
+     */
+    protected function parseFieldArguments(string $arguments): void
+    {
+        // Match: 'name', 'type', [options]
+        // The pattern now handles the first two quoted strings, then everything else is the options
+        if (preg_match('/^\s*([\'"])(.*?)\1\s*,\s*([\'"])(.*?)\3\s*,\s*(.+)$/s', $arguments, $matches)) {
+            $identifier = $matches[2];
+            $type = $matches[4];
+            $arrayCode = trim($matches[5]);
+
+            try {
                 // Evaluate the array code safely.
                 $properties = eval("return {$arrayCode};");
-                FieldRegistry::register($identifier, $type, $properties);
-            }
-        }
 
+                if (is_array($properties)) {
+                    FieldRegistry::register($identifier, $type, $properties);
+                }
+            } catch (\Throwable $e) {
+                // Log error but continue parsing other fields
+                \Log::warning("Failed to parse CMS field options for '{$identifier}': " . $e->getMessage());
+            }
+        } elseif (preg_match('/^\s*([\'"])(.*?)\1\s*,\s*([\'"])(.*?)\3\s*$/s', $arguments, $matches)) {
+            // Handle case with no options array
+            $identifier = $matches[2];
+            $type = $matches[4];
+            FieldRegistry::register($identifier, $type, []);
+        }
     }
 }

@@ -10,11 +10,14 @@ use FrankenCms\Commands\InstallCommand;
 use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
 use FrankenCms\Services\BladeFormDirectiveRegistry;
+use FrankenCms\Services\CmsFieldBuilder;
+use FrankenCms\Services\CmsFieldRenderer;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\MenuService;
 use FrankenCms\Services\PageRouteService;
 use FrankenCms\Services\PostService;
 use FrankenCms\Services\SettingsTabService;
+use FrankenCms\Services\TemplateFieldParser;
 use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
 use Illuminate\Foundation\Console\AboutCommand;
@@ -58,6 +61,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        // Load helpers file
+        require_once __DIR__ . '/helpers.php';
+
         // Register the settings tab registry as a singleton
         $this->app->singleton(SettingsTabRegistry::class);
 
@@ -77,6 +83,11 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         // Register the page route service
         $this->app->singleton(PageRouteService::class);
+
+        // Register custom field services
+        $this->app->singleton(CmsFieldRenderer::class);
+        $this->app->singleton(TemplateFieldParser::class);
+        $this->app->singleton(CmsFieldBuilder::class);
     }
 
     public function packageBooted(): void
@@ -152,6 +163,11 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register @endmenu directive
         Blade::directive('endmenu', function () {
             return '<?php unset($menuItems, $__menuSlug, $__menuService); ?>';
+        });
+
+        // Register @cmsField directive
+        Blade::directive('cmsField', function ($expression) {
+            return "<?php echo cmsField({$expression}); ?>";
         });
     }
 
