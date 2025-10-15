@@ -9,6 +9,7 @@ use Illuminate\View\View;
 class CmsFieldComposer
 {
     protected static array $parsedFields = [];
+    protected static array $fileTimestamps = [];
 
     public function __construct(
         protected TemplateFieldParser $parser
@@ -28,13 +29,26 @@ class CmsFieldComposer
             return;
         }
 
-        // Use static in-memory cache for this request to avoid re-parsing
-        // (We can't use Laravel cache because field options contain closures)
-        if (! isset(static::$parsedFields[$viewPath])) {
-            static::$parsedFields[$viewPath] = $this->parser->parseTemplate($viewPath);
-        }
+        // Check if caching is enabled
+        $cacheEnabled = config('franken-cms.cache_parsed_fields', true);
 
-        $fields = static::$parsedFields[$viewPath];
+        if ($cacheEnabled) {
+            // Use static in-memory cache with file modification time tracking
+            // This works safely in both traditional PHP and Octane/FrankenPHP
+            $currentMtime = filemtime($viewPath);
+
+            // Invalidate cache if file changed or not yet cached
+            if (! isset(static::$fileTimestamps[$viewPath]) ||
+                static::$fileTimestamps[$viewPath] !== $currentMtime) {
+                static::$parsedFields[$viewPath] = $this->parser->parseTemplate($viewPath);
+                static::$fileTimestamps[$viewPath] = $currentMtime;
+            }
+
+            $fields = static::$parsedFields[$viewPath];
+        } else {
+            // No caching - parse template on every request (useful for development)
+            $fields = $this->parser->parseTemplate($viewPath);
+        }
 
         if (empty($fields)) {
             return;

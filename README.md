@@ -17,8 +17,12 @@ together your perfect app and spark something extraordinary with Franken CMS! âš
 - [Features](#features)
   - [Dynamic Settings System](#dynamic-settings-system)
   - [Content Management](#content-management)
+  - [Template Field System](#template-field-system)
   - [Extensible Architecture](#extensible-architecture)
 - [Usage](#usage)
+  - [Basic Setup](#basic-setup)
+  - [Using Template Fields](#using-template-fields)
+  - [Adding Custom Settings Tab](#adding-custom-settings-tab)
 - [Documentation](#documentation)
 - [Testing](#testing)
 - [Contributing](#contributing)
@@ -88,6 +92,27 @@ Franken CMS features a powerful dynamic settings system that allows both the cor
 - **User Roles**: WordPress-style user roles and permissions
 - **Media Management**: Image handling with multiple size variants
 
+### Template Field System
+
+Franken CMS provides a powerful `@cmsField` directive that allows you to define editable fields directly in your Blade templates. All fields are automatically collected into a `$cmsFields` collection that's available throughout your template.
+
+**Key Features:**
+- **Pre-populated Collection**: All fields are available from the start of template rendering
+- **Multiple Access Methods**: Use `$cmsFields['heroTitle']`, `$cmsFields->get('heroTitle')`, or `cmsField('heroTitle')` helper
+- **Smart Caching**: Configurable in-memory caching with automatic invalidation on file changes
+- **Zero Duplicate Rendering**: Fields render once and are reused throughout the template
+- **Octane/FrankenPHP Compatible**: Works safely in persistent worker environments
+
+**Performance Configuration:**
+
+```bash
+# In your .env file
+CMS_CACHE_PARSED_FIELDS=true  # Production (default)
+CMS_CACHE_PARSED_FIELDS=false # Development (instant template updates)
+```
+
+The caching system uses file modification time tracking to automatically invalidate cached fields when templates change, making it safe for both traditional PHP-FPM and Laravel Octane/FrankenPHP environments.
+
 ### Extensible Architecture
 
 - **Plugin System**: Easy integration for external packages
@@ -108,6 +133,43 @@ echo $generalSettings->title; // Site title
 $currentPage = app(\FrankenCms\Services\CurrentPageService::class);
 $page = $currentPage->getCurrentPage();
 ```
+
+### Using Template Fields
+
+```blade
+{{-- Define fields in your Blade templates --}}
+<h1>
+    @cmsField('hero.title', 'text', [
+        'label' => 'Hero Title',
+        'default' => 'Welcome to my site',
+        'maxLength' => 100
+    ])
+</h1>
+
+{{-- Access fields anywhere in the template (before or after definition) --}}
+<meta property="og:title" content="{{ cmsField('hero.title') }}">
+
+{{-- Use repeater fields --}}
+@cmsField('features.items', 'repeater', [
+    'label' => 'Features',
+    'schema' => [
+        ['name' => 'title', 'type' => 'text', 'label' => 'Title'],
+        ['name' => 'description', 'type' => 'textarea', 'label' => 'Description']
+    ]
+])
+
+@foreach ($cmsFields['featuresItems'] ?? [] as $feature)
+    <div>
+        <h3>{{ $feature['custom_fields']['title'] }}</h3>
+        <p>{{ $feature['custom_fields']['description'] }}</p>
+    </div>
+@endforeach
+```
+
+**Access Methods:**
+- `$cmsFields['heroTitle']` - Direct array access
+- `$cmsFields->get('heroTitle')` - Collection method
+- `cmsField('heroTitle')` or `cmsField('hero.title')` - Helper function (supports both camelCase and dot notation)
 
 ### Adding Custom Settings Tab
 

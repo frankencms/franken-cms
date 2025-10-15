@@ -33,6 +33,21 @@ return [
 
     'menu_cache' => 3600, // Cache TTL in seconds (default: 1 hour)
 
+    /*
+    |--------------------------------------------------------------------------
+    | CMS Field Parsing Cache
+    |--------------------------------------------------------------------------
+    |
+    | Enable in-memory caching of parsed template fields. When enabled,
+    | template files are parsed once per request and cached. The cache
+    | automatically invalidates when template files are modified.
+    |
+    | Recommended: true for production, false for local development
+    |
+    */
+
+    'cache_parsed_fields' => env('CMS_CACHE_PARSED_FIELDS', true),
+
     'rich_editor' => [
         'custom_text_colors' => [
             'brand'     => TextColor::make(label: 'Brand', color: '#919831'),
