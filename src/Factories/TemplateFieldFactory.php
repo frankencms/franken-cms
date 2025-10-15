@@ -5,6 +5,7 @@ namespace FrankenCms\Factories;
 use Filament\Schemas\Components\Section;
 use FilamentTiptapEditor\Enums\TiptapOutput;
 use FrankenCms\Registries\FieldRegistry;
+use FrankenCms\Services\CmsFieldBuilder;
 use FrankenCms\Services\CmsFieldParser;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -56,8 +57,14 @@ class TemplateFieldFactory
                 // Configure field properties if supported
                 foreach ($properties as $method => $value) {
                     if (method_exists($fieldInstance, $method)) {
-                        // Handle special cases where value is an array that should be spread
-                        if (is_array($value) && in_array($method, ['schema', 'columns'])) {
+                        // Special handling for 'schema' - build fields from mixed definitions
+                        if ($method === 'schema' && is_array($value)) {
+                            $fieldBuilder = app(CmsFieldBuilder::class);
+                            $builtSchema = $fieldBuilder->buildSchema($value);
+                            $fieldInstance = $fieldInstance->schema($builtSchema);
+                        }
+                        // Handle other array values that should be spread
+                        elseif (is_array($value) && in_array($method, ['columns'])) {
                             $fieldInstance = $fieldInstance->$method($value);
                         } else {
                             $fieldInstance = $fieldInstance->$method($value);
