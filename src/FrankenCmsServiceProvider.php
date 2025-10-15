@@ -21,8 +21,10 @@ use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Services\TemplateFieldParser;
 use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
+use FrankenCms\View\Composers\CmsFieldComposer;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\View;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -98,6 +100,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
+
+        // Register view composer to pre-populate CMS fields
+        $this->registerCmsFieldComposer();
 
         // Register theme components directory
         // This allows themes to have their own self-contained components
@@ -199,6 +204,13 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             // Fallback - just echo
             return "<?php echo _renderCmsField({$expression}); ?>";
         });
+    }
+
+    private function registerCmsFieldComposer(): void
+    {
+        // Register the composer for all views
+        // The composer itself will check if it's a theme template
+        View::composer('*', CmsFieldComposer::class);
     }
 
     private function registerAboutInfo(): void
