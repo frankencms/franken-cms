@@ -3,6 +3,7 @@
 namespace FrankenCms;
 
 use Composer\InstalledVersions;
+use Exception;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
@@ -144,7 +145,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         if (is_dir($componentsPath)) {
             Blade::anonymousComponentPath(
                 $componentsPath,
-                "theme"
+                'theme'
             );
         }
     }
@@ -166,22 +167,37 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         });
 
         // Register @cmsField directive
-        // For repeaters: assigns to a variable (e.g., $items = cmsField(...))
-        // For other fields: echoes the value (e.g., echo cmsField(...))
+        // Adds all fields to $cmsFields collection and echoes non-repeater fields
         Blade::directive('cmsField', function ($expression) {
-            // Try to detect if this is a repeater field by checking the second parameter
-            if (preg_match("/^[^,]+,\s*['\"]repeater['\"]/", $expression)) {
-                // It's a repeater - extract field name and generate variable name
-                if (preg_match("/^['\"]([^'\"]+)['\"]/", $expression, $matches)) {
-                    $fieldName = $matches[1];
-                    $varName = cmsFieldVariableName($fieldName);
+            // Extract field name from expression
+            if (preg_match("/^['\"]([^'\"]+)['\"]/", $expression, $matches)) {
+                $fieldName = $matches[1];
+                $varName = cmsFieldVariableName($fieldName);
 
-                    return "<?php \${$varName} = cmsField({$expression}); ?>";
+                // Check if it's a repeater
+                $isRepeater = preg_match("/^[^,]+,\s*['\"]repeater['\"]/", $expression);
+
+                if ($isRepeater) {
+                    // Repeater: add to collection but don't echo
+                    return "<?php
+                        if (!isset(\$cmsFields)) { \$cmsFields = collect(); view()->share('cmsFields', \$cmsFields); }
+                        \$cmsFields['{$varName}'] = _renderCmsField({$expression});
+                        view()->share('cmsFields', \$cmsFields);
+                    ?>";
+                } else {
+                    // Non-repeater: add to collection AND echo
+                    return "<?php
+                        if (!isset(\$cmsFields)) { \$cmsFields = collect(); view()->share('cmsFields', \$cmsFields); }
+                        \$_fieldValue = _renderCmsField({$expression});
+                        \$cmsFields['{$varName}'] = \$_fieldValue;
+                        view()->share('cmsFields', \$cmsFields);
+                        echo \$_fieldValue;
+                    ?>";
                 }
             }
 
-            // For non-repeater fields, echo the value
-            return "<?php echo cmsField({$expression}); ?>";
+            // Fallback - just echo
+            return "<?php echo _renderCmsField({$expression}); ?>";
         });
     }
 
@@ -193,9 +209,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
                 AboutCommand::add('🧟 FRANKEN CMS - Alive & Wel', fn () => [
 
-
-                    'Version' => InstalledVersions::getPrettyVersion('frankencms/franken-cms') ?? 'Unknown',
-                    'Theme' => config('franken-cms.theme_folder', 'theme'),
+                    'Version'          => InstalledVersions::getPrettyVersion('frankencms/franken-cms') ?? 'Unknown',
+                    'Theme'            => config('franken-cms.theme_folder', 'theme'),
                     'Theme Components' => function (): string {
                         $themeFolder = config('franken-cms.theme_folder', 'theme');
                         $componentsPath = resource_path("views/{$themeFolder}/components");
@@ -206,10 +221,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
                             if ($count > 0) {
                                 $names = collect($components)
-                                    ->map(fn($path) => basename($path, '.blade.php'))
+                                    ->map(fn ($path) => basename($path, '.blade.php'))
                                     ->take(5)
                                     ->join(', ');
-                                $extra = $count > 5 ? " (+".($count - 5)." more)" : "";
+                                $extra = $count > 5 ? ' (+' . ($count - 5) . ' more)' : '';
                                 return "<fg=green;options=bold>{$count} registered:</> {$names}{$extra}";
                             }
                             return '<fg=yellow>No components found</>';
@@ -225,11 +240,11 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
                             if ($count > 0) {
                                 $tabNames = collect($tabs)->keys()->take(3)->join(', ');
-                                $extra = $count > 3 ? " (+".($count - 3)." more)" : "";
+                                $extra = $count > 3 ? ' (+' . ($count - 3) . ' more)' : '';
                                 return "<fg=green;options=bold>{$count} tab(s):</> {$tabNames}{$extra}";
                             }
                             return '<fg=yellow>None registered</>';
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             return '<fg=gray>N/A</>';
                         }
                     },
@@ -240,12 +255,18 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                             $pages = \FrankenCms\Models\Post::where('type', 'page')->count();
 
                             $parts = [];
-                            if ($published > 0) $parts[] = "<fg=green>{$published} published</>";
-                            if ($draft > 0) $parts[] = "<fg=yellow>{$draft} draft</>";
-                            if ($pages > 0) $parts[] = "<fg=cyan>{$pages} pages</>";
+                            if ($published > 0) {
+                                $parts[] = "<fg=green>{$published} published</>";
+                            }
+                            if ($draft > 0) {
+                                $parts[] = "<fg=yellow>{$draft} draft</>";
+                            }
+                            if ($pages > 0) {
+                                $parts[] = "<fg=cyan>{$pages} pages</>";
+                            }
 
                             return $parts ? implode(' • ', $parts) : '<fg=gray>No content</>';
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             return '<fg=gray>N/A</>';
                         }
                     },
@@ -258,7 +279,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                                 return "<fg=green;options=bold>{$taxonomies} taxonomies</> with <fg=green;options=bold>{$terms} terms</>";
                             }
                             return '<fg=yellow>None configured</>';
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             return '<fg=gray>N/A</>';
                         }
                     },
@@ -270,29 +291,29 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
                             if ($count > 0) {
                                 $names = $menus->pluck('slug')->take(3)->join(', ');
-                                $extra = $count > 3 ? " (+".($count - 3)." more)" : "";
+                                $extra = $count > 3 ? ' (+' . ($count - 3) . ' more)' : '';
                                 return "<fg=green;options=bold>{$count} menu(s):</> {$names}{$extra}";
                             }
                             return '<fg=yellow>No menus</>';
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             return '<fg=gray>N/A</>';
                         }
                     },
                     'Custom Blade Directives' => '<fg=green;options=bold>@menu</>, <fg=green;options=bold>@endmenu</>, <fg=green;options=bold>@cmsField</>',
-                    'Filament Components' => function (): string {
+                    'Filament Components'     => function (): string {
                         $components = [
                             'Enhanced Image Editor',
                             'Focal Point Picker',
-                            'Featured Image Picker'
+                            'Featured Image Picker',
                         ];
-                        return '<fg=cyan>'.implode('</>, <fg=cyan>', $components).'</>';
+                        return '<fg=cyan>' . implode('</>, <fg=cyan>', $components) . '</>';
                     },
                     'Blade Components' => '<fg=cyan><x-cms-field /></>, <fg=cyan><x-cms-post /></>',
 
-                    'Routes Cached' => fn() => app()->routesAreCached()
+                    'Routes Cached' => fn () => app()->routesAreCached()
                         ? '<fg=green;options=bold>YES</>'
                         : '<fg=yellow;options=bold>NO</>',
-                    'Config Cached' => fn() => app()->configurationIsCached()
+                    'Config Cached' => fn () => app()->configurationIsCached()
                         ? '<fg=green;options=bold>YES</>'
                         : '<fg=yellow;options=bold>NO</>',
                     'Theme Path' => function (): string {
@@ -311,24 +332,21 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                     },
                 ]);
 
-
-
-
-//                AboutCommand::add('Franken CMS 🧟', [
-//                    'Version' => InstalledVersions::getPrettyVersion('frankencms/franken-cms'),
-//                    //                    'Plugins' => collect()
-//                    //                        ->join(', '),
-//                    //                    'XXXX' => function (): string {
-//                    //                        $publishedViewPaths = collect(array_keys(config('master-forms.components')))
-//                    //                            ->filter(fn (string $form): bool => is_dir(resource_path("views/vendor/{$form}")));
-//                    //
-//                    //                        if (! $publishedViewPaths->count()) {
-//                    //                            return '<fg=green;options=bold>NOT PUBLISHED</>';
-//                    //                        }
-//                    //
-//                    //                        return "<fg=red;options=bold>PUBLISHED:</> {$publishedViewPaths->join(', ')}";
-//                    //                    },
-//                ]);
+                //                AboutCommand::add('Franken CMS 🧟', [
+                //                    'Version' => InstalledVersions::getPrettyVersion('frankencms/franken-cms'),
+                //                    //                    'Plugins' => collect()
+                //                    //                        ->join(', '),
+                //                    //                    'XXXX' => function (): string {
+                //                    //                        $publishedViewPaths = collect(array_keys(config('master-forms.components')))
+                //                    //                            ->filter(fn (string $form): bool => is_dir(resource_path("views/vendor/{$form}")));
+                //                    //
+                //                    //                        if (! $publishedViewPaths->count()) {
+                //                    //                            return '<fg=green;options=bold>NOT PUBLISHED</>';
+                //                    //                        }
+                //                    //
+                //                    //                        return "<fg=red;options=bold>PUBLISHED:</> {$publishedViewPaths->join(', ')}";
+                //                    //                    },
+                //                ]);
 
             }
         }

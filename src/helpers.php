@@ -1,19 +1,51 @@
 <?php
 
 use FrankenCms\Helpers\TemplateHelper;
+use Illuminate\Support\Facades\View;
 
-if (! function_exists('cmsField')) {
+if (! function_exists('_renderCmsField')) {
     /**
-     * Render a CMS field value from the current page
+     * Internal: Render a CMS field value from the current page (called by blade directive)
      *
      * @param  string  $fieldName  The field name (supports dot notation)
      * @param  string  $fieldType  The field type (text, textarea, repeater, etc.)
      * @param  array  $options  Additional options (not used for rendering, only for admin)
      * @return mixed The rendered field value
      */
-    function cmsField(string $fieldName, string $fieldType = 'text', array $options = []): mixed
+    function _renderCmsField(string $fieldName, string $fieldType = 'text', array $options = []): mixed
     {
         return TemplateHelper::cmsField($fieldName, $fieldType, $options);
+    }
+}
+
+if (! function_exists('cmsField')) {
+    /**
+     * Retrieve a CMS field value from the $cmsFields collection
+     *
+     * Supports both camelCase and dot notation:
+     * - cmsField('heroTitle')
+     * - cmsField('hero.title')
+     *
+     * @param  string  $fieldName  The field name (camelCase or dot notation)
+     * @return mixed The field value or null if not found
+     */
+    function cmsField(string $fieldName): mixed
+    {
+        // Get the cmsFields collection from view data
+        $cmsFields = View::shared('cmsFields') ?? collect();
+
+        // Try camelCase version first
+        $camelCaseName = cmsFieldVariableName($fieldName);
+        if ($cmsFields->has($camelCaseName)) {
+            return $cmsFields->get($camelCaseName);
+        }
+
+        // Try original name as fallback
+        if ($cmsFields->has($fieldName)) {
+            return $cmsFields->get($fieldName);
+        }
+
+        return null;
     }
 }
 
