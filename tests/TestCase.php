@@ -35,6 +35,7 @@ class TestCase extends Orchestra
         ]);
 
         config()->set('app.timezone', 'UTC');
+        config()->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
     }
 
 

@@ -56,4 +56,12 @@ class SeoMedia extends Model implements HasMedia
     {
         return static::firstOrCreate(['id' => 1]);
     }
+
+    /**
+     * Get the media model class name
+     */
+    public function getMediaModel(): string
+    {
+        return config('media-library.media_model', \Spatie\MediaLibrary\MediaCollections\Models\Media::class);
+    }
 }

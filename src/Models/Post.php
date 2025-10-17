@@ -240,6 +240,14 @@ class Post extends Model implements HasMedia, HasRichContent
     }
 
     /**
+     * Get the media model class name
+     */
+    public function getMediaModel(): string
+    {
+        return config('media-library.media_model', \Spatie\MediaLibrary\MediaCollections\Models\Media::class);
+    }
+
+    /**
      * Register media collections for SEO images
      */
     public function registerMediaCollections(): void
