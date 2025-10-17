@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -236,6 +237,41 @@ class Post extends Model implements HasMedia, HasRichContent
                     ->preserveFilenames()
                     ->mediaName(fn (TemporaryUploadedFile $file): string => Str::random() . '_' . $file->getClientOriginalName())
             );
+    }
+
+    /**
+     * Register media collections for SEO images
+     */
+    public function registerMediaCollections(): void
+    {
+        // Featured image - use default behavior
+        $this->addMediaCollection('featured')
+            ->singleFile()
+            ->useDisk('public');
+
+        // SEO OpenGraph image - exact 1200x630 dimensions
+        $this->addMediaCollection('seo-og')
+            ->singleFile()
+            ->useDisk('public')
+            ->registerMediaConversions(function () {
+                $this->addMediaConversion('og')
+                    ->fit(Fit::Crop, 1200, 630)
+                    ->format('jpg')
+                    ->quality(85)
+                    ->performOnCollections('seo-og');
+            });
+
+        // SEO Twitter image - exact 1200x675 dimensions
+        $this->addMediaCollection('seo-twitter')
+            ->singleFile()
+            ->useDisk('public')
+            ->registerMediaConversions(function () {
+                $this->addMediaConversion('twitter')
+                    ->fit(Fit::Crop, 1200, 675)
+                    ->format('jpg')
+                    ->quality(85)
+                    ->performOnCollections('seo-twitter');
+            });
     }
 
     //    public function getRichContentAttribute(string $attribute): ?RichContentAttribute

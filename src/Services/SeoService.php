@@ -114,7 +114,7 @@ class SeoService
         // Check for post-specific OG image
         if ($post && $post->hasMedia('seo-og')) {
             $media = $post->getFirstMedia('seo-og');
-            return $media?->getFullUrl();
+            return $media?->getFullUrl('og');
         }
 
         // Check for default OG image from SeoMedia model
@@ -159,7 +159,7 @@ class SeoService
         // Check for post-specific Twitter image
         if ($post && $post->hasMedia('seo-twitter')) {
             $media = $post->getFirstMedia('seo-twitter');
-            return $media?->getFullUrl();
+            return $media?->getFullUrl('twitter');
         }
 
         // Check for default Twitter image from SeoMedia model

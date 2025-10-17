@@ -206,7 +206,11 @@ trait HasSeoFields
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios([
-                                '1.91:1', // 1200x630
+                                null, // Free crop
+                                '1.91:1', // 1200x630 (OG recommended)
+                                '16:9',
+                                '4:3',
+                                '1:1',
                             ])
                             ->maxSize(5120)
                             ->columnSpanFull(),
@@ -258,7 +262,11 @@ trait HasSeoFields
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios([
-                                '16:9', // 1200x675
+                                null, // Free crop
+                                '16:9', // 1200x675 (Twitter recommended)
+                                '1.91:1', // 1200x630 (OG)
+                                '4:3',
+                                '1:1',
                             ])
                             ->maxSize(5120)
                             ->columnSpanFull(),
