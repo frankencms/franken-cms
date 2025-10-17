@@ -77,6 +77,62 @@ if (! function_exists('cmsFieldVariableName')) {
     }
 }
 
+if (! function_exists('setting')) {
+    /**
+     * Retrieve a setting value from any settings class
+     *
+     * Usage:
+     * - setting('general.tagline')
+     * - setting('seo.site_name')
+     * - setting('reading.posts_per_page')
+     * - setting('general.tagline', 'Default Tagline')
+     *
+     * @param  string  $key  The setting key in format 'group.property'
+     * @param  mixed  $default  Default value if setting not found
+     * @return mixed The setting value or default
+     */
+    function setting(string $key, mixed $default = null): mixed
+    {
+        // Parse the key into group and property
+        $parts = explode('.', $key, 2);
+
+        if (count($parts) !== 2) {
+            return $default;
+        }
+
+        [$group, $property] = $parts;
+
+        // Map short group names to settings classes
+        $settingsMap = [
+            'general' => \FrankenCms\Settings\GeneralSettings::class,
+            'reading' => \FrankenCms\Settings\ReadingSettings::class,
+            'seo' => \FrankenCms\Settings\SeoSettings::class,
+            'media' => \FrankenCms\Settings\MediaSettings::class,
+            'permalink' => \FrankenCms\Settings\PermalinkSettings::class,
+        ];
+
+        // Check if the group exists
+        if (! isset($settingsMap[$group])) {
+            return $default;
+        }
+
+        try {
+            // Resolve the settings class
+            $settings = app($settingsMap[$group]);
+
+            // Return the property value if it exists
+            if (property_exists($settings, $property)) {
+                return $settings->{$property};
+            }
+
+            return $default;
+        } catch (\Exception $e) {
+            logger()->error("Failed to retrieve setting '{$key}': " . $e->getMessage());
+            return $default;
+        }
+    }
+}
+
 if (! function_exists('favicon_tags')) {
     /**
      * Get HTML tags for favicons

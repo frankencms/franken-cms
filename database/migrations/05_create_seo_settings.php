@@ -8,8 +8,13 @@ return new class extends SettingsMigration
     {
         // SEO Settings Group (franken-cms-seo)
         $this->migrator->add('franken-cms-seo.site_name', config('app.name', 'Franken CMS'));
-        $this->migrator->add('franken-cms-seo.site_tagline', '');
+        $this->migrator->add('franken-cms-seo.site_tagline', null);
+
+        // Title Configuration
+        $this->migrator->add('franken-cms-seo.append_site_name', true);
+        $this->migrator->add('franken-cms-seo.site_name_position', 'append');
         $this->migrator->add('franken-cms-seo.title_separator', '-');
+
         $this->migrator->add('franken-cms-seo.default_meta_description', null);
 
         // Canonical & Robots
@@ -18,16 +23,14 @@ return new class extends SettingsMigration
         $this->migrator->add('franken-cms-seo.default_robots_follow', 'follow');
 
         // OpenGraph
-        $this->migrator->add('franken-cms-seo.og_default_image', null);
         $this->migrator->add('franken-cms-seo.og_type', 'website');
         $this->migrator->add('franken-cms-seo.fb_app_id', null);
 
         // Twitter
         $this->migrator->add('franken-cms-seo.twitter_card_type', 'summary_large_image');
         $this->migrator->add('franken-cms-seo.twitter_username', null);
-        $this->migrator->add('franken-cms-seo.twitter_default_image', null);
 
         // Theme & Appearance
-        $this->migrator->add('franken-cms-seo.theme_color', '000000');
+        $this->migrator->add('franken-cms-seo.theme_color', null);
     }
 };
