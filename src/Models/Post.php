@@ -68,9 +68,17 @@ class Post extends Model implements HasMedia, HasRichContent
     protected array $metaFillable = [
         'template',
         'read_time',
+        'post_teaser',
+        // SEO Meta Fields
         'seo_title',
         'seo_description',
-        'post_teaser',
+        'seo_canonical_url',
+        'seo_robots_index',
+        'seo_robots_follow',
+        'seo_og_title',
+        'seo_og_description',
+        'seo_twitter_title',
+        'seo_twitter_description',
     ];
 
     /**

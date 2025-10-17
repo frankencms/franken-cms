@@ -4,17 +4,18 @@ namespace FrankenCms\Services;
 
 use FrankenCms\Contracts\CurrentPageInterface;
 use FrankenCms\Models\Page;
+use FrankenCms\Models\Post;
 
 class CurrentPageService implements CurrentPageInterface
 {
-    protected ?Page $page = null;
+    protected ?Post $page = null;
 
-    public function setPage(Page $page): void
+    public function setPage(Post $page): void
     {
         $this->page = $page;
     }
 
-    public function getPage(): ?Page
+    public function getPage(): ?Post
     {
         return $this->page;
     }

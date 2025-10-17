@@ -79,6 +79,12 @@ trait HasMeta
             return;
         }
 
+        // If value is null or empty string, delete the meta record
+        if ($value === null || $value === '') {
+            $this->deleteMeta($key);
+            return;
+        }
+
         $this->meta()->updateOrCreate(
             ['meta_key' => $key],
             ['meta_value' => $value]

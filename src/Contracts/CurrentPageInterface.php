@@ -2,11 +2,11 @@
 
 namespace FrankenCms\Contracts;
 
-use FrankenCms\Models\Page;
+use FrankenCms\Models\Post;
 
 interface CurrentPageInterface
 {
-    public function setPage(Page $page);
+    public function setPage(Post $page);
 
-    public function getPage();
+    public function getPage(): ?Post;
 }

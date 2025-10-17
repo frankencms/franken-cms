@@ -15,6 +15,7 @@ class MediaSettingsTabProvider implements SettingsTabProviderInterface
     public function getTab(): Tab
     {
         return Tab::make('Media')
+            ->icon('heroicon-o-photo')
             ->schema([
                 Section::make('Image Sizes')
                     ->description('The sizes listed below determine the maximum dimensions in pixels to use when adding an image to the Media Library.')

@@ -25,6 +25,7 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
     public function getTab(): Tab
     {
         return Tab::make(__('franken-cms::messages.settings.general.title'))
+            ->icon('heroicon-o-cog-6-tooth')
             ->schema([
                 Section::make(__('franken-cms::messages.settings.general.title'))
                     ->description(__('franken-cms::messages.settings.general.description'))

@@ -47,15 +47,18 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '02_create_reading_settings',
                 '03_create_media_settings',
                 '04_create_permalink_settings',
-                '05_create_posts_table',
-                '06_create_usermeta_table',
-                '07_create_taxonomies_table',
-                '08_create_terms_table',
-                '09_create_termables_table',
-                '10_seed_default_taxonomies',
-                '11_create_media_table',
-                '12_create_menus_table',
-                '13_add_hierarchy_and_routes_to_posts',
+                '05_create_seo_settings',
+                '06_create_posts_table',
+                '07_create_usermeta_table',
+                '08_create_taxonomies_table',
+                '09_create_terms_table',
+                '10_create_termables_table',
+                '11_seed_default_taxonomies',
+                '12_create_media_table',
+                '13_create_menus_table',
+                '14_create_postmeta_table',
+                '15_add_hierarchy_and_routes_to_posts',
+                '16_remove_homepage_displays_setting',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
@@ -91,12 +94,21 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->app->singleton(CmsFieldRenderer::class);
         $this->app->singleton(TemplateFieldParser::class);
         $this->app->singleton(CmsFieldBuilder::class);
+
+        // Register the SEO service provider
+        $this->app->register(\FrankenCms\Providers\SeoServiceProvider::class);
     }
 
     public function packageBooted(): void
     {
         $this->app->singleton(CurrentPageService::class);
         $this->app->singleton(PostService::class);
+
+        // Register middlewares to web group
+        $router = $this->app['router'];
+        // SetCurrentPage must run before AddSeoDefaults so the SEO service can access the current page
+        $router->pushMiddlewareToGroup('web', \FrankenCms\Http\Middleware\SetCurrentPage::class);
+        $router->pushMiddlewareToGroup('web', \FrankenCms\Http\Middleware\AddSeoDefaults::class);
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
@@ -140,6 +152,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         ], 'frankencms/franken-cms');
 
     }
+
 
     private function registerThemeComponents(): void
     {

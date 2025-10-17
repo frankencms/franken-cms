@@ -17,6 +17,7 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
     public function getTab(): Tab
     {
         return Tab::make('Reading')
+            ->icon('heroicon-o-book-open')
             ->columns(3)
             ->schema([
                 Section::make(__('franken-cms::messages.settings.reading.title'))

@@ -30,6 +30,7 @@ use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
 use FrankenCms\Filament\Plugins\RichEditor\SourceCodePlugin;
+use FrankenCms\Filament\Resources\Concerns\HasSeoFields;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Helpers\TemplateHelper;
 use FrankenCms\Models\Post;
@@ -39,6 +40,8 @@ use Livewire\Component;
 
 class PostForm
 {
+    use HasSeoFields;
+
     public static function make(Schema $schema): Schema
     {
         $settings = app(GeneralSettings::class);
@@ -46,160 +49,150 @@ class PostForm
 
         return $schema
             ->components([
-                Grid::make([
-                    'default' => 1,
-                    'sm'      => 1,
-                    'md'      => 6,
-                    'lg'      => 12,
-                ])
+                Tabs::make('Post Editor')
                     ->columnSpanFull()
-                    ->schema([
-                        Grid::make()
-                            ->columnSpan([
-                                'sm' => 1,
-                                'md' => 4,
-                                'lg' => 8,
-                            ])
+                    ->persistTabInQueryString()
+                    ->tabs([
+                        // Content Tab
+                        Tab::make('Content')
+                            ->icon('heroicon-o-document-text')
                             ->schema([
-                                Section::make(__('Post Details'))
-                                    ->columnSpanFull()
-                                    ->schema([
-                                        Hidden::make('post_type')
-                                            ->default(PostType::POST->value),
+                                Hidden::make('post_type')
+                                    ->default(PostType::POST->value),
 
-                                        TitleWithSlugInput::make(
-                                            fieldTitle: 'post_title',
-                                            fieldSlug: 'post_slug',
-                                            titleLabel: 'Post Name',
-                                            slugLabel: 'Permalink',
-                                            urlPath: sprintf('/%s/', $readingSettings->post_page ?? 'posts'),
-                                            slugRules: [
-                                                'required',
-                                                fn (?Post $record) => 'unique:posts,post_slug,' . ($record?->id ?? 'NULL') . ',id',
-                                            ],
-                                        ),
+                                TitleWithSlugInput::make(
+                                    fieldTitle: 'post_title',
+                                    fieldSlug: 'post_slug',
+                                    titleLabel: 'Post Name',
+                                    slugLabel: 'Permalink',
+                                    urlPath: sprintf('/%s/', $readingSettings->post_page ?? 'posts'),
+                                    slugRules: [
+                                        'required',
+                                        fn (?Post $record) => 'unique:posts,post_slug,' . ($record?->id ?? 'NULL') . ',id',
+                                    ],
+                                ),
 
-                                        Group::make()->schema([
-                                            Textarea::make('post_teaser')
-                                                ->helperText('A short excerpt or teaser for the blog post')
-                                                ->rows(3)
-                                                ->autosize()
-                                                ->afterStateHydrated(function ($component, $state, $record): void {
-                                                    if ($record) {
-                                                        $component->state($record->getMeta('post_teaser', ''));
-                                                    }
-                                                })
-                                                ->dehydrated(false)
-                                                ->afterStateUpdated(function ($state, $record): void {
-                                                    if ($record) {
-                                                        $record->setMeta('post_teaser', $state);
-                                                    }
-                                                }),
-                                            Actions::make([
-                                                Action::make('generate_teaser')
-                                                    ->label('Generate Teaser')
-                                                    ->icon('heroicon-o-sparkles')
-                                                // TODO: Abstract create teaser to action if prism is installed
-                                                ,
-                                            ]),
-
-                                        ]),
-
-                                        RichEditor::make('post_content')
-                                            ->live()
-                                            ->json()
-                                            ->plugins([
-                                                SourceCodePlugin::make(),
-                                                EnhancedImagePlugin::make(),
-                                            ])
-                                            ->fileAttachmentsDirectory('posts/images')
-                                            ->fileAttachmentsVisibility('public')
-                                            ->toolbarButtons([
-                                                // Text Formatting
-                                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'highlight', 'textColor'],
-
-                                                // Headings & Alignment
-                                                ['h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd'],
-
-                                                // Lists & Structure
-                                                ['bulletList', 'orderedList', 'blockquote', 'codeBlock', 'horizontalRule'],
-
-                                                // Advanced Elements
-                                                //                                                ['link', 'table', 'enhancedImage', 'details', 'attachFiles'],
-                                                ['link', 'table', 'enhancedImage', 'details'],
-
-                                                // Layout & Grid
-                                                ['grid', 'gridDelete'],
-
-                                                // Merge Tags (if using)
-                                                ['mergeTags'],
-
-                                                // Actions
-                                                ['undo', 'redo', 'clearFormatting', 'sourceCode'],
-                                            ])
-                                            ->floatingToolbars([
-                                                'paragraph' => [
-                                                    'bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'textColor',
-                                                ],
-                                                'heading' => [
-                                                    'h1', 'h2', 'h3',
-                                                ],
-                                                'table' => [
-                                                    'tableAddColumnBefore', 'tableAddColumnAfter', 'tableDeleteColumn',
-                                                    'tableAddRowBefore', 'tableAddRowAfter', 'tableDeleteRow',
-                                                    'tableMergeCells', 'tableSplitCell',
-                                                    'tableToggleHeaderRow',
-                                                    'tableDelete',
-                                                ],
-                                                'image' => [
-                                                    'enhancedImage',
-                                                ],
-
-                                            ])
-
-                                            ->label('Content')
-                                            ->extraInputAttributes(['style' => 'min-height: 16rem;'])
-                                            ->afterStateUpdated(function ($state, $record): void {
-                                                if ($record) {
-                                                    // Calculate read time based on content
-                                                    $readTime = self::calculateReadTime($state);
-                                                    $record->setMeta('read_time', $readTime);
-                                                    $record->save();
-                                                }
-                                            }),
+                                Group::make()->schema([
+                                    Textarea::make('post_teaser')
+                                        ->helperText('A short excerpt or teaser for the blog post')
+                                        ->rows(3)
+                                        ->autosize()
+                                        ->afterStateHydrated(function ($component, $state, $record): void {
+                                            if ($record) {
+                                                $component->state($record->getMeta('post_teaser', ''));
+                                            }
+                                        })
+                                        ->dehydrated(false)
+                                        ->afterStateUpdated(function ($state, $record): void {
+                                            if ($record) {
+                                                $record->setMeta('post_teaser', $state);
+                                            }
+                                        }),
+                                    Actions::make([
+                                        Action::make('generate_teaser')
+                                            ->label('Generate Teaser')
+                                            ->icon('heroicon-o-sparkles')
+                                        // TODO: Abstract create teaser to action if prism is installed
+                                        ,
                                     ]),
+
+                                ]),
+
+                                RichEditor::make('post_content')
+                                    ->live()
+                                    ->json()
+                                    ->plugins([
+                                        SourceCodePlugin::make(),
+                                        EnhancedImagePlugin::make(),
+                                    ])
+                                    ->fileAttachmentsDirectory('posts/images')
+                                    ->fileAttachmentsVisibility('public')
+                                    ->toolbarButtons([
+                                        // Text Formatting
+                                        ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'highlight', 'textColor'],
+
+                                        // Headings & Alignment
+                                        ['h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd'],
+
+                                        // Lists & Structure
+                                        ['bulletList', 'orderedList', 'blockquote', 'codeBlock', 'horizontalRule'],
+
+                                        // Advanced Elements
+                                        ['link', 'table', 'enhancedImage', 'details'],
+
+                                        // Layout & Grid
+                                        ['grid', 'gridDelete'],
+
+                                        // Merge Tags (if using)
+                                        ['mergeTags'],
+
+                                        // Actions
+                                        ['undo', 'redo', 'clearFormatting', 'sourceCode'],
+                                    ])
+                                    ->floatingToolbars([
+                                        'paragraph' => [
+                                            'bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'textColor',
+                                        ],
+                                        'heading' => [
+                                            'h1', 'h2', 'h3',
+                                        ],
+                                        'table' => [
+                                            'tableAddColumnBefore', 'tableAddColumnAfter', 'tableDeleteColumn',
+                                            'tableAddRowBefore', 'tableAddRowAfter', 'tableDeleteRow',
+                                            'tableMergeCells', 'tableSplitCell',
+                                            'tableToggleHeaderRow',
+                                            'tableDelete',
+                                        ],
+                                        'image' => [
+                                            'enhancedImage',
+                                        ],
+
+                                    ])
+
+                                    ->label('Content')
+                                    ->extraInputAttributes(['style' => 'min-height: 16rem;'])
+                                    ->afterStateUpdated(function ($state, $record): void {
+                                        if ($record) {
+                                            // Calculate read time based on content
+                                            $readTime = self::calculateReadTime($state);
+                                            $record->setMeta('read_time', $readTime);
+                                            $record->save();
+                                        }
+                                    }),
                             ]),
 
-                        Grid::make()
-                            ->columnSpan([
-                                'sm' => 1,
-                                'md' => 2,
-                                'lg' => 4,
-                            ])
+                        // Settings Tab
+                        Tab::make('Settings')
+                            ->icon('heroicon-o-cog-6-tooth')
                             ->schema([
-                                Section::make(__('Post Status'))
-                                    ->columnSpanFull()
+                                Section::make('Publishing')
                                     ->schema([
                                         Select::make('post_status')
                                             ->label('Status')
-                                            ->inlineLabel(true)
                                             ->selectablePlaceholder(false)
                                             ->options(PostStatus::class)
-                                            ->default(PostStatus::DRAFT),
+                                            ->default(PostStatus::DRAFT)
+                                            ->columnSpan(1),
 
                                         DateTimePicker::make('post_published_at')
                                             ->label('Publish Date')
-                                            ->timezone(fn (GeneralSettings $settings) => $settings->timezone) // TODO: handle UNKNOWN TIME ZONE
+                                            ->timezone(fn (GeneralSettings $settings) => $settings->timezone)
                                             ->default(now())
-                                            ->required(),
+                                            ->required()
+                                            ->columnSpan(1),
 
                                         Select::make('post_author_id')
                                             ->relationship('author', 'name')
                                             ->searchable()
                                             ->required()
                                             ->default(fn () => auth()->id())
-                                            ->label('Author'),
+                                            ->label('Author')
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2),
 
+                                Section::make('Template')
+                                    ->schema([
                                         Select::make('template')
                                             ->label('Post Template')
                                             ->options(fn () => self::getTemplates())
@@ -207,7 +200,10 @@ class PostForm
                                             ->default('post')
                                             ->placeholder('Select a template')
                                             ->helperText('Optional: Use a specific template for this post. Defaults to "post" template.'),
+                                    ]),
 
+                                Section::make('Organization')
+                                    ->schema([
                                         Select::make('categories')
                                             ->label('Categories')
                                             ->relationship(
@@ -236,7 +232,8 @@ class PostForm
                                                     'taxonomy_id' => $taxonomy->id,
                                                 ]);
                                                 return $term->id;
-                                            }),
+                                            })
+                                            ->columnSpanFull(),
 
                                         Select::make('tags')
                                             ->label('Tags')
@@ -266,27 +263,27 @@ class PostForm
                                                     'taxonomy_id' => $taxonomy->id,
                                                 ]);
                                                 return $term->id;
-                                            }),
+                                            })
+                                            ->columnSpanFull(),
+                                    ]),
 
-                                        // TODO: FIX OR REPLACE
+                                Section::make('Metadata')
+                                    ->schema([
                                         TextEntry::make('read_time')
                                             ->label('Read Time')
                                             ->icon('heroicon-o-clock')
                                             ->html(function ($record): string {
-                                                //                                                if ($record) {
-                                                //                                                    $readTime = $record->getMeta('read_time', '');
-                                                //                                                    return $readTime ? "{$readTime} minutes" : 'Not calculated yet';
-                                                //                                                }
                                                 return '- Not calculated yet';
                                             }),
-
                                     ]),
+                            ]),
 
-                                Section::make('Featured Image')
-                                    ->description('')
-                                    ->columnSpanFull()
+                        // Featured Image Tab
+                        Tab::make('Featured Image')
+                            ->icon('heroicon-o-photo')
+                            ->schema([
+                                Section::make()
                                     ->schema([
-
                                         // Preview Image
                                         SpatieMediaLibraryImageEntry::make('featured_image')
                                             ->hiddenLabel()
@@ -296,7 +293,7 @@ class PostForm
                                             ->collection('featured')
                                             ->hidden(fn (?Post $record): bool => ! ($record?->hasMedia('featured') ?? false)),
 
-                                        // Fallback image if preview is un available
+                                        // Fallback image if preview is unavailable
                                         View::make('franken-cms::components.image-placeholder')
                                             ->hidden(fn (?Post $record): bool => ($record?->hasMedia('featured') ?? false)),
 
@@ -376,11 +373,11 @@ class PostForm
                                                     SpatieMediaLibraryFileUpload::make('featured_image')
                                                         ->label(__('Featured Image'))
                                                         ->collection('featured')
-                                                        ->disk('public') // todo: make configurable
+                                                        ->disk('public')
                                                         ->image()
                                                         ->imageEditor()
                                                         ->previewable()
-                                                        ->maxSize(10240) // 10MB TODO: make configurable
+                                                        ->maxSize(10240)
                                                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                                                         ->visibility('public')
                                                         ->multiple(false)
@@ -390,31 +387,22 @@ class PostForm
                                                                 return;
                                                             }
 
-                                                            // Handle file upload - state is the TemporaryUploadedFile object directly
                                                             if (is_object($state)) {
-                                                                // Auto-populate width and height from uploaded file
                                                                 $dimensions = PostHelper::get_image_dimensions($state);
                                                                 if ($dimensions) {
                                                                     $set('modal_featured_image_width', $dimensions['width']);
                                                                     $set('modal_featured_image_height', $dimensions['height']);
                                                                 }
 
-                                                                // Reset focal point to center for new uploads
                                                                 $set('modal_featured_image_focal_x', 50);
                                                                 $set('modal_featured_image_focal_y', 50);
 
-                                                                // Get the temporary URL and dispatch event to Alpine component
                                                                 try {
-                                                                    // Try temporaryUrl() method (Livewire TemporaryUploadedFile)
                                                                     if (method_exists($state, 'temporaryUrl')) {
                                                                         $imageUrl = $state->temporaryUrl();
-                                                                    }
-                                                                    // Fallback to getTemporaryUrl()
-                                                                    elseif (method_exists($state, 'getTemporaryUrl')) {
+                                                                    } elseif (method_exists($state, 'getTemporaryUrl')) {
                                                                         $imageUrl = $state->getTemporaryUrl();
-                                                                    }
-                                                                    // Fallback to getRealPath() and convert to data URL
-                                                                    elseif (method_exists($state, 'getRealPath')) {
+                                                                    } elseif (method_exists($state, 'getRealPath')) {
                                                                         $imageUrl = 'data:image/' . $state->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($state->getRealPath()));
                                                                     } else {
                                                                         return;
@@ -537,10 +525,11 @@ class PostForm
                                                 ]),
 
                                         ]),
-
                                     ]),
-
                             ]),
+
+                        // SEO Tab
+                        self::getSeoTab(),
                     ]),
             ]);
     }
