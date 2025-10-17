@@ -17,7 +17,9 @@ use FrankenCms\Enums\DateFormat;
 use FrankenCms\Enums\TimeFormat;
 use FrankenCms\Enums\UserRole;
 use FrankenCms\Helpers\TimezoneHelper;
+use FrankenCms\Services\FaviconGenerator;
 use FrankenCms\Settings\GeneralSettings;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
 class GeneralSettingsTabProvider implements SettingsTabProviderInterface
@@ -46,9 +48,26 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                         FileUpload::make('icon')
                             ->label(trans('franken-cms::messages.settings.general.form.icon.label'))
                             ->inlineLabel()
-                            ->avatar()
+                            ->image()
+                            ->imageEditor()
+                            ->directory('site-icons')
+                            ->visibility('public')
+                            ->disk('public')
+                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'])
+                            ->maxSize(5120)
                             ->columnSpan(2)
-                            ->helperText(__('franken-cms::messages.settings.general.form.icon.helper')),
+                            ->helperText('Upload a site icon (512x512px or larger recommended). Favicons will be generated automatically.')
+                            ->afterStateUpdated(function ($state) {
+                                if ($state) {
+                                    // Generate favicons from uploaded file
+                                    $faviconGenerator = app(FaviconGenerator::class);
+                                    $sourcePath = Storage::disk('public')->path($state);
+
+                                    if (file_exists($sourcePath)) {
+                                        $faviconGenerator->generate($sourcePath);
+                                    }
+                                }
+                            }),
 
                         Toggle::make('membership')
                             ->inlineLabel()

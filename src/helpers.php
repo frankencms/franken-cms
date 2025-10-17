@@ -1,6 +1,7 @@
 <?php
 
 use FrankenCms\Helpers\TemplateHelper;
+use FrankenCms\Services\FaviconGenerator;
 use Illuminate\Support\Facades\View;
 
 if (! function_exists('_renderCmsField')) {
@@ -73,5 +74,17 @@ if (! function_exists('cmsFieldVariableName')) {
         }
 
         return $camelCase;
+    }
+}
+
+if (! function_exists('favicon_tags')) {
+    /**
+     * Get HTML tags for favicons
+     *
+     * @return string HTML meta tags for favicons
+     */
+    function favicon_tags(): string
+    {
+        return app(FaviconGenerator::class)->getHtmlTags();
     }
 }

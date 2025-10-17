@@ -54,6 +54,9 @@ class AddSeoDefaults
             );
         }
 
+        // Include favicon tags
+        $this->includeFavicons();
+
         // Include OpenGraph tags
         $this->includeOpenGraph($post);
 
@@ -168,5 +171,92 @@ class AddSeoDefaults
                     ->content($image)
             );
         }
+    }
+
+    /**
+     * Add favicon link tags
+     */
+    private function includeFavicons(): void
+    {
+        // Apple Touch Icons
+        $appleTouchSizes = [
+            ['57x57', '57'],
+            ['60x60', '60'],
+            ['72x72', '72'],
+            ['76x76', '76'],
+            ['114x114', '114'],
+            ['120x120', '120'],
+            ['144x144', '144'],
+            ['152x152', '152'],
+        ];
+
+        foreach ($appleTouchSizes as [$filename, $size]) {
+            seo()->add(
+                LinkMeta::make()
+                    ->rel('apple-touch-icon')
+                    ->attr('sizes', "{$size}x{$size}")
+                    ->href("/apple-touch-icon-{$filename}.png")
+            );
+        }
+
+        // Standard Favicons
+        seo()->addMany([
+            LinkMeta::make()
+                ->rel('icon')
+                ->attr('type', 'image/png')
+                ->attr('sizes', '16x16')
+                ->href('/favicon-16x16.png'),
+
+            LinkMeta::make()
+                ->rel('icon')
+                ->attr('type', 'image/png')
+                ->attr('sizes', '32x32')
+                ->href('/favicon-32x32.png'),
+
+            LinkMeta::make()
+                ->rel('icon')
+                ->attr('type', 'image/png')
+                ->attr('sizes', '96x96')
+                ->href('/favicon-96x96.png'),
+
+            LinkMeta::make()
+                ->rel('icon')
+                ->attr('type', 'image/png')
+                ->attr('sizes', '128x128')
+                ->href('/favicon-128.png'),
+
+            LinkMeta::make()
+                ->rel('icon')
+                ->attr('type', 'image/png')
+                ->attr('sizes', '196x196')
+                ->href('/favicon-196x196.png'),
+        ]);
+
+        // MS Tiles
+        seo()->addMany([
+            Meta::make()
+                ->name('msapplication-TileColor')
+                ->content('#ffffff'),
+
+            Meta::make()
+                ->name('msapplication-TileImage')
+                ->content('/mstile-144x144.png'),
+
+            Meta::make()
+                ->name('msapplication-square70x70logo')
+                ->content('/mstile-70x70.png'),
+
+            Meta::make()
+                ->name('msapplication-square150x150logo')
+                ->content('/mstile-150x150.png'),
+
+            Meta::make()
+                ->name('msapplication-wide310x150logo')
+                ->content('/mstile-310x150.png'),
+
+            Meta::make()
+                ->name('msapplication-square310x310logo')
+                ->content('/mstile-310x310.png'),
+        ]);
     }
 }
