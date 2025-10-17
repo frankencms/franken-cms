@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -30,8 +31,7 @@ class SeoMedia extends Model implements HasMedia
             ->useDisk('public')
             ->registerMediaConversions(function () {
                 $this->addMediaConversion('og')
-                    ->width(1200)
-                    ->height(630)
+                    ->fit(Fit::Crop, 1200, 630)
                     ->format('jpg')
                     ->quality(85)
                     ->performOnCollections('og-default');
@@ -42,8 +42,7 @@ class SeoMedia extends Model implements HasMedia
             ->useDisk('public')
             ->registerMediaConversions(function () {
                 $this->addMediaConversion('twitter')
-                    ->width(1200)
-                    ->height(675)
+                    ->fit(Fit::Crop, 1200, 675)
                     ->format('jpg')
                     ->quality(85)
                     ->performOnCollections('twitter-default');
