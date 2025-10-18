@@ -146,3 +146,31 @@ if (! function_exists('favicon_tags')) {
         return app(FaviconGenerator::class)->getHtmlTags();
     }
 }
+
+
+if (!function_exists('aspect_ratio')) {
+    /**
+     * Calculate and return a simplified aspect ratio (e.g. "16:9").
+     *
+     * @param  int|float  $width
+     * @param  int|float  $height
+     * @return string
+     */
+    function aspect_ratio($width, $height): string
+    {
+        if ($width == 0 || $height == 0) {
+            return 'Invalid dimensions';
+        }
+
+        $gcd = function ($a, $b) use (&$gcd) {
+            return $b == 0 ? $a : $gcd($b, fmod($a, $b));
+        };
+
+        $divisor = $gcd($width, $height);
+
+        $ratioWidth = $width / $divisor;
+        $ratioHeight = $height / $divisor;
+
+        return sprintf('%d:%d', $ratioWidth, $ratioHeight);
+    }
+}

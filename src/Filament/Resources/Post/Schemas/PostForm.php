@@ -33,6 +33,7 @@ use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Helpers\TemplateHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
+use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\ReadingSettings;
 use Livewire\Component;
 
@@ -44,6 +45,7 @@ class PostForm
     {
         $settings = app(GeneralSettings::class);
         $readingSettings = app(ReadingSettings::class);
+        $mediaSettings = app(MediaSettings::class);
 
         return $schema
             ->components([
@@ -288,6 +290,17 @@ class PostForm
                                             ->disk('public')
                                             ->image()
                                             ->imageEditor()
+                                            ->imageEditorAspectRatios(function () use ($mediaSettings) {
+                                                $ratio = $mediaSettings->featured_aspect_ratio;
+
+                                                if ($ratio === 'custom' && $mediaSettings->featured_custom_width && $mediaSettings->featured_custom_height) {
+                                                    $ratio =  aspect_ratio( $mediaSettings->featured_custom_width ,$mediaSettings->featured_custom_height);
+                                                }
+                                                return [
+                                                    $ratio,
+                                                    null
+                                                ];
+                                            })
                                             ->previewable()
                                             ->maxSize(10240)
                                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
