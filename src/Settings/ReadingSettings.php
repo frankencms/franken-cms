@@ -12,7 +12,6 @@ class ReadingSettings extends Settings
     public bool $enable_feeds = true;           // Enable RSS and Atom feeds
     public ?int $syndicate_feeds = 10;          // "Syndicate Feeds Show The Most Recent" items
     public ?string $include_in_feed = 'full_text';
-    public ?string $discourage_search_visibility = null;
 
     public static function group(): string
     {

@@ -32,10 +32,20 @@ class RobotsSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Enable Dynamic Robots.txt')
                             ->helperText('Generate robots.txt dynamically. If disabled, only static robots.txt file will be used.')
                             ->default(true)
+                            ->live()
+                            ->columnSpanFull(),
+
+                        Toggle::make('discourage_indexing')
+                            ->label('Discourage Search Engine Indexing')
+                            ->helperText('Block ALL search engines from indexing your entire site. Useful during development to prevent work-in-progress content from being indexed. When enabled, this overrides all other robot rules below.')
+                            ->default(false)
+                            ->live()
+                            ->visible(fn ($get) => $get('enabled'))
                             ->columnSpanFull(),
 
                         Repeater::make('user_agents')
                             ->label('User Agent Rules')
+                            ->visible(fn ($get) => $get('enabled') && ! $get('discourage_indexing'))
                             ->schema([
                                 TextInput::make('user_agent')
                                     ->label('User Agent')

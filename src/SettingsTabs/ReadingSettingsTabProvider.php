@@ -2,7 +2,6 @@
 
 namespace FrankenCms\SettingsTabs;
 
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -85,12 +84,6 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
                             ])
                             ->default('full_text')
                             ->required()
-                            ->columnSpan(2),
-
-                        Checkbox::make('discourage_search_visibility')
-                            ->inlineLabel()
-                            ->label('Discourage search engines from indexing this site')
-                            ->helperText('It is up to search engines to honor this request.')
                             ->columnSpan(2),
                     ]),
             ]);

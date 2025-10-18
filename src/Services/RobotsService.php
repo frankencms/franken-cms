@@ -6,9 +6,14 @@ namespace FrankenCms\Services;
 
 use FrankenCms\Settings\RobotsSettings;
 use FrankenCms\Settings\SitemapSettings;
+use Illuminate\Support\Facades\Cache;
 
 class RobotsService
 {
+    /**
+     * Cache key for robots.txt
+     */
+    protected const CACHE_KEY = 'robots_txt';
     public function __construct(
         protected RobotsSettings $settings,
         protected ?SitemapService $sitemapService = null,
@@ -46,6 +51,17 @@ class RobotsService
         }
 
         $lines = [];
+
+        // If discourage indexing is enabled, block all search engines
+        // This overrides all other rules
+        if ($this->settings->discourage_indexing) {
+            $lines[] = '# Blocking all search engines (discourage indexing enabled)';
+            $lines[] = 'User-agent: *';
+            $lines[] = 'Disallow: /';
+            $lines[] = '';
+
+            return implode(PHP_EOL, $lines);
+        }
 
         // Add header comments
         $lines = array_merge($lines, $this->generateHeader());
@@ -86,7 +102,7 @@ class RobotsService
     }
 
     /**
-     * Get the robots.txt content (static if exists, otherwise dynamic)
+     * Get the robots.txt content (static if exists, otherwise dynamic with caching)
      */
     public function getContent(): string
     {
@@ -95,8 +111,18 @@ class RobotsService
             return $this->getStaticContent();
         }
 
-        // Generate dynamic content
-        return $this->generate();
+        // Generate and cache dynamic content
+        return Cache::rememberForever(self::CACHE_KEY, function () {
+            return $this->generate();
+        });
+    }
+
+    /**
+     * Clear the robots.txt cache
+     */
+    public function clearCache(): void
+    {
+        Cache::forget(self::CACHE_KEY);
     }
 
     /**
