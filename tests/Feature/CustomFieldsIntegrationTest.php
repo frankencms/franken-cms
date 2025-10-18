@@ -1,6 +1,5 @@
 <?php
 
-use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Page;
 use FrankenCms\Services\CmsFieldRenderer;
 use FrankenCms\Services\TemplateFieldParser;
@@ -17,7 +16,7 @@ it('stores and retrieves custom fields in page', function () {
     $page = Page::factory()->create([
         'post_content' => [
             'custom_fields' => [
-                'hero.title' => 'Welcome to our site',
+                'hero.title'    => 'Welcome to our site',
                 'hero.subtitle' => 'We build amazing things',
             ],
         ],
@@ -39,7 +38,7 @@ it('updates custom fields in page', function () {
 
     $content = $page->post_content;
     $content['custom_fields'] = [
-        'title' => 'New Title',
+        'title'    => 'New Title',
         'subtitle' => 'New Subtitle',
     ];
     $page->post_content = $content;
@@ -162,7 +161,7 @@ it('handles dot notation in custom field keys', function () {
     $page = Page::factory()->create([
         'post_content' => [
             'custom_fields' => [
-                'hero.title' => 'Hero Title Value',
+                'hero.title'    => 'Hero Title Value',
                 'hero.subtitle' => 'Hero Subtitle Value',
             ],
         ],

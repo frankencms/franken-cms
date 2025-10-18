@@ -158,7 +158,7 @@ if (! function_exists('aspect_ratio')) {
     function aspect_ratio(float | int $width, float | int $height, bool $cleanRatio = false): string
     {
         // Calculate GCD (Greatest Common Divisor) using Euclidean algorithm
-        $gcd = function (int|float $a, int|float $b) use (&$gcd): int|float {
+        $gcd = function (int | float $a, int | float $b) use (&$gcd): int | float {
             return $b ? $gcd($b, $a % $b) : $a;
         };
 

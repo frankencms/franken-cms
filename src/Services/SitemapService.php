@@ -86,6 +86,41 @@ class SitemapService
     }
 
     /**
+     * Write sitemap to file
+     */
+    public function writeToFile(string $filename = 'sitemap.xml'): void
+    {
+        if (! $this->isEnabled()) {
+            return;
+        }
+
+        $sitemap = $this->generate();
+        $sitemap->writeToFile(public_path($filename));
+    }
+
+    /**
+     * Get sitemap as string
+     */
+    public function render(): string
+    {
+        if (! $this->isEnabled()) {
+            return '';
+        }
+
+        return $this->generate()->render();
+    }
+
+    /**
+     * Clear all sitemap caches
+     */
+    public function clearCache(): void
+    {
+        Cache::forget(self::CACHE_KEY_INDEX);
+        Cache::forget(self::CACHE_KEY_PREFIX . 'post');
+        Cache::forget(self::CACHE_KEY_PREFIX . 'page');
+    }
+
+    /**
      * Get posts for a specific post type
      */
     protected function getPostsForType(string $postType): Collection
@@ -230,7 +265,7 @@ class SitemapService
                 // Also mark the relation as loaded to prevent Laravel from trying to lazy load
                 // This is needed because of the HasMeta trait's getAttribute() override
                 $post->relationLoaded('parent'); // Just check if it's loaded
-            } else if ($post->parent_id === null) {
+            } elseif ($post->parent_id === null) {
                 // Set parent to null explicitly to prevent lazy loading attempts
                 $post->setRelation('parent', null);
             }
@@ -292,40 +327,5 @@ class SitemapService
         }
 
         return false;
-    }
-
-    /**
-     * Write sitemap to file
-     */
-    public function writeToFile(string $filename = 'sitemap.xml'): void
-    {
-        if (! $this->isEnabled()) {
-            return;
-        }
-
-        $sitemap = $this->generate();
-        $sitemap->writeToFile(public_path($filename));
-    }
-
-    /**
-     * Get sitemap as string
-     */
-    public function render(): string
-    {
-        if (! $this->isEnabled()) {
-            return '';
-        }
-
-        return $this->generate()->render();
-    }
-
-    /**
-     * Clear all sitemap caches
-     */
-    public function clearCache(): void
-    {
-        Cache::forget(self::CACHE_KEY_INDEX);
-        Cache::forget(self::CACHE_KEY_PREFIX . 'post');
-        Cache::forget(self::CACHE_KEY_PREFIX . 'page');
     }
 }

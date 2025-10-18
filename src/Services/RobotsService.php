@@ -14,6 +14,7 @@ class RobotsService
      * Cache key for robots.txt
      */
     protected const CACHE_KEY = 'robots_txt';
+
     public function __construct(
         protected RobotsSettings $settings,
         protected ?SitemapService $sitemapService = null,

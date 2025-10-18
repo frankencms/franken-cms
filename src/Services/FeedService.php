@@ -301,17 +301,17 @@ class FeedService
         $type = $node['type'] ?? '';
 
         return match ($type) {
-            'paragraph' => $this->renderParagraph($node),
-            'heading' => $this->renderHeading($node),
-            'bulletList' => $this->renderBulletList($node),
-            'orderedList' => $this->renderOrderedList($node),
-            'listItem' => $this->renderListItem($node),
-            'image' => $this->renderImage($node),
-            'codeBlock' => $this->renderCodeBlock($node),
-            'blockquote' => $this->renderBlockquote($node),
+            'paragraph'      => $this->renderParagraph($node),
+            'heading'        => $this->renderHeading($node),
+            'bulletList'     => $this->renderBulletList($node),
+            'orderedList'    => $this->renderOrderedList($node),
+            'listItem'       => $this->renderListItem($node),
+            'image'          => $this->renderImage($node),
+            'codeBlock'      => $this->renderCodeBlock($node),
+            'blockquote'     => $this->renderBlockquote($node),
             'horizontalRule' => '<hr>',
-            'hardBreak' => '<br>',
-            default => $this->renderGenericNode($node),
+            'hardBreak'      => '<br>',
+            default          => $this->renderGenericNode($node),
         };
     }
 
@@ -370,9 +370,9 @@ class FeedService
             return '';
         }
 
-        $titleAttr = $title ? " title=\"" . htmlspecialchars($title) . "\"" : '';
+        $titleAttr = $title ? ' title="' . htmlspecialchars($title) . '"' : '';
 
-        return "<img src=\"" . htmlspecialchars($src) . "\" alt=\"" . htmlspecialchars($alt) . "\"{$titleAttr}>";
+        return '<img src="' . htmlspecialchars($src) . '" alt="' . htmlspecialchars($alt) . "\"{$titleAttr}>";
     }
 
     protected function renderCodeBlock(array $node): string
@@ -409,13 +409,13 @@ class FeedService
                 // Apply text marks (bold, italic, etc.)
                 foreach ($marks as $mark) {
                     $text = match ($mark['type'] ?? '') {
-                        'bold' => "<strong>{$text}</strong>",
-                        'italic' => "<em>{$text}</em>",
+                        'bold'      => "<strong>{$text}</strong>",
+                        'italic'    => "<em>{$text}</em>",
                         'underline' => "<u>{$text}</u>",
-                        'strike' => "<s>{$text}</s>",
-                        'code' => "<code>{$text}</code>",
-                        'link' => "<a href=\"" . htmlspecialchars($mark['attrs']['href'] ?? '') . "\">{$text}</a>",
-                        default => $text,
+                        'strike'    => "<s>{$text}</s>",
+                        'code'      => "<code>{$text}</code>",
+                        'link'      => '<a href="' . htmlspecialchars($mark['attrs']['href'] ?? '') . "\">{$text}</a>",
+                        default     => $text,
                     };
                 }
 

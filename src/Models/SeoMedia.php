@@ -22,6 +22,14 @@ class SeoMedia extends Model implements HasMedia
     protected $fillable = [];
 
     /**
+     * Get the singleton instance
+     */
+    public static function getInstance(): self
+    {
+        return static::firstOrCreate(['id' => 1]);
+    }
+
+    /**
      * Register media collections
      */
     public function registerMediaCollections(): void
@@ -38,7 +46,7 @@ class SeoMedia extends Model implements HasMedia
     /**
      * Register media conversions
      */
-    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
         // OpenGraph default image - exact 1200x630 dimensions (no focal point needed)
         $this->addMediaConversion('og')
@@ -60,14 +68,6 @@ class SeoMedia extends Model implements HasMedia
             ->format('jpg')
             ->quality(85)
             ->performOnCollections('twitter-default');
-    }
-
-    /**
-     * Get the singleton instance
-     */
-    public static function getInstance(): self
-    {
-        return static::firstOrCreate(['id' => 1]);
     }
 
     /**

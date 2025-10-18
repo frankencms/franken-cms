@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-use FrankenCms\Filament\Plugins\RichEditor\EnhancedImageAction;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
-use FrankenCms\Filament\Plugins\RichEditor\EnhancedImageTool;
 
 it('enhanced image plugin exists and is properly configured', function () {
     $plugin = EnhancedImagePlugin::make();

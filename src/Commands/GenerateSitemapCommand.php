@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrankenCms\Commands;
 
+use Exception;
 use FrankenCms\Services\SitemapService;
 use Illuminate\Console\Command;
 
@@ -28,7 +29,7 @@ class GenerateSitemapCommand extends Command
             $sitemapService->writeToFile();
             $this->info('✓ Sitemap generated successfully at public/sitemap.xml');
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Failed to generate sitemap: ' . $e->getMessage());
             return self::FAILURE;
         }

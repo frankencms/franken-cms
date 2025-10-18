@@ -1,15 +1,11 @@
 <?php
 
+use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\SettingsTabs\GeneralSettingsTabProvider;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Radio;
 
 beforeEach(function () {
-    $this->provider = new GeneralSettingsTabProvider();
+    $this->provider = new GeneralSettingsTabProvider;
 });
 
 it('returns correct tab key', function () {
@@ -67,17 +63,29 @@ it('enum options method returns correct format', function () {
     $method->setAccessible(true);
 
     // Create a mock enum class for testing
-    $mockEnum = new class {
-        public static function cases() {
+    $mockEnum = new class
+    {
+        public static function cases()
+        {
             return [
-                new class {
+                new class
+                {
                     public $value = 'value1';
-                    public function getLabel() { return 'Label 1'; }
+
+                    public function getLabel()
+                    {
+                        return 'Label 1';
+                    }
                 },
-                new class {
+                new class
+                {
                     public $value = 'value2';
-                    public function getLabel() { return 'Label 2'; }
-                }
+
+                    public function getLabel()
+                    {
+                        return 'Label 2';
+                    }
+                },
             ];
         }
     };
@@ -86,6 +94,6 @@ it('enum options method returns correct format', function () {
 
     expect($result)->toBe([
         'value1' => 'Label 1',
-        'value2' => 'Label 2'
+        'value2' => 'Label 2',
     ]);
 });

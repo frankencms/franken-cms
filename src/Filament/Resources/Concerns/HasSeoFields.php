@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FrankenCms\Filament\Resources\Concerns;
 
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -46,7 +45,7 @@ trait HasSeoFields
                                 }
                             })
                             ->extraInputAttributes([
-                                'x-init' => "\$dispatch('seo-title-update', { length: \$el.value.length })",
+                                'x-init'                   => "\$dispatch('seo-title-update', { length: \$el.value.length })",
                                 'x-on:input.debounce.50ms' => "\$dispatch('seo-title-update', { length: \$el.value.length })",
                             ])
                             ->columnSpanFull(),
@@ -125,7 +124,7 @@ trait HasSeoFields
                                 }
                             })
                             ->extraInputAttributes([
-                                'x-init' => "\$dispatch('seo-description-update', { length: \$el.value.length })",
+                                'x-init'                   => "\$dispatch('seo-description-update', { length: \$el.value.length })",
                                 'x-on:input.debounce.50ms' => "\$dispatch('seo-description-update', { length: \$el.value.length })",
                             ])
                             ->columnSpanFull(),
@@ -203,8 +202,8 @@ trait HasSeoFields
                             ->label('Index Setting')
                             ->helperText('Control whether search engines should index this page')
                             ->options([
-                                '' => 'Use Default (' . (app(SeoSettings::class)->default_robots_index ?? 'index') . ')',
-                                'index' => 'Index',
+                                ''        => 'Use Default (' . (app(SeoSettings::class)->default_robots_index ?? 'index') . ')',
+                                'index'   => 'Index',
                                 'noindex' => 'No Index',
                             ])
                             ->default('')
@@ -226,8 +225,8 @@ trait HasSeoFields
                             ->label('Follow Setting')
                             ->helperText('Control whether search engines should follow links on this page')
                             ->options([
-                                '' => 'Use Default (' . (app(SeoSettings::class)->default_robots_follow ?? 'follow') . ')',
-                                'follow' => 'Follow',
+                                ''         => 'Use Default (' . (app(SeoSettings::class)->default_robots_follow ?? 'follow') . ')',
+                                'follow'   => 'Follow',
                                 'nofollow' => 'No Follow',
                             ])
                             ->default('')

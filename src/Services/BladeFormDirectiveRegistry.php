@@ -20,6 +20,104 @@ class BladeFormDirectiveRegistry
     }
 
     /**
+     * Capture field definition for processing
+     */
+    public function captureFieldDefinition(string $type, string $expression, array $config): void
+    {
+        $this->fieldDefinitions[] = [
+            'type'          => $type,
+            'id'            => $this->parseId($expression),
+            'options'       => $this->parseOptions($expression),
+            'component'     => $config['component'],
+            'section_stack' => array_slice($this->currentSectionStack, 0), // Copy current stack
+        ];
+    }
+
+    /**
+     * Open a layout component
+     */
+    public function openLayoutComponent(string $type, string $expression, array $config): void
+    {
+        $parsed = $this->parseDirectiveExpression($expression);
+
+        $layoutDef = [
+            'type'      => $type,
+            'id'        => $parsed['id'] ?? uniqid('layout_'),
+            'options'   => $parsed['options'] ?? [],
+            'component' => $config['component'],
+            'children'  => [],
+        ];
+
+        $this->currentSectionStack[] = $layoutDef;
+    }
+
+    /**
+     * Close a layout component
+     */
+    public function closeLayoutComponent(string $type, string $content): void
+    {
+        if (! empty($this->currentSectionStack)) {
+            $layoutDef = array_pop($this->currentSectionStack);
+
+            // If we have a parent section, add this as a child
+            if (! empty($this->currentSectionStack)) {
+                $this->currentSectionStack[count($this->currentSectionStack) - 1]['children'][] = $layoutDef;
+            } else {
+                // This is a top-level layout component
+                $this->layoutDefinitions[] = $layoutDef;
+            }
+        }
+    }
+
+    /**
+     * Get all captured field definitions
+     */
+    public function getFieldDefinitions(): array
+    {
+        return $this->fieldDefinitions;
+    }
+
+    /**
+     * Get all captured layout definitions
+     */
+    public function getLayoutDefinitions(): array
+    {
+        return $this->layoutDefinitions;
+    }
+
+    /**
+     * Clear all definitions (useful for processing multiple templates)
+     */
+    public function clearDefinitions(): void
+    {
+        $this->fieldDefinitions = [];
+        $this->layoutDefinitions = [];
+        $this->currentSectionStack = [];
+    }
+
+    /**
+     * Convert captured definitions to Filament schema
+     */
+    public function toFilamentSchema(): array
+    {
+        $schema = [];
+
+        // Add layout components with their children
+        foreach ($this->layoutDefinitions as $layoutDef) {
+            $schema[] = $this->buildFilamentComponent($layoutDef);
+        }
+
+        // Add standalone fields (not in any layout)
+        foreach ($this->fieldDefinitions as $fieldDef) {
+            if (empty($fieldDef['section_stack'])) {
+                $schema[] = $this->buildFilamentComponent($fieldDef);
+            }
+        }
+
+        return $schema;
+    }
+
+    /**
      * Register all form field directives
      */
     protected function registerFormFields(): void
@@ -27,63 +125,63 @@ class BladeFormDirectiveRegistry
         $formFields = [
             'textInput' => [
                 'component' => 'Filament\Forms\Components\TextInput',
-                'closing' => false,
+                'closing'   => false,
             ],
             'textarea' => [
                 'component' => 'Filament\Forms\Components\Textarea',
-                'closing' => false,
+                'closing'   => false,
             ],
             'select' => [
                 'component' => 'Filament\Forms\Components\Select',
-                'closing' => false,
+                'closing'   => false,
             ],
             'toggle' => [
                 'component' => 'Filament\Forms\Components\Toggle',
-                'closing' => false,
+                'closing'   => false,
             ],
             'checkbox' => [
                 'component' => 'Filament\Forms\Components\Checkbox',
-                'closing' => false,
+                'closing'   => false,
             ],
             'radio' => [
                 'component' => 'Filament\Forms\Components\Radio',
-                'closing' => false,
+                'closing'   => false,
             ],
             'dateTimePicker' => [
                 'component' => 'Filament\Forms\Components\DateTimePicker',
-                'closing' => false,
+                'closing'   => false,
             ],
             'datePicker' => [
                 'component' => 'Filament\Forms\Components\DatePicker',
-                'closing' => false,
+                'closing'   => false,
             ],
             'timePicker' => [
                 'component' => 'Filament\Forms\Components\TimePicker',
-                'closing' => false,
+                'closing'   => false,
             ],
             'fileUpload' => [
                 'component' => 'Filament\Forms\Components\FileUpload',
-                'closing' => false,
+                'closing'   => false,
             ],
             'richEditor' => [
                 'component' => 'Filament\Forms\Components\RichEditor',
-                'closing' => false,
+                'closing'   => false,
             ],
             'markdownEditor' => [
                 'component' => 'Filament\Forms\Components\MarkdownEditor',
-                'closing' => false,
+                'closing'   => false,
             ],
             'keyValue' => [
                 'component' => 'Filament\Forms\Components\KeyValue',
-                'closing' => false,
+                'closing'   => false,
             ],
             'repeater' => [
                 'component' => 'Filament\Forms\Components\Repeater',
-                'closing' => true,
+                'closing'   => true,
             ],
             'colorPicker' => [
                 'component' => 'Filament\Forms\Components\ColorPicker',
-                'closing' => false,
+                'closing'   => false,
             ],
         ];
 
@@ -100,31 +198,31 @@ class BladeFormDirectiveRegistry
         $layoutComponents = [
             'formSection' => [
                 'component' => 'Filament\Schemas\Components\Section',
-                'closing' => true,
+                'closing'   => true,
             ],
             'grid' => [
                 'component' => 'Filament\Schemas\Components\Grid',
-                'closing' => true,
+                'closing'   => true,
             ],
             'fieldset' => [
                 'component' => 'Filament\Schemas\Components\Fieldset',
-                'closing' => true,
+                'closing'   => true,
             ],
             'tabs' => [
                 'component' => 'Filament\Schemas\Components\Tabs',
-                'closing' => true,
+                'closing'   => true,
             ],
             'tab' => [
                 'component' => 'Filament\Schemas\Components\Tabs\Tab',
-                'closing' => true,
+                'closing'   => true,
             ],
             'wizard' => [
                 'component' => 'Filament\Schemas\Components\Wizard',
-                'closing' => true,
+                'closing'   => true,
             ],
             'wizardStep' => [
                 'component' => 'Filament\Schemas\Components\Wizard\Step',
-                'closing' => true,
+                'closing'   => true,
             ],
         ];
 
@@ -168,8 +266,8 @@ class BladeFormDirectiveRegistry
     {
         return "<?php
             \$__fieldRegistry = app('" . static::class . "');
-            \$__fieldRegistry->captureFieldDefinition('$name', $expression, " . var_export($config, true) . ");
-        ?>";
+            \$__fieldRegistry->captureFieldDefinition('{$name}', {$expression}, " . var_export($config, true) . ');
+        ?>';
     }
 
     /**
@@ -180,65 +278,15 @@ class BladeFormDirectiveRegistry
         if ($type === 'open') {
             return "<?php
                 \$__fieldRegistry = app('" . static::class . "');
-                \$__fieldRegistry->openLayoutComponent('$name', $expression, " . var_export($config, true) . ");
+                \$__fieldRegistry->openLayoutComponent('{$name}', {$expression}, " . var_export($config, true) . ');
                 ob_start();
-            ?>";
+            ?>';
         } else {
             return "<?php
                 \$__content = ob_get_clean();
                 \$__fieldRegistry = app('" . static::class . "');
-                \$__fieldRegistry->closeLayoutComponent('$name', \$__content);
+                \$__fieldRegistry->closeLayoutComponent('{$name}', \$__content);
             ?>";
-        }
-    }
-
-    /**
-     * Capture field definition for processing
-     */
-    public function captureFieldDefinition(string $type, string $expression, array $config): void
-    {
-        $this->fieldDefinitions[] = [
-            'type' => $type,
-            'id' => $this->parseId($expression),
-            'options' => $this->parseOptions($expression),
-            'component' => $config['component'],
-            'section_stack' => array_slice($this->currentSectionStack, 0), // Copy current stack
-        ];
-    }
-
-    /**
-     * Open a layout component
-     */
-    public function openLayoutComponent(string $type, string $expression, array $config): void
-    {
-        $parsed = $this->parseDirectiveExpression($expression);
-
-        $layoutDef = [
-            'type' => $type,
-            'id' => $parsed['id'] ?? uniqid('layout_'),
-            'options' => $parsed['options'] ?? [],
-            'component' => $config['component'],
-            'children' => [],
-        ];
-
-        $this->currentSectionStack[] = $layoutDef;
-    }
-
-    /**
-     * Close a layout component
-     */
-    public function closeLayoutComponent(string $type, string $content): void
-    {
-        if (!empty($this->currentSectionStack)) {
-            $layoutDef = array_pop($this->currentSectionStack);
-
-            // If we have a parent section, add this as a child
-            if (!empty($this->currentSectionStack)) {
-                $this->currentSectionStack[count($this->currentSectionStack) - 1]['children'][] = $layoutDef;
-            } else {
-                // This is a top-level layout component
-                $this->layoutDefinitions[] = $layoutDef;
-            }
         }
     }
 
@@ -300,64 +348,16 @@ class BladeFormDirectiveRegistry
     }
 
     /**
-     * Get all captured field definitions
-     */
-    public function getFieldDefinitions(): array
-    {
-        return $this->fieldDefinitions;
-    }
-
-    /**
-     * Get all captured layout definitions
-     */
-    public function getLayoutDefinitions(): array
-    {
-        return $this->layoutDefinitions;
-    }
-
-    /**
-     * Clear all definitions (useful for processing multiple templates)
-     */
-    public function clearDefinitions(): void
-    {
-        $this->fieldDefinitions = [];
-        $this->layoutDefinitions = [];
-        $this->currentSectionStack = [];
-    }
-
-    /**
-     * Convert captured definitions to Filament schema
-     */
-    public function toFilamentSchema(): array
-    {
-        $schema = [];
-
-        // Add layout components with their children
-        foreach ($this->layoutDefinitions as $layoutDef) {
-            $schema[] = $this->buildFilamentComponent($layoutDef);
-        }
-
-        // Add standalone fields (not in any layout)
-        foreach ($this->fieldDefinitions as $fieldDef) {
-            if (empty($fieldDef['section_stack'])) {
-                $schema[] = $this->buildFilamentComponent($fieldDef);
-            }
-        }
-
-        return $schema;
-    }
-
-    /**
      * Build a Filament component from definition
      */
     protected function buildFilamentComponent(array $definition): array
     {
         return [
-            'type' => $definition['type'],
+            'type'      => $definition['type'],
             'component' => $definition['component'],
-            'id' => $definition['id'],
-            'options' => $definition['options'],
-            'children' => $definition['children'] ?? [],
+            'id'        => $definition['id'],
+            'options'   => $definition['options'],
+            'children'  => $definition['children'] ?? [],
         ];
     }
 }

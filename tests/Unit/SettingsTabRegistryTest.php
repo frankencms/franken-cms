@@ -1,11 +1,11 @@
 <?php
 
+use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Registries\SettingsTabRegistry;
-use Filament\Schemas\Components\Tabs\Tab;
 
 beforeEach(function () {
-    $this->registry = new SettingsTabRegistry();
+    $this->registry = new SettingsTabRegistry;
 });
 
 it('can register a settings tab provider', function () {

@@ -15,8 +15,8 @@ return new class extends SettingsMigration
         // Default: Allow all bots to crawl everything
         $this->migrator->add('franken-cms-robots.user_agents', [
             [
-                'user_agent' => '*',
-                'rules' => ['Allow: /'],
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /'],
                 'crawl_delay' => null,
             ],
         ]);

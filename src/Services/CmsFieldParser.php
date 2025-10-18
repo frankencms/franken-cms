@@ -4,6 +4,8 @@ namespace FrankenCms\Services;
 
 use Exception;
 use FrankenCms\Registries\FieldRegistry;
+use Log;
+use Throwable;
 
 class CmsFieldParser
 {
@@ -83,7 +85,7 @@ class CmsFieldParser
             }
 
             // Handle string boundaries
-            if (($char === '"' || $char === "'") && !$inString) {
+            if (($char === '"' || $char === "'") && ! $inString) {
                 $inString = true;
                 $stringChar = $char;
                 continue;
@@ -96,7 +98,7 @@ class CmsFieldParser
             }
 
             // Only count parentheses outside of strings
-            if (!$inString) {
+            if (! $inString) {
                 if ($char === '(') {
                     $depth++;
                 } elseif ($char === ')') {
@@ -131,9 +133,9 @@ class CmsFieldParser
                 if (is_array($properties)) {
                     FieldRegistry::register($identifier, $type, $properties);
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Log error but continue parsing other fields
-                \Log::warning("Failed to parse CMS field options for '{$identifier}': " . $e->getMessage());
+                Log::warning("Failed to parse CMS field options for '{$identifier}': " . $e->getMessage());
             }
         } elseif (preg_match('/^\s*([\'"])(.*?)\1\s*,\s*([\'"])(.*?)\3\s*$/s', $arguments, $matches)) {
             // Handle case with no options array

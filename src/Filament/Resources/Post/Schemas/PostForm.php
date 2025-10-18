@@ -294,11 +294,11 @@ class PostForm
                                                 $ratio = $mediaSettings->featured_aspect_ratio;
 
                                                 if ($ratio === 'custom' && $mediaSettings->featured_custom_width && $mediaSettings->featured_custom_height) {
-                                                    $ratio =  aspect_ratio( $mediaSettings->featured_custom_width ,$mediaSettings->featured_custom_height);
+                                                    $ratio = aspect_ratio($mediaSettings->featured_custom_width, $mediaSettings->featured_custom_height);
                                                 }
                                                 return [
                                                     $ratio,
-                                                    null
+                                                    null,
                                                 ];
                                             })
                                             ->previewable()

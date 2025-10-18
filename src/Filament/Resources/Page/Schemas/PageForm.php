@@ -88,7 +88,7 @@ class PageForm
                                                 $slug = $get('post_slug');
                                                 $parentId = $get('parent_id');
 
-                                                if (!$slug) {
+                                                if (! $slug) {
                                                     return 'Enter a permalink to see the URL';
                                                 }
 

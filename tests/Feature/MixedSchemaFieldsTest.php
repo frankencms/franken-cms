@@ -53,7 +53,7 @@ it('throws exception if array definition missing name', function () {
     $builder = app(CmsFieldBuilder::class);
 
     $builder->buildSchemaField([
-        'type' => 'text',
+        'type'  => 'text',
         'label' => 'Missing Name',
     ]);
 })->throws(\InvalidArgumentException::class, 'Field definition array must have a "name" key');
@@ -62,7 +62,7 @@ it('defaults to text type if not specified', function () {
     $builder = app(CmsFieldBuilder::class);
 
     $field = $builder->buildSchemaField([
-        'name' => 'test_field',
+        'name'  => 'test_field',
         'label' => 'Test Field',
     ]);
 
@@ -73,11 +73,11 @@ it('applies options from array definition', function () {
     $builder = app(CmsFieldBuilder::class);
 
     $field = $builder->buildSchemaField([
-        'name' => 'description',
-        'type' => 'textarea',
-        'label' => 'Description',
+        'name'     => 'description',
+        'type'     => 'textarea',
+        'label'    => 'Description',
         'required' => true,
-        'rows' => 5,
+        'rows'     => 5,
     ]);
 
     expect($field)->toBeInstanceOf(Field::class);

@@ -76,7 +76,7 @@
                     </x-filament::link>
                 @endif
             @else
-                <span class="@if(!$getState()) flex items-center gap-1 @endif">
+                <span class="@if (!$getState()) flex items-center gap-1 @endif">
                     <span>{{ $getLabelPrefix() }}</span>
 
                     <span

@@ -94,33 +94,6 @@ class Post extends Model implements HasMedia, HasRichContent
     protected $with = ['meta'];
     protected $appends = ['template', 'custom_fields'];
 
-    public function template(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->getMeta('template', $this->metaDefaults['template'] ?? 'post')
-        );
-    }
-
-    /**
-     * Accessor for custom_fields
-     * Retrieves custom fields from within post_content
-     */
-    public function customFields(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                $content = $this->post_content;
-
-                // If post_content is already an array with custom_fields, return it
-                if (is_array($content) && isset($content['custom_fields'])) {
-                    return $content['custom_fields'];
-                }
-
-                return [];
-            }
-        );
-    }
-
     /**
      * Boot the model and register model events
      */
@@ -151,6 +124,41 @@ class Post extends Model implements HasMedia, HasRichContent
                 }
             }
         });
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return PostFactory::new();
+    }
+
+    public function template(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->getMeta('template', $this->metaDefaults['template'] ?? 'post')
+        );
+    }
+
+    /**
+     * Accessor for custom_fields
+     * Retrieves custom fields from within post_content
+     */
+    public function customFields(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $content = $this->post_content;
+
+                // If post_content is already an array with custom_fields, return it
+                if (is_array($content) && isset($content['custom_fields'])) {
+                    return $content['custom_fields'];
+                }
+
+                return [];
+            }
+        );
     }
 
     public function isPublished(): bool
@@ -273,7 +281,7 @@ class Post extends Model implements HasMedia, HasRichContent
     /**
      * Register media conversions
      */
-    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
         $mediaSettings = app(\FrankenCms\Settings\MediaSettings::class);
         $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
@@ -436,14 +444,6 @@ class Post extends Model implements HasMedia, HasRichContent
         // Default: Use OG image for Twitter large image cards
         // This will fall back through the same logic as seoOgImage()
         return $this->seoOgImage();
-    }
-
-    /**
-     * Create a new factory instance for the model.
-     */
-    protected static function newFactory()
-    {
-        return PostFactory::new();
     }
 
     protected function casts(): array

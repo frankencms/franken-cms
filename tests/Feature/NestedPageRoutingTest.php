@@ -2,7 +2,6 @@
 
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Page;
-use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Support\Facades\Config;
 
 beforeEach(function () {
@@ -16,10 +15,10 @@ beforeEach(function () {
 describe('Single-level page routing', function () {
     test('can access published single-level page', function () {
         $page = Page::factory()->create([
-            'post_slug' => 'about',
-            'post_title' => 'About Us',
+            'post_slug'   => 'about',
+            'post_title'  => 'About Us',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $response = $this->get('/about');
@@ -29,10 +28,10 @@ describe('Single-level page routing', function () {
 
     test('cannot access draft single-level page', function () {
         $page = Page::factory()->create([
-            'post_slug' => 'about',
-            'post_title' => 'About Us',
+            'post_slug'   => 'about',
+            'post_title'  => 'About Us',
             'post_status' => PostStatus::DRAFT,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $response = $this->get('/about');
@@ -42,10 +41,10 @@ describe('Single-level page routing', function () {
 
     test('generates correct URL for single-level page', function () {
         $page = Page::factory()->create([
-            'post_slug' => 'contact',
-            'post_title' => 'Contact',
+            'post_slug'   => 'contact',
+            'post_title'  => 'Contact',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         expect($page->url)->toBe('/contact');
@@ -55,10 +54,10 @@ describe('Single-level page routing', function () {
 describe('Two-level nested page routing', function () {
     test('can access published parent page', function () {
         $parent = Page::factory()->create([
-            'post_slug' => 'company',
-            'post_title' => 'Company',
+            'post_slug'   => 'company',
+            'post_title'  => 'Company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $response = $this->get('/company');
@@ -68,17 +67,17 @@ describe('Two-level nested page routing', function () {
 
     test('can access published child page', function () {
         $parent = Page::factory()->create([
-            'post_slug' => 'company',
-            'post_title' => 'Company',
+            'post_slug'   => 'company',
+            'post_title'  => 'Company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $child = Page::factory()->create([
-            'post_slug' => 'team',
-            'post_title' => 'Our Team',
+            'post_slug'   => 'team',
+            'post_title'  => 'Our Team',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $parent->id,
+            'parent_id'   => $parent->id,
         ]);
 
         $response = $this->get('/company/team');
@@ -88,17 +87,17 @@ describe('Two-level nested page routing', function () {
 
     test('generates correct URL for child page', function () {
         $parent = Page::factory()->create([
-            'post_slug' => 'company',
-            'post_title' => 'Company',
+            'post_slug'   => 'company',
+            'post_title'  => 'Company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $child = Page::factory()->create([
-            'post_slug' => 'team',
-            'post_title' => 'Our Team',
+            'post_slug'   => 'team',
+            'post_title'  => 'Our Team',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $parent->id,
+            'parent_id'   => $parent->id,
         ]);
 
         expect($child->url)->toBe('/company/team');
@@ -106,17 +105,17 @@ describe('Two-level nested page routing', function () {
 
     test('cannot access draft child page even if parent is published', function () {
         $parent = Page::factory()->create([
-            'post_slug' => 'company',
-            'post_title' => 'Company',
+            'post_slug'   => 'company',
+            'post_title'  => 'Company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $child = Page::factory()->create([
-            'post_slug' => 'team',
-            'post_title' => 'Our Team',
+            'post_slug'   => 'team',
+            'post_title'  => 'Our Team',
             'post_status' => PostStatus::DRAFT,
-            'parent_id' => $parent->id,
+            'parent_id'   => $parent->id,
         ]);
 
         $response = $this->get('/company/team');
@@ -128,24 +127,24 @@ describe('Two-level nested page routing', function () {
 describe('Three-level nested page routing', function () {
     test('can access all three levels of published pages', function () {
         $level1 = Page::factory()->create([
-            'post_slug' => 'company',
-            'post_title' => 'Company',
+            'post_slug'   => 'company',
+            'post_title'  => 'Company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $level2 = Page::factory()->create([
-            'post_slug' => 'team',
-            'post_title' => 'Our Team',
+            'post_slug'   => 'team',
+            'post_title'  => 'Our Team',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $level1->id,
+            'parent_id'   => $level1->id,
         ]);
 
         $level3 = Page::factory()->create([
-            'post_slug' => 'leadership',
-            'post_title' => 'Leadership',
+            'post_slug'   => 'leadership',
+            'post_title'  => 'Leadership',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $level2->id,
+            'parent_id'   => $level2->id,
         ]);
 
         // Test all three levels
@@ -156,24 +155,24 @@ describe('Three-level nested page routing', function () {
 
     test('generates correct URL for deeply nested page', function () {
         $level1 = Page::factory()->create([
-            'post_slug' => 'company',
-            'post_title' => 'Company',
+            'post_slug'   => 'company',
+            'post_title'  => 'Company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $level2 = Page::factory()->create([
-            'post_slug' => 'team',
-            'post_title' => 'Our Team',
+            'post_slug'   => 'team',
+            'post_title'  => 'Our Team',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $level1->id,
+            'parent_id'   => $level1->id,
         ]);
 
         $level3 = Page::factory()->create([
-            'post_slug' => 'leadership',
-            'post_title' => 'Leadership',
+            'post_slug'   => 'leadership',
+            'post_title'  => 'Leadership',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $level2->id,
+            'parent_id'   => $level2->id,
         ]);
 
         expect($level3->url)->toBe('/company/team/leadership');
@@ -183,31 +182,31 @@ describe('Three-level nested page routing', function () {
 describe('Four-level nested page routing', function () {
     test('can access all four levels of published pages', function () {
         $level1 = Page::factory()->create([
-            'post_slug' => 'company',
-            'post_title' => 'Company',
+            'post_slug'   => 'company',
+            'post_title'  => 'Company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $level2 = Page::factory()->create([
-            'post_slug' => 'departments',
-            'post_title' => 'Departments',
+            'post_slug'   => 'departments',
+            'post_title'  => 'Departments',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $level1->id,
+            'parent_id'   => $level1->id,
         ]);
 
         $level3 = Page::factory()->create([
-            'post_slug' => 'engineering',
-            'post_title' => 'Engineering',
+            'post_slug'   => 'engineering',
+            'post_title'  => 'Engineering',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $level2->id,
+            'parent_id'   => $level2->id,
         ]);
 
         $level4 = Page::factory()->create([
-            'post_slug' => 'backend',
-            'post_title' => 'Backend Team',
+            'post_slug'   => 'backend',
+            'post_title'  => 'Backend Team',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $level3->id,
+            'parent_id'   => $level3->id,
         ]);
 
         // Test all four levels
@@ -251,9 +250,9 @@ describe('Page hierarchy edge cases', function () {
 
     test('returns 404 for non-existent nested page', function () {
         $parent = Page::factory()->create([
-            'post_slug' => 'company',
+            'post_slug'   => 'company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $response = $this->get('/company/does-not-exist');
@@ -263,21 +262,21 @@ describe('Page hierarchy edge cases', function () {
 
     test('returns 404 for incorrect hierarchy path', function () {
         $parent1 = Page::factory()->create([
-            'post_slug' => 'company',
+            'post_slug'   => 'company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $parent2 = Page::factory()->create([
-            'post_slug' => 'about',
+            'post_slug'   => 'about',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $child = Page::factory()->create([
-            'post_slug' => 'team',
+            'post_slug'   => 'team',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $parent1->id, // Actually belongs to 'company'
+            'parent_id'   => $parent1->id, // Actually belongs to 'company'
         ]);
 
         // Should work
@@ -289,30 +288,30 @@ describe('Page hierarchy edge cases', function () {
 
     test('handles pages with same slug but different parents', function () {
         $company = Page::factory()->create([
-            'post_slug' => 'company',
+            'post_slug'   => 'company',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         $products = Page::factory()->create([
-            'post_slug' => 'products',
+            'post_slug'   => 'products',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => null,
+            'parent_id'   => null,
         ]);
 
         // Both have a child with slug 'overview'
         $companyOverview = Page::factory()->create([
-            'post_slug' => 'overview',
-            'post_title' => 'Company Overview',
+            'post_slug'   => 'overview',
+            'post_title'  => 'Company Overview',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $company->id,
+            'parent_id'   => $company->id,
         ]);
 
         $productsOverview = Page::factory()->create([
-            'post_slug' => 'overview',
-            'post_title' => 'Products Overview',
+            'post_slug'   => 'overview',
+            'post_title'  => 'Products Overview',
             'post_status' => PostStatus::PUBLISH,
-            'parent_id' => $products->id,
+            'parent_id'   => $products->id,
         ]);
 
         // Both should work and return different pages

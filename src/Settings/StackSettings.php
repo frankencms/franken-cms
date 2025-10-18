@@ -24,17 +24,15 @@ class StackSettings extends Settings
 
     /**
      * Get all enabled stacks grouped by stack name
-     *
-     * @return array
      */
     public function getEnabledStacksByName(): array
     {
         $grouped = [];
 
         foreach ($this->stacks as $stack) {
-            if (($stack['enabled'] ?? false) && !empty($stack['code'] ?? '')) {
+            if (($stack['enabled'] ?? false) && ! empty($stack['code'] ?? '')) {
                 $stackName = $stack['stack_name'] ?? '';
-                if (!isset($grouped[$stackName])) {
+                if (! isset($grouped[$stackName])) {
                     $grouped[$stackName] = [];
                 }
                 $grouped[$stackName][] = $stack['code'];

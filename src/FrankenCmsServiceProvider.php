@@ -186,7 +186,6 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
     }
 
-
     private function registerThemeComponents(): void
     {
         $themeFolder = config('franken-cms.theme_folder', 'theme');
@@ -296,7 +295,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                         $view->getFactory()->startPush($stackName, $code . PHP_EOL);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Silently fail if settings aren't available yet
                 // This can happen during installation or migrations
             }

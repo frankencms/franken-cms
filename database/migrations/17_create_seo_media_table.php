@@ -15,7 +15,7 @@ return new class extends Migration
 
         // Create the singleton instance
         DB::table('seo_media')->insert([
-            'id' => 1,
+            'id'         => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

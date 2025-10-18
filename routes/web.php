@@ -10,16 +10,16 @@ use Illuminate\Support\Facades\Route;
 // Apply web middleware group to all package routes
 Route::middleware('web')->group(function () {
     // Robots.txt route (static file takes precedence if exists)
-    Route::get('/robots.txt', [RobotsController::class, 'index'])->name('robots');
+    Route::get('robots.txt', [RobotsController::class, 'index'])->name('robots');
 
     // Feed routes
-    Route::get('/feed', [FeedController::class, 'rss'])->name('feed.rss');
-    Route::get('/feed/atom', [FeedController::class, 'atom'])->name('feed.atom');
+    Route::get('feed', [FeedController::class, 'rss'])->name('feed.rss');
+    Route::get('feed/atom', [FeedController::class, 'atom'])->name('feed.atom');
 
     // Sitemap routes
-    Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
-    Route::get('/sitemap-pages.xml', fn() => app(SitemapController::class)->postType('page'))->name('sitemap.pages');
-    Route::get('/sitemap-posts.xml', fn() => app(SitemapController::class)->postType('post'))->name('sitemap.posts');
+    Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+    Route::get('sitemap-pages.xml', fn () => app(SitemapController::class)->postType('page'))->name('sitemap.pages');
+    Route::get('sitemap-posts.xml', fn () => app(SitemapController::class)->postType('post'))->name('sitemap.posts');
 
     // Register named routes for pages (must be before fallback)
     app(PageRouteService::class)->registerPageRoutes();

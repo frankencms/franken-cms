@@ -3,6 +3,8 @@
 namespace FrankenCms\Services;
 
 use Illuminate\Support\Facades\File;
+use RuntimeException;
+use Throwable;
 
 class TemplateFieldParser
 {
@@ -41,44 +43,19 @@ class TemplateFieldParser
 
             // Check for duplicate field names
             if (isset($fields[$fieldName])) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     "Duplicate field name '{$fieldName}' found in template. Each field name must be unique."
                 );
             }
 
             $fields[$fieldName] = [
-                'name' => $fieldName,
-                'type' => $fieldType,
+                'name'    => $fieldName,
+                'type'    => $fieldType,
                 'options' => $options,
             ];
         }
 
         return $fields;
-    }
-
-    /**
-     * Parse the options array from the directive
-     */
-    protected function parseOptions(string $optionsString): array
-    {
-        // Remove square brackets
-        $optionsString = trim($optionsString, '[]');
-
-        if (empty($optionsString)) {
-            return [];
-        }
-
-        // Use eval to parse the PHP array syntax safely within a controlled context
-        // This is safe because we're only parsing template files, not user input
-        try {
-            $options = eval("return [{$optionsString}];");
-
-            return is_array($options) ? $options : [];
-        } catch (\Throwable $e) {
-            throw new \RuntimeException(
-                "Failed to parse field options: {$optionsString}. Error: {$e->getMessage()}"
-            );
-        }
     }
 
     /**
@@ -117,5 +94,30 @@ class TemplateFieldParser
         }
 
         return true;
+    }
+
+    /**
+     * Parse the options array from the directive
+     */
+    protected function parseOptions(string $optionsString): array
+    {
+        // Remove square brackets
+        $optionsString = trim($optionsString, '[]');
+
+        if (empty($optionsString)) {
+            return [];
+        }
+
+        // Use eval to parse the PHP array syntax safely within a controlled context
+        // This is safe because we're only parsing template files, not user input
+        try {
+            $options = eval("return [{$optionsString}];");
+
+            return is_array($options) ? $options : [];
+        } catch (Throwable $e) {
+            throw new RuntimeException(
+                "Failed to parse field options: {$optionsString}. Error: {$e->getMessage()}"
+            );
+        }
     }
 }

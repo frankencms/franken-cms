@@ -10,14 +10,6 @@ trait HasMeta
     protected array $pendingMeta = [];
 
     /**
-     * Get the meta records associated with the post.
-     */
-    public function meta()
-    {
-        return $this->hasMany($this->metaModel, 'post_id');
-    }
-
-    /**
      * Boot the HasMeta trait
      */
     protected static function bootHasMeta(): void
@@ -30,6 +22,14 @@ trait HasMeta
                 $model->pendingMeta = [];
             }
         });
+    }
+
+    /**
+     * Get the meta records associated with the post.
+     */
+    public function meta()
+    {
+        return $this->hasMany($this->metaModel, 'post_id');
     }
 
     /**
@@ -100,14 +100,6 @@ trait HasMeta
     }
 
     /**
-     * Check if an attribute is a meta field
-     */
-    protected function isMetaAttribute(string $key): bool
-    {
-        return in_array($key, $this->metaFillable ?? []);
-    }
-
-    /**
      * Override setAttribute to handle meta fields
      */
     public function setAttribute($key, $value)
@@ -131,5 +123,13 @@ trait HasMeta
         }
 
         return parent::getAttribute($key);
+    }
+
+    /**
+     * Check if an attribute is a meta field
+     */
+    protected function isMetaAttribute(string $key): bool
+    {
+        return in_array($key, $this->metaFillable ?? []);
     }
 }

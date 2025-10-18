@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrankenCms\Jobs;
 
+use Exception;
 use FrankenCms\Models\Post;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,7 +17,10 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class RegeneratePostImagesJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * The number of times the job may be attempted.
@@ -53,7 +57,7 @@ class RegeneratePostImagesJob implements ShouldQueue
                 '--ids' => $mediaIds,
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Failed to queue regeneration: {$e->getMessage()}");
             throw $e;
         }

@@ -17,14 +17,6 @@ class TestCase extends Orchestra
         );
     }
 
-    /**
-     * Define database migrations.
-     */
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-    }
-
     public function getEnvironmentSetUp($app)
     {
         config()->set('database.default', 'testing');
@@ -41,6 +33,13 @@ class TestCase extends Orchestra
         config()->set('franken-cms.models.user', \FrankenCms\Tests\Support\User::class);
     }
 
+    /**
+     * Define database migrations.
+     */
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+    }
 
     protected function getPackageProviders($app)
     {

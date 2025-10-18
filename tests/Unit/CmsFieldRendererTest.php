@@ -1,10 +1,6 @@
 <?php
 
 use FrankenCms\Services\CmsFieldRenderer;
-use FrankenCms\Services\FieldRenderers\BooleanFieldRenderer;
-use FrankenCms\Services\FieldRenderers\FileFieldRenderer;
-use FrankenCms\Services\FieldRenderers\RepeaterFieldRenderer;
-use FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer;
 use FrankenCms\Services\FieldRenderers\TextFieldRenderer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;

@@ -3,7 +3,6 @@
 namespace FrankenCms\Services;
 
 use FrankenCms\Contracts\CurrentPageInterface;
-use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 
 class CurrentPageService implements CurrentPageInterface

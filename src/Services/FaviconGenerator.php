@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace FrankenCms\Services;
 
-use Spatie\Image\Image;
+use Exception;
 use Spatie\Image\Enums\Fit;
+use Spatie\Image\Image;
 
 class FaviconGenerator
 {
@@ -14,24 +15,24 @@ class FaviconGenerator
      */
     protected array $sizes = [
         // Apple Touch Icons
-        'apple-touch-icon-57x57.png' => [57, 57],
-        'apple-touch-icon-60x60.png' => [60, 60],
-        'apple-touch-icon-72x72.png' => [72, 72],
-        'apple-touch-icon-76x76.png' => [76, 76],
+        'apple-touch-icon-57x57.png'   => [57, 57],
+        'apple-touch-icon-60x60.png'   => [60, 60],
+        'apple-touch-icon-72x72.png'   => [72, 72],
+        'apple-touch-icon-76x76.png'   => [76, 76],
         'apple-touch-icon-114x114.png' => [114, 114],
         'apple-touch-icon-120x120.png' => [120, 120],
         'apple-touch-icon-144x144.png' => [144, 144],
         'apple-touch-icon-152x152.png' => [152, 152],
 
         // Standard Favicons
-        'favicon-16x16.png' => [16, 16],
-        'favicon-32x32.png' => [32, 32],
-        'favicon-96x96.png' => [96, 96],
-        'favicon-128.png' => [128, 128],
+        'favicon-16x16.png'   => [16, 16],
+        'favicon-32x32.png'   => [32, 32],
+        'favicon-96x96.png'   => [96, 96],
+        'favicon-128.png'     => [128, 128],
         'favicon-196x196.png' => [196, 196],
 
         // MS Tiles
-        'mstile-70x70.png' => [70, 70],
+        'mstile-70x70.png'   => [70, 70],
         'mstile-144x144.png' => [144, 144],
         'mstile-150x150.png' => [150, 150],
         'mstile-310x150.png' => [310, 150],
@@ -58,7 +59,7 @@ class FaviconGenerator
                     ->save($outputPath);
 
                 $generated[] = $filename;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Log error but continue with other sizes
                 logger()->error("Failed to generate favicon {$filename}: " . $e->getMessage());
             }
@@ -74,8 +75,8 @@ class FaviconGenerator
                 copy($ico32Path, $icoPath);
                 $generated[] = 'favicon.ico';
             }
-        } catch (\Exception $e) {
-            logger()->error("Failed to generate favicon.ico: " . $e->getMessage());
+        } catch (Exception $e) {
+            logger()->error('Failed to generate favicon.ico: ' . $e->getMessage());
         }
 
         return $generated;

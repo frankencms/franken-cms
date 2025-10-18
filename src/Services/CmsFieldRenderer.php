@@ -9,6 +9,7 @@ use FrankenCms\Services\FieldRenderers\RepeaterFieldRenderer;
 use FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer;
 use FrankenCms\Services\FieldRenderers\SelectFieldRenderer;
 use FrankenCms\Services\FieldRenderers\TextFieldRenderer;
+use InvalidArgumentException;
 
 class CmsFieldRenderer
 {
@@ -16,18 +17,18 @@ class CmsFieldRenderer
      * Map of field types to their renderer classes
      */
     protected array $renderers = [
-        'text' => TextFieldRenderer::class,
-        'textarea' => TextFieldRenderer::class,
-        'email' => TextFieldRenderer::class,
-        'url' => TextFieldRenderer::class,
-        'number' => TextFieldRenderer::class,
-        'select' => SelectFieldRenderer::class,
-        'file' => FileFieldRenderer::class,
-        'image' => FileFieldRenderer::class,
-        'repeater' => RepeaterFieldRenderer::class,
+        'text'       => TextFieldRenderer::class,
+        'textarea'   => TextFieldRenderer::class,
+        'email'      => TextFieldRenderer::class,
+        'url'        => TextFieldRenderer::class,
+        'number'     => TextFieldRenderer::class,
+        'select'     => SelectFieldRenderer::class,
+        'file'       => FileFieldRenderer::class,
+        'image'      => FileFieldRenderer::class,
+        'repeater'   => RepeaterFieldRenderer::class,
         'richEditor' => RichEditorFieldRenderer::class,
-        'toggle' => BooleanFieldRenderer::class,
-        'checkbox' => BooleanFieldRenderer::class,
+        'toggle'     => BooleanFieldRenderer::class,
+        'checkbox'   => BooleanFieldRenderer::class,
     ];
 
     /**
@@ -48,8 +49,8 @@ class CmsFieldRenderer
     public function registerRenderer(string $fieldType, string $rendererClass): void
     {
         if (! is_subclass_of($rendererClass, FieldRendererInterface::class)) {
-            throw new \InvalidArgumentException(
-                "Renderer class must implement FieldRendererInterface"
+            throw new InvalidArgumentException(
+                'Renderer class must implement FieldRendererInterface'
             );
         }
 

@@ -5,7 +5,6 @@ namespace FrankenCms\Services;
 use FrankenCms\Enums\PermalinkStructure;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
-use FrankenCms\Services\TemplateResolver;
 use FrankenCms\Settings\PermalinkSettings;
 use FrankenCms\Settings\ReadingSettings;
 use Illuminate\View\View;
@@ -85,6 +84,17 @@ readonly class ContentResolver
         return TemplateResolver::resolve($page);
     }
 
+    public function isPostPath(string $path): bool
+    {
+        $postPage = $this->readingSettings->post_page;
+        return $postPage && str_starts_with($path, $postPage);
+    }
+
+    public function extractSlugFromPostPath(string $path): string
+    {
+        return trim(str_replace($this->readingSettings->post_page, '', $path), '/');
+    }
+
     /**
      * Resolve a hierarchical page by traversing the path segments
      */
@@ -106,7 +116,7 @@ readonly class ContentResolver
 
             $currentPage = $query->first();
 
-            if (!$currentPage) {
+            if (! $currentPage) {
                 abort(404, "Page not found in hierarchy: {$slug}");
             }
 
@@ -114,17 +124,6 @@ readonly class ContentResolver
         }
 
         return $currentPage;
-    }
-
-    public function isPostPath(string $path): bool
-    {
-        $postPage = $this->readingSettings->post_page;
-        return $postPage && str_starts_with($path, $postPage);
-    }
-
-    public function extractSlugFromPostPath(string $path): string
-    {
-        return trim(str_replace($this->readingSettings->post_page, '', $path), '/');
     }
 
     private function findPostById(?string $id): ?Post

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrankenCms\SettingsTabs;
 
+use Closure;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -60,7 +61,7 @@ class RobotsSettingsTabProvider implements SettingsTabProviderInterface
                                     ->reorderable()
                                     ->required()
                                     ->rule(function () {
-                                        return function (string $attribute, $value, \Closure $fail) {
+                                        return function (string $attribute, $value, Closure $fail) {
                                             if (! is_array($value)) {
                                                 return;
                                             }

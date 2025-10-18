@@ -38,13 +38,13 @@ class SitemapSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Default Change Frequency')
                             ->helperText('How frequently content typically changes (hint for search engines)')
                             ->options([
-                                'always' => 'Always',
-                                'hourly' => 'Hourly',
-                                'daily' => 'Daily',
-                                'weekly' => 'Weekly',
+                                'always'  => 'Always',
+                                'hourly'  => 'Hourly',
+                                'daily'   => 'Daily',
+                                'weekly'  => 'Weekly',
                                 'monthly' => 'Monthly',
-                                'yearly' => 'Yearly',
-                                'never' => 'Never',
+                                'yearly'  => 'Yearly',
+                                'never'   => 'Never',
                             ])
                             ->default('weekly')
                             ->required()

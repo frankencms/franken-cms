@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Http\Middleware;
 
 use Closure;
+use Exception;
 use FrankenCms\Services\ContentResolver;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Settings\ReadingSettings;
@@ -40,7 +41,7 @@ class SetCurrentPage
                     ->where('post_status', 'published')
                     ->firstOrFail();
                 $this->currentPageService->setPage($page);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Page not found, let the controller handle it
             }
         }

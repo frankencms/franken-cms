@@ -1,10 +1,10 @@
 <?php
 
 use FrankenCms\Settings\GeneralSettings;
-use FrankenCms\Settings\ReadingSettings;
-use FrankenCms\Settings\SeoSettings;
 use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\PermalinkSettings;
+use FrankenCms\Settings\ReadingSettings;
+use FrankenCms\Settings\SeoSettings;
 
 describe('setting() helper function', function () {
 
@@ -150,7 +150,7 @@ describe('cmsField() helper function', function () {
 
     it('can retrieve a shared cmsField', function () {
         View::share('cmsFields', collect([
-            'heroTitle' => 'Welcome to our site',
+            'heroTitle'    => 'Welcome to our site',
             'heroSubtitle' => 'We are awesome',
         ]));
 

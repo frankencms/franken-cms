@@ -68,10 +68,10 @@ it('groups fields by section using dot notation', function () {
     $parser = new TemplateFieldParser;
 
     $fields = [
-        'hero.title' => ['name' => 'hero.title', 'type' => 'text', 'options' => []],
+        'hero.title'    => ['name' => 'hero.title', 'type' => 'text', 'options' => []],
         'hero.subtitle' => ['name' => 'hero.subtitle', 'type' => 'textarea', 'options' => []],
-        'cta.button' => ['name' => 'cta.button', 'type' => 'text', 'options' => []],
-        'standalone' => ['name' => 'standalone', 'type' => 'text', 'options' => []],
+        'cta.button'    => ['name' => 'cta.button', 'type' => 'text', 'options' => []],
+        'standalone'    => ['name' => 'standalone', 'type' => 'text', 'options' => []],
     ];
 
     $sections = $parser->getFieldsBySection($fields);

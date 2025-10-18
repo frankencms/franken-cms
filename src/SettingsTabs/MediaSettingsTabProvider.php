@@ -31,11 +31,11 @@ class MediaSettingsTabProvider implements SettingsTabProviderInterface
                                     ->label('Aspect Ratio')
                                     ->inlineLabel()
                                     ->options([
-                                        '16:9' => '16:9 (Widescreen)',
-                                        '4:3' => '4:3 (Traditional)',
-                                        '3:2' => '3:2 (Classic Photo)',
-                                        '1:1' => '1:1 (Square)',
-                                        '21:9' => '21:9 (Ultrawide)',
+                                        '16:9'   => '16:9 (Widescreen)',
+                                        '4:3'    => '4:3 (Traditional)',
+                                        '3:2'    => '3:2 (Classic Photo)',
+                                        '1:1'    => '1:1 (Square)',
+                                        '21:9'   => '21:9 (Ultrawide)',
                                         'custom' => 'Custom Dimensions',
                                     ])
                                     ->default('16:9')
@@ -89,11 +89,11 @@ class MediaSettingsTabProvider implements SettingsTabProviderInterface
                                     ->label('Aspect Ratio')
                                     ->inlineLabel()
                                     ->options([
-                                        '16:9' => '16:9 (Widescreen)',
-                                        '4:3' => '4:3 (Traditional)',
-                                        '3:2' => '3:2 (Classic Photo)',
-                                        '1:1' => '1:1 (Square)',
-                                        '21:9' => '21:9 (Ultrawide)',
+                                        '16:9'   => '16:9 (Widescreen)',
+                                        '4:3'    => '4:3 (Traditional)',
+                                        '3:2'    => '3:2 (Classic Photo)',
+                                        '1:1'    => '1:1 (Square)',
+                                        '21:9'   => '21:9 (Ultrawide)',
                                         'custom' => 'Custom Dimensions',
                                     ])
                                     ->default('3:2')

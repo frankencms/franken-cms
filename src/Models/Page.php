@@ -32,18 +32,18 @@ class Page extends Post
     protected $with = ['meta'];
     protected $appends = ['template', 'custom_fields'];
 
-    public function template(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->getMeta('template', $this->metaDefaults['template'] ?? 'page-home')
-        );
-    }
-
     /**
      * Create a new factory instance for the model.
      */
     protected static function newFactory()
     {
         return PageFactory::new();
+    }
+
+    public function template(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->getMeta('template', $this->metaDefaults['template'] ?? 'page-home')
+        );
     }
 }

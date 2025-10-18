@@ -6,6 +6,7 @@ use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
+use Throwable;
 
 class PageRouteService
 {
@@ -20,11 +21,28 @@ class PageRouteService
             foreach ($pages as $page) {
                 $this->registerPage($page);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Silently fail if database tables don't exist yet (e.g., during tests or fresh install)
             // This can happen when routes are registered before migrations run
             return;
         }
+    }
+
+    /**
+     * Clear the page routes cache
+     */
+    public function clearCache(): void
+    {
+        Cache::forget('franken_cms_page_routes');
+    }
+
+    /**
+     * Refresh page routes (clear cache and re-register)
+     */
+    public function refreshRoutes(): void
+    {
+        $this->clearCache();
+        $this->registerPageRoutes();
     }
 
     /**
@@ -61,29 +79,12 @@ class PageRouteService
                 ->get()
                 ->map(function ($page) {
                     return [
-                        'id' => $page->id,
+                        'id'         => $page->id,
                         'route_name' => $page->route_name,
-                        'path' => $page->getHierarchicalPath(),
+                        'path'       => $page->getHierarchicalPath(),
                     ];
                 })
                 ->toArray();
         });
-    }
-
-    /**
-     * Clear the page routes cache
-     */
-    public function clearCache(): void
-    {
-        Cache::forget('franken_cms_page_routes');
-    }
-
-    /**
-     * Refresh page routes (clear cache and re-register)
-     */
-    public function refreshRoutes(): void
-    {
-        $this->clearCache();
-        $this->registerPageRoutes();
     }
 }

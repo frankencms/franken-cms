@@ -67,22 +67,6 @@ class CmsFieldBuilder
     }
 
     /**
-     * Apply type-specific default configurations
-     */
-    protected function applyTypeSpecificDefaults(mixed $field, string $type, array $options): mixed
-    {
-        match ($type) {
-            'email'  => $field instanceof TextInput ? $field->email() : null,
-            'url'    => $field instanceof TextInput ? $field->url() : null,
-            'number' => $field instanceof TextInput ? $field->numeric() : null,
-            'image'  => $field instanceof FileUpload ? $field->image()->imageEditor() : null,
-            default  => null,
-        };
-
-        return $field;
-    }
-
-    /**
      * Build all fields from an array of field definitions
      *
      * @return array<mixed>
@@ -172,5 +156,21 @@ class CmsFieldBuilder
     public function getFieldTypeMap(): array
     {
         return $this->fieldTypeMap;
+    }
+
+    /**
+     * Apply type-specific default configurations
+     */
+    protected function applyTypeSpecificDefaults(mixed $field, string $type, array $options): mixed
+    {
+        match ($type) {
+            'email'  => $field instanceof TextInput ? $field->email() : null,
+            'url'    => $field instanceof TextInput ? $field->url() : null,
+            'number' => $field instanceof TextInput ? $field->numeric() : null,
+            'image'  => $field instanceof FileUpload ? $field->image()->imageEditor() : null,
+            default  => null,
+        };
+
+        return $field;
     }
 }

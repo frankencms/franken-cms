@@ -17,8 +17,8 @@ beforeEach(function () {
     $this->settings->enabled = true;
     $this->settings->user_agents = [
         [
-            'user_agent' => '*',
-            'rules' => ['Allow: /'],
+            'user_agent'  => '*',
+            'rules'       => ['Allow: /'],
             'crawl_delay' => null,
         ],
     ];
@@ -78,8 +78,8 @@ describe('Dynamic robots.txt generation', function () {
     test('generates robots.txt with disallow rules', function () {
         $this->settings->user_agents = [
             [
-                'user_agent' => '*',
-                'rules' => ['Disallow: /admin', 'Disallow: /private'],
+                'user_agent'  => '*',
+                'rules'       => ['Disallow: /admin', 'Disallow: /private'],
                 'crawl_delay' => null,
             ],
         ];
@@ -94,8 +94,8 @@ describe('Dynamic robots.txt generation', function () {
     test('generates robots.txt with allow rules', function () {
         $this->settings->user_agents = [
             [
-                'user_agent' => '*',
-                'rules' => ['Allow: /public', 'Allow: /assets'],
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /public', 'Allow: /assets'],
                 'crawl_delay' => null,
             ],
         ];
@@ -109,8 +109,8 @@ describe('Dynamic robots.txt generation', function () {
     test('generates robots.txt with mixed allow and disallow rules', function () {
         $this->settings->user_agents = [
             [
-                'user_agent' => '*',
-                'rules' => ['Disallow: /admin', 'Allow: /admin/public'],
+                'user_agent'  => '*',
+                'rules'       => ['Disallow: /admin', 'Allow: /admin/public'],
                 'crawl_delay' => null,
             ],
         ];
@@ -124,8 +124,8 @@ describe('Dynamic robots.txt generation', function () {
     test('generates robots.txt with crawl delay', function () {
         $this->settings->user_agents = [
             [
-                'user_agent' => '*',
-                'rules' => ['Allow: /'],
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /'],
                 'crawl_delay' => 10,
             ],
         ];
@@ -138,8 +138,8 @@ describe('Dynamic robots.txt generation', function () {
     test('ignores zero or negative crawl delay', function () {
         $this->settings->user_agents = [
             [
-                'user_agent' => '*',
-                'rules' => ['Allow: /'],
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /'],
                 'crawl_delay' => 0,
             ],
         ];
@@ -152,13 +152,13 @@ describe('Dynamic robots.txt generation', function () {
     test('generates robots.txt with multiple user agents', function () {
         $this->settings->user_agents = [
             [
-                'user_agent' => 'Googlebot',
-                'rules' => ['Allow: /'],
+                'user_agent'  => 'Googlebot',
+                'rules'       => ['Allow: /'],
                 'crawl_delay' => null,
             ],
             [
-                'user_agent' => 'Bingbot',
-                'rules' => ['Allow: /', 'Disallow: /private'],
+                'user_agent'  => 'Bingbot',
+                'rules'       => ['Allow: /', 'Disallow: /private'],
                 'crawl_delay' => 5,
             ],
         ];
@@ -231,8 +231,8 @@ describe('Dynamic robots.txt generation', function () {
     test('ignores invalid rules without colon', function () {
         $this->settings->user_agents = [
             [
-                'user_agent' => '*',
-                'rules' => ['Allow: /', 'InvalidRule'],
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /', 'InvalidRule'],
                 'crawl_delay' => null,
             ],
         ];
@@ -247,8 +247,8 @@ describe('Dynamic robots.txt generation', function () {
     test('handles case-insensitive rule directives', function () {
         $this->settings->user_agents = [
             [
-                'user_agent' => '*',
-                'rules' => ['DISALLOW: /admin', 'allow: /public'],
+                'user_agent'  => '*',
+                'rules'       => ['DISALLOW: /admin', 'allow: /public'],
                 'crawl_delay' => null,
             ],
         ];
@@ -284,8 +284,8 @@ describe('Hybrid static/dynamic content', function () {
         // Even though settings allow everything, static file should be used
         $this->settings->user_agents = [
             [
-                'user_agent' => '*',
-                'rules' => ['Allow: /'],
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /'],
                 'crawl_delay' => null,
             ],
         ];

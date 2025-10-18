@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\File;
 beforeEach(function () {
     // Create a test user with ID 1 for post author relationship
     User::create([
-        'id' => 1,
-        'name' => 'Test User',
-        'email' => 'test@example.com',
+        'id'       => 1,
+        'name'     => 'Test User',
+        'email'    => 'test@example.com',
         'password' => bcrypt('password'),
     ]);
 
@@ -85,12 +85,12 @@ describe('Enabled state', function () {
 describe('Post filtering', function () {
     test('includes only published posts', function () {
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::DRAFT,
         ]);
 
@@ -104,12 +104,12 @@ describe('Post filtering', function () {
         $this->settings->included_post_types = ['post'];
 
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
         Post::factory()->create([
-            'post_type' => 'page',
+            'post_type'   => 'page',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -121,8 +121,8 @@ describe('Post filtering', function () {
 
     test('excludes posts with future publish date', function () {
         Post::factory()->create([
-            'post_type' => 'post',
-            'post_status' => PostStatus::PUBLISH,
+            'post_type'         => 'post',
+            'post_status'       => PostStatus::PUBLISH,
             'post_published_at' => now()->addDay(),
         ]);
 
@@ -134,8 +134,8 @@ describe('Post filtering', function () {
 
     test('includes posts with past publish date', function () {
         Post::factory()->create([
-            'post_type' => 'post',
-            'post_status' => PostStatus::PUBLISH,
+            'post_type'         => 'post',
+            'post_status'       => PostStatus::PUBLISH,
             'post_published_at' => now()->subDay(),
         ]);
 
@@ -147,8 +147,8 @@ describe('Post filtering', function () {
 
     test('includes posts with null publish date', function () {
         Post::factory()->create([
-            'post_type' => 'post',
-            'post_status' => PostStatus::PUBLISH,
+            'post_type'         => 'post',
+            'post_status'       => PostStatus::PUBLISH,
             'post_published_at' => null,
         ]);
 
@@ -162,15 +162,15 @@ describe('Post filtering', function () {
 describe('Excluded paths', function () {
     test('excludes posts matching exact path', function () {
         $privatePost = Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
-            'post_slug' => 'private-post',
+            'post_slug'   => 'private-post',
         ]);
 
         $publicPost = Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
-            'post_slug' => 'public-post',
+            'post_slug'   => 'public-post',
         ]);
 
         $this->settings->excluded_paths = [$privatePost->url];
@@ -185,15 +185,15 @@ describe('Excluded paths', function () {
 
     test('excludes posts matching wildcard pattern', function () {
         $adminPost = Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
-            'post_slug' => 'admin-stuff',
+            'post_slug'   => 'admin-stuff',
         ]);
 
         $publicPost = Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
-            'post_slug' => 'about',
+            'post_slug'   => 'about',
         ]);
 
         // Use wildcard pattern matching URL structure
@@ -209,21 +209,21 @@ describe('Excluded paths', function () {
 
     test('supports multiple excluded paths', function () {
         $private = Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
-            'post_slug' => 'private',
+            'post_slug'   => 'private',
         ]);
 
         $secret = Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
-            'post_slug' => 'secret',
+            'post_slug'   => 'secret',
         ]);
 
         $public = Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
-            'post_slug' => 'public',
+            'post_slug'   => 'public',
         ]);
 
         $this->settings->excluded_paths = [$private->url, $secret->url];
@@ -239,7 +239,7 @@ describe('Excluded paths', function () {
 describe('Sitemap generation', function () {
     test('generates valid XML sitemap', function () {
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -258,7 +258,7 @@ describe('Sitemap generation', function () {
         $this->settings->default_change_frequency = 'daily';
 
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -271,7 +271,7 @@ describe('Sitemap generation', function () {
         $this->settings->default_priority = 0.8;
 
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -282,9 +282,9 @@ describe('Sitemap generation', function () {
 
     test('includes post URL in sitemap', function () {
         $post = Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
-            'post_slug' => 'test-post',
+            'post_slug'   => 'test-post',
         ]);
 
         $sitemap = $this->service->render();
@@ -294,7 +294,7 @@ describe('Sitemap generation', function () {
 
     test('includes last modification date', function () {
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -310,7 +310,7 @@ describe('Sitemap index generation', function () {
 
         // Create 5 posts (under max)
         Post::factory()->count(5)->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -326,7 +326,7 @@ describe('Sitemap index generation', function () {
 
         // Create 5 posts (over max)
         Post::factory()->count(5)->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -342,7 +342,7 @@ describe('Sitemap index generation', function () {
 describe('File writing', function () {
     test('writes sitemap to default filename', function () {
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -353,7 +353,7 @@ describe('File writing', function () {
 
     test('writes sitemap to custom filename', function () {
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 
@@ -364,7 +364,7 @@ describe('File writing', function () {
 
     test('written file contains valid XML', function () {
         Post::factory()->create([
-            'post_type' => 'post',
+            'post_type'   => 'post',
             'post_status' => PostStatus::PUBLISH,
         ]);
 

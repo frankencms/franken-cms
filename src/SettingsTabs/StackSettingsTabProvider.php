@@ -4,7 +4,6 @@ namespace FrankenCms\SettingsTabs;
 
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;

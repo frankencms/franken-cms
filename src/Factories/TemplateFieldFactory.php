@@ -3,7 +3,6 @@
 namespace FrankenCms\Factories;
 
 use Filament\Schemas\Components\Section;
-use FilamentTiptapEditor\Enums\TiptapOutput;
 use FrankenCms\Registries\FieldRegistry;
 use FrankenCms\Services\CmsFieldBuilder;
 use FrankenCms\Services\CmsFieldParser;

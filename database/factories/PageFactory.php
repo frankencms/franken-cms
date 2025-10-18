@@ -13,26 +13,26 @@ class PageFactory extends Factory
     public function definition(): array
     {
         return [
-            'post_title' => $this->faker->sentence(),
-            'post_slug' => $this->faker->unique()->slug(),
+            'post_title'   => $this->faker->sentence(),
+            'post_slug'    => $this->faker->unique()->slug(),
             'post_content' => [
-                'type' => 'doc',
+                'type'    => 'doc',
                 'content' => [
                     [
-                        'type' => 'paragraph',
-                        'attrs' => ['textAlign' => 'start'],
+                        'type'    => 'paragraph',
+                        'attrs'   => ['textAlign' => 'start'],
                         'content' => [
                             ['type' => 'text', 'text' => $this->faker->paragraph()],
                         ],
                     ],
                 ],
             ],
-            'post_status' => PostStatus::PUBLISH,
+            'post_status'       => PostStatus::PUBLISH,
             'post_published_at' => now(),
-            'post_author_id' => 1, // Assuming user ID 1 exists
-            'post_type' => 'page',
-            'parent_id' => null,
-            'route_name' => null,
+            'post_author_id'    => 1, // Assuming user ID 1 exists
+            'post_type'         => 'page',
+            'parent_id'         => null,
+            'route_name'        => null,
         ];
     }
 

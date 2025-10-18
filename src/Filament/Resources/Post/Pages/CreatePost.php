@@ -16,15 +16,15 @@ class CreatePost extends CreateRecord
     {
         // Extract featured image metadata before mass assignment
         $this->featuredImageMetadata = [
-            'alt' => $data['featured_image_alt'] ?? '',
-            'title' => $data['featured_image_title'] ?? '',
-            'caption' => $data['featured_image_caption'] ?? '',
-            'attribution' => $data['featured_image_attribution'] ?? '',
-            'css_classes' => $data['featured_image_css'] ?? '',
+            'alt'          => $data['featured_image_alt'] ?? '',
+            'title'        => $data['featured_image_title'] ?? '',
+            'caption'      => $data['featured_image_caption'] ?? '',
+            'attribution'  => $data['featured_image_attribution'] ?? '',
+            'css_classes'  => $data['featured_image_css'] ?? '',
             'lazy_loading' => $data['featured_image_lazy_loading'] ?? false,
-            'width' => $data['featured_image_width'] ?? null,
-            'height' => $data['featured_image_height'] ?? null,
-            'focal_point' => [
+            'width'        => $data['featured_image_width'] ?? null,
+            'height'       => $data['featured_image_height'] ?? null,
+            'focal_point'  => [
                 'x' => $data['featured_image_focal_x'] ?? 50,
                 'y' => $data['featured_image_focal_y'] ?? 50,
             ],

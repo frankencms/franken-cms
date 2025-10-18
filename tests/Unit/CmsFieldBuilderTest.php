@@ -14,8 +14,8 @@ it('builds TextInput field from definition', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'title',
-        'type' => 'text',
+        'name'    => 'title',
+        'type'    => 'text',
         'options' => ['label' => 'Title', 'required' => true],
     ];
 
@@ -28,8 +28,8 @@ it('builds Textarea field from definition', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'description',
-        'type' => 'textarea',
+        'name'    => 'description',
+        'type'    => 'textarea',
         'options' => [],
     ];
 
@@ -42,8 +42,8 @@ it('builds Select field from definition', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'status',
-        'type' => 'select',
+        'name'    => 'status',
+        'type'    => 'select',
         'options' => [],
     ];
 
@@ -56,8 +56,8 @@ it('builds FileUpload field from definition', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'avatar',
-        'type' => 'file',
+        'name'    => 'avatar',
+        'type'    => 'file',
         'options' => [],
     ];
 
@@ -70,8 +70,8 @@ it('builds image field with imageEditor', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'featured_image',
-        'type' => 'image',
+        'name'    => 'featured_image',
+        'type'    => 'image',
         'options' => [],
     ];
 
@@ -84,8 +84,8 @@ it('builds Repeater field from definition', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'items',
-        'type' => 'repeater',
+        'name'    => 'items',
+        'type'    => 'repeater',
         'options' => [],
     ];
 
@@ -98,8 +98,8 @@ it('builds RichEditor field from definition', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'content',
-        'type' => 'richEditor',
+        'name'    => 'content',
+        'type'    => 'richEditor',
         'options' => [],
     ];
 
@@ -112,8 +112,8 @@ it('builds Toggle field from definition', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'is_active',
-        'type' => 'toggle',
+        'name'    => 'is_active',
+        'type'    => 'toggle',
         'options' => [],
     ];
 
@@ -126,8 +126,8 @@ it('builds Checkbox field from definition', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'agree',
-        'type' => 'checkbox',
+        'name'    => 'agree',
+        'type'    => 'checkbox',
         'options' => [],
     ];
 
@@ -140,8 +140,8 @@ it('applies email validation to email fields', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'email',
-        'type' => 'email',
+        'name'    => 'email',
+        'type'    => 'email',
         'options' => [],
     ];
 
@@ -154,8 +154,8 @@ it('applies url validation to url fields', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'website',
-        'type' => 'url',
+        'name'    => 'website',
+        'type'    => 'url',
         'options' => [],
     ];
 
@@ -168,8 +168,8 @@ it('applies numeric validation to number fields', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'age',
-        'type' => 'number',
+        'name'    => 'age',
+        'type'    => 'number',
         'options' => [],
     ];
 
@@ -182,8 +182,8 @@ it('uses custom_fields prefix for field names', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'hero.title',
-        'type' => 'text',
+        'name'    => 'hero.title',
+        'type'    => 'text',
         'options' => [],
     ];
 
@@ -224,8 +224,8 @@ it('falls back to TextInput for unknown field types', function () {
     $builder = new CmsFieldBuilder;
 
     $definition = [
-        'name' => 'unknown',
-        'type' => 'unknown_type',
+        'name'    => 'unknown',
+        'type'    => 'unknown_type',
         'options' => [],
     ];
 

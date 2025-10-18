@@ -12,7 +12,7 @@
         x-load
         x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('featured-image-focal-picker', 'frankencms/franken-cms') }}"
         x-data="featuredImageFocalPicker(
-            @if($existingImageSrc ?? null)'{{ $existingImageSrc }}'@else null @endif,
+            @if ($existingImageSrc ?? null)'{{ $existingImageSrc }}'@else null @endif,
             {{ $existingFocalX ?? 50 }},
             {{ $existingFocalY ?? 50 }},
             '{{ $statePaths['focal_x'] ?? 'data.featured_image_focal_x' }}',
