@@ -18,6 +18,7 @@ class MediaSettingsTabProvider implements SettingsTabProviderInterface
         return Tab::make('Media')
             ->icon('heroicon-o-photo')
             ->schema([
+
                 Section::make('Post Image Conversions')
                     ->description('Configure how featured images are displayed on single posts and in post listings. Images will be automatically resized and cropped based on these settings.')
                     ->columnSpanFull()
@@ -138,6 +139,18 @@ class MediaSettingsTabProvider implements SettingsTabProviderInterface
                                     ->columnSpan(2),
                             ]),
                     ]),
+
+                Section::make('Responsive Images')
+                    ->description('Configure responsive image generation for better performance and bandwidth savings.')
+                    ->columnSpanFull()
+                    ->schema([
+                        Toggle::make('enable_responsive_images')
+                            ->label('Enable Responsive Images')
+                            ->helperText('Generate multiple image sizes (srcset) for responsive delivery. Automatically serves optimized image sizes based on device and screen resolution.')
+                            ->default(true)
+                            ->columnSpanFull(),
+                    ]),
+
             ]);
     }
 

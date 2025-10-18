@@ -20,6 +20,9 @@ class MediaSettings extends Settings
     public ?int $listing_custom_height = null;      // Used when aspect_ratio is 'custom'
     public bool $listing_crop = true;               // Crop to exact ratio
 
+    // Responsive Images
+    public bool $enable_responsive_images = true;   // Generate responsive image srcsets
+
     public static function group(): string
     {
         return 'cms_media';

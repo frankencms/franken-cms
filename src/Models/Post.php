@@ -297,17 +297,27 @@ class Post extends Model implements HasMedia, HasRichContent
         $featuredHeight = $mediaSettings->getFeaturedHeight();
 
         if ($mediaSettings->featured_crop) {
-            $this->addMediaConversion('featured')
+            $conversion = $this->addMediaConversion('featured')
                 ->focalCrop($featuredWidth, $featuredHeight, $focalX, $focalY)
                 ->format('jpg')
-                ->quality(85)
-                ->performOnCollections('featured');
+                ->quality(85);
+
+            if ($mediaSettings->enable_responsive_images) {
+                $conversion->withResponsiveImages();
+            }
+
+            $conversion->performOnCollections('featured');
         } else {
-            $this->addMediaConversion('featured')
+            $conversion = $this->addMediaConversion('featured')
                 ->fit(Fit::Contain, $featuredWidth, $featuredHeight)
                 ->format('jpg')
-                ->quality(85)
-                ->performOnCollections('featured');
+                ->quality(85);
+
+            if ($mediaSettings->enable_responsive_images) {
+                $conversion->withResponsiveImages();
+            }
+
+            $conversion->performOnCollections('featured');
         }
 
         // Listing image conversion (blog index/archive pages)
@@ -317,17 +327,27 @@ class Post extends Model implements HasMedia, HasRichContent
         $listingHeight = $mediaSettings->getListingHeight();
 
         if ($mediaSettings->listing_crop) {
-            $this->addMediaConversion('listing')
+            $conversion = $this->addMediaConversion('listing')
                 ->focalCrop($listingWidth, $listingHeight, $focalX, $focalY)
                 ->format('jpg')
-                ->quality(85)
-                ->performOnCollections('featured');
+                ->quality(85);
+
+            if ($mediaSettings->enable_responsive_images) {
+                $conversion->withResponsiveImages();
+            }
+
+            $conversion->performOnCollections('featured');
         } else {
-            $this->addMediaConversion('listing')
+            $conversion = $this->addMediaConversion('listing')
                 ->fit(Fit::Contain, $listingWidth, $listingHeight)
                 ->format('jpg')
-                ->quality(85)
-                ->performOnCollections('featured');
+                ->quality(85);
+
+            if ($mediaSettings->enable_responsive_images) {
+                $conversion->withResponsiveImages();
+            }
+
+            $conversion->performOnCollections('featured');
         }
 
         // SEO OpenGraph image - exact 1200x630 dimensions
