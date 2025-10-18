@@ -59,7 +59,7 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
                         Toggle::make('enable_feeds')
                             ->label('Enable RSS & Atom Feeds')
                             ->inlineLabel()
-                            ->helperText('Allow visitors to subscribe to your content via RSS and Atom feeds')
+                            ->helperText('Allow visitors to subscribe to your content via RSS and Atom feeds. Feeds are accessible at /feed (RSS) and /feed/atom (Atom).')
                             ->default(true)
                             ->live()
                             ->columnSpan(2),
@@ -68,6 +68,7 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Syndicate Feeds Show The Most Recent')
                             ->postfix('items')
                             ->inlineLabel()
+                            ->helperText('Maximum number of posts to include in your RSS and Atom feeds.')
                             ->default(10)
                             ->required()
                             ->visible(fn ($get) => $get('enable_feeds'))
@@ -77,7 +78,7 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
                             ->visible(fn ($get) => $get('enable_feeds'))
                             ->inlineLabel()
                             ->label('For Each Article In A Feed, Include')
-                            ->helperText('Your theme determines how content is displayed in browsers.')
+                            ->helperText('Full Text: Includes complete article HTML in feed (larger feeds, better for reading in feed readers). Summary: Includes only excerpt text (smaller feeds, encourages click-through to site).')
                             ->options([
                                 'full_text' => 'Full Text',
                                 'summary'   => 'Summary',

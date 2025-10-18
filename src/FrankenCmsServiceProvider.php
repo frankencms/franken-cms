@@ -9,6 +9,7 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use FrankenCms\Commands\GenerateSitemapCommand;
 use FrankenCms\Commands\InstallCommand;
+use FrankenCms\Listeners\ClearFeedCacheListener;
 use FrankenCms\Listeners\ClearSitemapCacheListener;
 use FrankenCms\Models\Post;
 use FrankenCms\Observers\PostObserver;
@@ -130,10 +131,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Post::observe(PostObserver::class);
 
         // Register event listeners
-        Event::listen(
-            \Spatie\LaravelSettings\Events\SettingsSaved::class,
-            ClearSitemapCacheListener::class
-        );
+        Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, ClearSitemapCacheListener::class);
+        Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, ClearFeedCacheListener::class);
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
