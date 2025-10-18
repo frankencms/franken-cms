@@ -6,7 +6,6 @@ use BackedEnum;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -39,11 +38,6 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                             ->required()
                             ->label(__('franken-cms::messages.settings.general.form.title.label'))
                             ->columnSpan(2),
-                        TextArea::make('tagline')
-                            ->inlineLabel()
-                            ->label(__('franken-cms::messages.settings.general.form.tagline.label'))
-                            ->columnSpan(2)
-                            ->helperText(__('franken-cms::messages.settings.general.form.tagline.helper')),
 
                         FileUpload::make('icon')
                             ->label(trans('franken-cms::messages.settings.general.form.icon.label'))

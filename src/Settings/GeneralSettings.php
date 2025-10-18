@@ -10,7 +10,6 @@ use Spatie\LaravelSettings\Settings;
 class GeneralSettings extends Settings
 {
     public string $title;
-    public ?string $tagline = null;
     public ?string $icon = null;
     public bool $membership = false;
     public ?string $new_user_default_role = UserRole::SUBSCRIBER->value;

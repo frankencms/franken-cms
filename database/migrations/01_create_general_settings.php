@@ -11,7 +11,6 @@ return new class extends SettingsMigration
     {
         // General Settings Group (cms_general)
         $this->migrator->add('cms_general.title', 'Franken CMS');
-        $this->migrator->add('cms_general.tagline');
         $this->migrator->add('cms_general.icon');
         $this->migrator->add('cms_general.membership', false);
         $this->migrator->add('cms_general.new_user_default_role', UserRole::SUBSCRIBER->value);

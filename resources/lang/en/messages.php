@@ -12,10 +12,6 @@ return [
                     'label'  => 'Site Title',
                     'helper' => 'The Site Title is what you see in the browser tab and in the header of the admin panel',
                 ],
-                'tagline' => [
-                    'label'  => 'Site Tagline',
-                    'helper' => 'In a few words, explain what this site is about. Example: "Just another Laravel site"',
-                ],
                 'icon' => [
                     'label'  => 'Site Icon',
                     'helper' => 'The Site Icon is what you see in browser tabs, bookmark bars, and within the mobile apps. It should be square and at least 512 by 512 pixels',

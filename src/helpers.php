@@ -82,10 +82,10 @@ if (! function_exists('setting')) {
      * Retrieve a setting value from any settings class
      *
      * Usage:
-     * - setting('general.tagline')
+     * - setting('general.title')
      * - setting('seo.site_name')
      * - setting('reading.posts_per_page')
-     * - setting('general.tagline', 'Default Tagline')
+     * - setting('general.title', 'Default Title')
      *
      * @param  string  $key  The setting key in format 'group.property'
      * @param  mixed  $default  Default value if setting not found
