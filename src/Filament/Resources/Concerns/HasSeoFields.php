@@ -9,6 +9,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
@@ -161,11 +162,11 @@ trait HasSeoFields
                     ->columns(2)
                     ->collapsed(),
 
-                Section::make('Open Graph (Social Media)')
-                    ->description('Configure how this content appears when shared on Facebook, LinkedIn, etc.')
+                Section::make('Social Media Sharing')
+                    ->description('Configure how this content appears when shared on social media (Facebook, Twitter, LinkedIn, etc.)')
                     ->schema([
                         TextInput::make('seo_og_title')
-                            ->label('OpenGraph Title')
+                            ->label('Social Media Title')
                             ->helperText('Title for social media shares. Leave blank to use SEO title or post/page title.')
                             ->maxLength(95)
                             ->afterStateHydrated(function ($component, $state, $record): void {
@@ -182,7 +183,7 @@ trait HasSeoFields
                             ->columnSpanFull(),
 
                         Textarea::make('seo_og_description')
-                            ->label('OpenGraph Description')
+                            ->label('Social Media Description')
                             ->helperText('Description for social media shares. Leave blank to use meta description.')
                             ->rows(3)
                             ->maxLength(200)
@@ -200,75 +201,48 @@ trait HasSeoFields
                             ->columnSpanFull(),
 
                         SpatieMediaLibraryFileUpload::make('seo_og_image')
-                            ->label('OpenGraph Image')
-                            ->helperText('Image for social media shares (1200×630px recommended). Leave blank to use default.')
+                            ->label('Social Media Image')
+                            ->helperText('Image for social media shares (1200×630px recommended). Used for Facebook, LinkedIn, Twitter, and other platforms. Leave blank to use default or featured image.')
                             ->collection('seo-og')
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios([
-                                null, // Free crop
                                 '1.91:1', // 1200x630 (OG recommended)
-                                '16:9',
-                                '4:3',
-                                '1:1',
+                                null, // Free crop
                             ])
                             ->maxSize(5120)
                             ->columnSpanFull(),
-                    ])
-                    ->collapsed(),
 
-                Section::make('Twitter Card')
-                    ->description('Configure how this content appears on Twitter/X')
-                    ->schema([
-                        TextInput::make('seo_twitter_title')
-                            ->label('Twitter Title')
-                            ->helperText('Title for Twitter cards. Leave blank to use OpenGraph title.')
-                            ->maxLength(70)
+                        Toggle::make('seo_use_twitter_summary')
+                            ->label('Use Twitter Summary Card (Small Square Image)')
+                            ->helperText('Enable to use a small square Twitter card instead of the large image card above')
+                            ->default(false)
+                            ->live()
                             ->afterStateHydrated(function ($component, $state, $record): void {
                                 if ($record) {
-                                    $component->state($record->getMeta('seo_twitter_title', ''));
+                                    $component->state((bool) $record->getMeta('seo_use_twitter_summary', false));
                                 }
                             })
                             ->dehydrated(false)
                             ->afterStateUpdated(function ($state, $record): void {
                                 if ($record) {
-                                    $record->setMeta('seo_twitter_title', $state);
-                                }
-                            })
-                            ->columnSpanFull(),
-
-                        Textarea::make('seo_twitter_description')
-                            ->label('Twitter Description')
-                            ->helperText('Description for Twitter cards. Leave blank to use OpenGraph description.')
-                            ->rows(3)
-                            ->maxLength(200)
-                            ->afterStateHydrated(function ($component, $state, $record): void {
-                                if ($record) {
-                                    $component->state($record->getMeta('seo_twitter_description', ''));
-                                }
-                            })
-                            ->dehydrated(false)
-                            ->afterStateUpdated(function ($state, $record): void {
-                                if ($record) {
-                                    $record->setMeta('seo_twitter_description', $state);
+                                    $record->setMeta('seo_use_twitter_summary', (bool) $state);
                                 }
                             })
                             ->columnSpanFull(),
 
                         SpatieMediaLibraryFileUpload::make('seo_twitter_image')
-                            ->label('Twitter Card Image')
-                            ->helperText('Image for Twitter cards (1200×675px recommended). Leave blank to use OpenGraph image.')
+                            ->label('Twitter Summary Card Image')
+                            ->helperText('Square image for Twitter summary cards (minimum 240×240px, recommended 600×600px). Only used when summary card is enabled above.')
                             ->collection('seo-twitter')
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios([
+                                '1:1', // Square for summary cards
                                 null, // Free crop
-                                '16:9', // 1200x675 (Twitter recommended)
-                                '1.91:1', // 1200x630 (OG)
-                                '4:3',
-                                '1:1',
                             ])
                             ->maxSize(5120)
+                            ->visible(fn (Get $get) => $get('seo_use_twitter_summary'))
                             ->columnSpanFull(),
                     ])
                     ->collapsed(),
@@ -288,8 +262,7 @@ trait HasSeoFields
             'seo_robots_follow',
             'seo_og_title',
             'seo_og_description',
-            'seo_twitter_title',
-            'seo_twitter_description',
+            'seo_use_twitter_summary',
         ];
     }
 }

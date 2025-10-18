@@ -81,8 +81,7 @@ class Post extends Model implements HasMedia, HasRichContent
         'seo_robots_follow',
         'seo_og_title',
         'seo_og_description',
-        'seo_twitter_title',
-        'seo_twitter_description',
+        'seo_use_twitter_summary',
     ];
 
     /**
@@ -391,14 +390,17 @@ class Post extends Model implements HasMedia, HasRichContent
     /**
      * Get the SEO Twitter image for this post
      * Checks post-specific image first, then falls back to default
-     * Respects the use_twitter_summary_card setting
+     * Respects both per-post and global use_twitter_summary_card settings
      */
     public function seoTwitterImage(): ?\Spatie\MediaLibrary\MediaCollections\Models\Media
     {
         $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
 
+        // Check per-post setting first, then fall back to global setting
+        $useTwitterSummary = $this->getMeta('seo_use_twitter_summary', $seoSettings->use_twitter_summary_card);
+
         // If using summary cards, check for dedicated Twitter summary image
-        if ($seoSettings->use_twitter_summary_card) {
+        if ($useTwitterSummary) {
             // Check for post-specific Twitter summary image
             if ($this->hasMedia('seo-twitter')) {
                 return $this->getFirstMedia('seo-twitter');

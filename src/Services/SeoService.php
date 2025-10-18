@@ -135,20 +135,20 @@ class SeoService
 
     /**
      * Get the Twitter title
+     * Since we consolidated social media fields, Twitter uses the same title as OG
      */
     public function getTwitterTitle(?Post $post = null): string
     {
-        return $post?->getMeta('seo_twitter_title')
-            ?? $this->getOgTitle($post);
+        return $this->getOgTitle($post);
     }
 
     /**
      * Get the Twitter description
+     * Since we consolidated social media fields, Twitter uses the same description as OG
      */
     public function getTwitterDescription(?Post $post = null): ?string
     {
-        return $post?->getMeta('seo_twitter_description')
-            ?? $this->getOgDescription($post);
+        return $this->getOgDescription($post);
     }
 
     /**
