@@ -60,22 +60,14 @@ export default function featuredImageFocalPicker(existingImageSrc = null, existi
 
             // Watch for focal point changes and sync to Livewire
             this.$watch('focalX', (value) => {
-                console.log('[Focal Picker] X changed to:', value, '| Path:', this.focalXPath);
                 if (this.$wire && this.$wire.set) {
                     this.$wire.set(this.focalXPath, value);
-                    console.log('[Focal Picker] Set Livewire state. Current value:', this.$wire.get ? this.$wire.get(this.focalXPath) : 'N/A');
-                } else {
-                    console.warn('[Focal Picker] $wire.set not available');
                 }
             });
 
             this.$watch('focalY', (value) => {
-                console.log('[Focal Picker] Y changed to:', value, '| Path:', this.focalYPath);
                 if (this.$wire && this.$wire.set) {
                     this.$wire.set(this.focalYPath, value);
-                    console.log('[Focal Picker] Set Livewire state. Current value:', this.$wire.get ? this.$wire.get(this.focalYPath) : 'N/A');
-                } else {
-                    console.warn('[Focal Picker] $wire.set not available');
                 }
             });
 

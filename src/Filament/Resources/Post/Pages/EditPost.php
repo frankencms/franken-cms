@@ -38,9 +38,6 @@ class EditPost extends EditRecord
             ],
         ];
 
-        // Debug logging
-        \Log::info('Featured Image Metadata Before Save:', $this->featuredImageMetadata);
-
         // Remove featured image metadata from data array to prevent mass assignment errors
         unset(
             $data['featured_image_alt'],
