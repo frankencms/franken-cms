@@ -7,6 +7,7 @@ use Exception;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
+use FrankenCms\Commands\GenerateSitemapCommand;
 use FrankenCms\Commands\InstallCommand;
 use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
@@ -59,10 +60,16 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '14_create_postmeta_table',
                 '15_add_hierarchy_and_routes_to_posts',
                 '16_remove_homepage_displays_setting',
+                '17_create_seo_media_table',
+                '18_create_robots_settings',
+                '19_create_sitemap_settings',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
-            ->hasCommand(InstallCommand::class);
+            ->hasCommands([
+                InstallCommand::class,
+                GenerateSitemapCommand::class,
+            ]);
     }
 
     public function packageRegistered(): void
@@ -94,6 +101,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->app->singleton(CmsFieldRenderer::class);
         $this->app->singleton(TemplateFieldParser::class);
         $this->app->singleton(CmsFieldBuilder::class);
+
+        // Register robots and sitemap services
+        $this->app->singleton(\FrankenCms\Services\RobotsService::class);
+        $this->app->singleton(\FrankenCms\Services\SitemapService::class);
 
         // Register the SEO service provider
         $this->app->register(\FrankenCms\Providers\SeoServiceProvider::class);

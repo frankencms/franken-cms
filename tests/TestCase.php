@@ -36,6 +36,9 @@ class TestCase extends Orchestra
 
         config()->set('app.timezone', 'UTC');
         config()->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
+
+        // Configure FrankenCMS user model for tests
+        config()->set('franken-cms.models.user', \FrankenCms\Tests\Support\User::class);
     }
 
 
@@ -52,6 +55,7 @@ class TestCase extends Orchestra
             \Filament\Tables\TablesServiceProvider::class,
             \Filament\Widgets\WidgetsServiceProvider::class,
             \Spatie\LaravelSettings\LaravelSettingsServiceProvider::class,
+            \Spatie\Sitemap\SitemapServiceProvider::class,
             FrankenCmsServiceProvider::class,
             \FrankenCms\Tests\Support\TestPanelProvider::class,
         ];

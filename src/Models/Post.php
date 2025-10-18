@@ -7,6 +7,7 @@ use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichConten
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
 use Filament\Forms\Components\RichEditor\RichContentAttribute;
 use FrankenCms\Casts\PostContentCast;
+use FrankenCms\Database\Factories\PostFactory;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Scopes\PostScope;
 use FrankenCms\Settings\GeneralSettings;
@@ -15,6 +16,7 @@ use FrankenCms\Traits\HasPermalinkUrl;
 use FrankenCms\Traits\HasTerms;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -29,6 +31,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 #[ScopedBy([PostScope::class])]
 class Post extends Model implements HasMedia, HasRichContent
 {
+    use HasFactory;
     use HasMeta;
     use HasPermalinkUrl;
     use HasTerms;
@@ -296,6 +299,14 @@ class Post extends Model implements HasMedia, HasRichContent
     //    {
     //        // TODO: Implement hasRichContentAttribute() method.
     //    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return PostFactory::new();
+    }
 
     protected function casts(): array
     {

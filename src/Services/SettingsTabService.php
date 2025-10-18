@@ -8,7 +8,9 @@ use FrankenCms\SettingsTabs\GeneralSettingsTabProvider;
 use FrankenCms\SettingsTabs\MediaSettingsTabProvider;
 use FrankenCms\SettingsTabs\PermalinkSettingsTabProvider;
 use FrankenCms\SettingsTabs\ReadingSettingsTabProvider;
+use FrankenCms\SettingsTabs\RobotsSettingsTabProvider;
 use FrankenCms\SettingsTabs\SeoSettingsTabProvider;
+use FrankenCms\SettingsTabs\SitemapSettingsTabProvider;
 
 class SettingsTabService
 {
@@ -27,6 +29,8 @@ class SettingsTabService
         $this->registry->register(new MediaSettingsTabProvider());
         $this->registry->register(new PermalinkSettingsTabProvider());
         $this->registry->register(new SeoSettingsTabProvider());
+        $this->registry->register(new RobotsSettingsTabProvider());
+        $this->registry->register(new SitemapSettingsTabProvider());
 
         // TODO: Add other tab providers here as they're created
         // $this->registry->register(new WritingSettingsTabProvider());

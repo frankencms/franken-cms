@@ -42,7 +42,7 @@ class Page extends Post
     /**
      * Create a new factory instance for the model.
      */
-    protected static function newFactory(): PageFactory
+    protected static function newFactory()
     {
         return PageFactory::new();
     }

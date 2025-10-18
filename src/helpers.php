@@ -109,6 +109,8 @@ if (! function_exists('setting')) {
             'seo' => \FrankenCms\Settings\SeoSettings::class,
             'media' => \FrankenCms\Settings\MediaSettings::class,
             'permalink' => \FrankenCms\Settings\PermalinkSettings::class,
+            'robots' => \FrankenCms\Settings\RobotsSettings::class,
+            'sitemap' => \FrankenCms\Settings\SitemapSettings::class,
         ];
 
         // Check if the group exists

@@ -27,7 +27,8 @@
         "illuminate/support": "^12.0",
         "romanzipp/laravel-seo": "^2.9",
         "spatie/laravel-medialibrary": "^11.15",
-        "spatie/laravel-package-tools": "^1.16"
+        "spatie/laravel-package-tools": "^1.16",
+        "spatie/laravel-sitemap": "^7.3"
     },
     "require-dev": {
         "larastan/larastan": "^3.0",
