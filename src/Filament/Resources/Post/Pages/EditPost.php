@@ -71,6 +71,10 @@ class EditPost extends EditRecord
 
         $media = $record->getFirstMedia('featured');
 
+        // Get the existing focal point to check if it changed
+        $existingFocalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+        $newFocalPoint = $this->featuredImageMetadata['focal_point'];
+
         // Save custom properties directly to the media item
         $media->setCustomProperty('alt', $this->featuredImageMetadata['alt']);
         $media->setCustomProperty('title', $this->featuredImageMetadata['title']);
@@ -80,8 +84,14 @@ class EditPost extends EditRecord
         $media->setCustomProperty('lazy_loading', $this->featuredImageMetadata['lazy_loading']);
         $media->setCustomProperty('width', $this->featuredImageMetadata['width']);
         $media->setCustomProperty('height', $this->featuredImageMetadata['height']);
-        $media->setCustomProperty('focal_point', $this->featuredImageMetadata['focal_point']);
+        $media->setCustomProperty('focal_point', $newFocalPoint);
 
         $media->save();
+
+        // Regenerate featured image conversions if focal point changed
+        // Only regenerate thumb, featured, and listing - NOT og/twitter (SEO images don't use focal points)
+        if ($existingFocalPoint['x'] !== $newFocalPoint['x'] || $existingFocalPoint['y'] !== $newFocalPoint['y']) {
+            app(\Spatie\MediaLibrary\Conversions\FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
+        }
     }
 }

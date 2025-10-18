@@ -63,6 +63,10 @@ class CreatePost extends CreateRecord
 
         $media = $record->getFirstMedia('featured');
 
+        // Get the existing focal point to check if it's different from default
+        $existingFocalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+        $newFocalPoint = $this->featuredImageMetadata['focal_point'];
+
         // Save custom properties directly to the media item
         $media->setCustomProperty('alt', $this->featuredImageMetadata['alt']);
         $media->setCustomProperty('title', $this->featuredImageMetadata['title']);
@@ -72,8 +76,15 @@ class CreatePost extends CreateRecord
         $media->setCustomProperty('lazy_loading', $this->featuredImageMetadata['lazy_loading']);
         $media->setCustomProperty('width', $this->featuredImageMetadata['width']);
         $media->setCustomProperty('height', $this->featuredImageMetadata['height']);
-        $media->setCustomProperty('focal_point', $this->featuredImageMetadata['focal_point']);
+        $media->setCustomProperty('focal_point', $newFocalPoint);
 
         $media->save();
+
+        // Regenerate featured image conversions if focal point is not default (50, 50)
+        // The conversions are generated before this method runs, so if user set a custom focal point, regenerate
+        // Only regenerate thumb, featured, and listing - NOT og/twitter (SEO images don't use focal points)
+        if ($newFocalPoint['x'] != 50 || $newFocalPoint['y'] != 50) {
+            app(\Spatie\MediaLibrary\Conversions\FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
+        }
     }
 }

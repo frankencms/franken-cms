@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace FrankenCms\SettingsTabs;
 
-
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use FrankenCms\Models\SeoMedia;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
+use FrankenCms\Models\SeoMedia;
 use FrankenCms\Settings\SeoSettings;
 
 class SeoSettingsTabProvider implements SettingsTabProviderInterface
@@ -67,7 +66,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Site Name Position')
                             ->helperText('Choose whether the site name appears before or after the page title')
                             ->options([
-                                'append' => 'After page title (Page Title - Site Name)',
+                                'append'  => 'After page title (Page Title - Site Name)',
                                 'prepend' => 'Before page title (Site Name - Page Title)',
                             ])
                             ->default('append')
@@ -79,16 +78,16 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Title Separator')
                             ->helperText('Character used to separate page title from site name')
                             ->options([
-                                '-' => '- (Dash)',
-                                '|' => '| (Pipe)',
-                                '–' => '– (En Dash)',
-                                '—' => '— (Em Dash)',
-                                '·' => '· (Middle Dot)',
-                                '•' => '• (Bullet)',
-                                '/' => '/ (Slash)',
+                                '-'  => '- (Dash)',
+                                '|'  => '| (Pipe)',
+                                '–'  => '– (En Dash)',
+                                '—'  => '— (Em Dash)',
+                                '·'  => '· (Middle Dot)',
+                                '•'  => '• (Bullet)',
+                                '/'  => '/ (Slash)',
                                 '\\' => '\\ (Backslash)',
-                                '>' => '> (Greater Than)',
-                                '<' => '< (Less Than)',
+                                '>'  => '> (Greater Than)',
+                                '<'  => '< (Less Than)',
                             ])
                             ->default('-')
                             ->required()
@@ -113,7 +112,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Default Index Behavior')
                             ->helperText('Tell search engines whether to index your pages by default')
                             ->options([
-                                'index' => 'Index (Allow search engines to index)',
+                                'index'   => 'Index (Allow search engines to index)',
                                 'noindex' => 'No Index (Prevent search engines from indexing)',
                             ])
                             ->default('index')
@@ -125,7 +124,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Default Follow Behavior')
                             ->helperText('Tell search engines whether to follow links on your pages')
                             ->options([
-                                'follow' => 'Follow (Allow search engines to follow links)',
+                                'follow'   => 'Follow (Allow search engines to follow links)',
                                 'nofollow' => 'No Follow (Prevent search engines from following links)',
                             ])
                             ->default('follow')
@@ -148,11 +147,8 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios([
-                                null, // Free crop
                                 '1.91:1', // 1200x630 (OG recommended)
-                                '16:9',
-                                '4:3',
-                                '1:1',
+                                null, // Free crop
                             ])
                             ->maxSize(5120)
                             ->columnSpanFull(),
@@ -162,7 +158,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->helperText('The type of content your site represents')
                             ->options([
                                 'website' => 'Website',
-                                'blog' => 'Blog',
+                                'blog'    => 'Blog',
                                 'article' => 'Article',
                             ])
                             ->default('website')
@@ -187,12 +183,13 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Twitter Card Type')
                             ->helperText('The type of Twitter card to use')
                             ->options([
-                                'summary' => 'Summary (Small image)',
+                                'summary'             => 'Summary (Small image)',
                                 'summary_large_image' => 'Summary with Large Image',
                             ])
                             ->default('summary_large_image')
                             ->required()
                             ->native(false)
+                            ->live()
                             ->columnSpanFull(),
 
                         TextInput::make('twitter_username')
@@ -209,13 +206,17 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->model(fn () => SeoMedia::getInstance())
                             ->image()
                             ->imageEditor()
-                            ->imageEditorAspectRatios([
-                                null, // Free crop
-                                '16:9', // 1200x675 (Twitter recommended)
-                                '1.91:1', // 1200x630 (OG)
-                                '4:3',
-                                '1:1',
-                            ])
+                            ->imageEditorAspectRatios(function (Get $get) {
+                                $cardType = $get('twitter_card_type');
+
+                                // summary = 1:1 (600x600), summary_large_image = 16:9 (1200x675)
+                                $aspectRatio = $cardType === 'summary' ? '1:1' : '16:9';
+
+                                return [
+                                    $aspectRatio,
+                                    null, // Free crop
+                                ];
+                            })
                             ->maxSize(5120)
                             ->columnSpanFull(),
                     ]),

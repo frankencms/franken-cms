@@ -277,10 +277,16 @@ class Post extends Model implements HasMedia, HasRichContent
     public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
         $mediaSettings = app(\FrankenCms\Settings\MediaSettings::class);
+        $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
+
+        // Get focal point from media custom properties (if available)
+        $focalPoint = $media?->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]) ?? ['x' => 50, 'y' => 50];
+        $focalX = (int) ($focalPoint['x'] ?? 50);
+        $focalY = (int) ($focalPoint['y'] ?? 50);
 
         // Thumbnail for admin table view (fixed 80x80)
         $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 80, 80)
+            ->focalCrop(80, 80, $focalX, $focalY)
             ->format('jpg')
             ->quality(80)
             ->performOnCollections('featured');
@@ -290,26 +296,40 @@ class Post extends Model implements HasMedia, HasRichContent
             ? $mediaSettings->featured_custom_width
             : $mediaSettings->featured_width;
         $featuredHeight = $mediaSettings->getFeaturedHeight();
-        $featuredFit = $mediaSettings->featured_crop ? Fit::Crop : Fit::Contain;
 
-        $this->addMediaConversion('featured')
-            ->fit($featuredFit, $featuredWidth, $featuredHeight)
-            ->format('jpg')
-            ->quality(85)
-            ->performOnCollections('featured');
+        if ($mediaSettings->featured_crop) {
+            $this->addMediaConversion('featured')
+                ->focalCrop($featuredWidth, $featuredHeight, $focalX, $focalY)
+                ->format('jpg')
+                ->quality(85)
+                ->performOnCollections('featured');
+        } else {
+            $this->addMediaConversion('featured')
+                ->fit(Fit::Contain, $featuredWidth, $featuredHeight)
+                ->format('jpg')
+                ->quality(85)
+                ->performOnCollections('featured');
+        }
 
         // Listing image conversion (blog index/archive pages)
         $listingWidth = $mediaSettings->listing_aspect_ratio === 'custom'
             ? $mediaSettings->listing_custom_width
             : $mediaSettings->listing_width;
         $listingHeight = $mediaSettings->getListingHeight();
-        $listingFit = $mediaSettings->listing_crop ? Fit::Crop : Fit::Contain;
 
-        $this->addMediaConversion('listing')
-            ->fit($listingFit, $listingWidth, $listingHeight)
-            ->format('jpg')
-            ->quality(85)
-            ->performOnCollections('featured');
+        if ($mediaSettings->listing_crop) {
+            $this->addMediaConversion('listing')
+                ->focalCrop($listingWidth, $listingHeight, $focalX, $focalY)
+                ->format('jpg')
+                ->quality(85)
+                ->performOnCollections('featured');
+        } else {
+            $this->addMediaConversion('listing')
+                ->fit(Fit::Contain, $listingWidth, $listingHeight)
+                ->format('jpg')
+                ->quality(85)
+                ->performOnCollections('featured');
+        }
 
         // SEO OpenGraph image - exact 1200x630 dimensions
         $this->addMediaConversion('og')
@@ -318,9 +338,13 @@ class Post extends Model implements HasMedia, HasRichContent
             ->quality(85)
             ->performOnCollections('seo-og');
 
-        // SEO Twitter image - exact 1200x675 dimensions
+        // SEO Twitter image - dimensions based on card type
+        // summary = 1:1 (600x600), summary_large_image = 1200x675
+        $twitterWidth = $seoSettings->twitter_card_type === 'summary' ? 600 : 1200;
+        $twitterHeight = $seoSettings->twitter_card_type === 'summary' ? 600 : 675;
+
         $this->addMediaConversion('twitter')
-            ->fit(Fit::Crop, 1200, 675)
+            ->fit(Fit::Crop, $twitterWidth, $twitterHeight)
             ->format('jpg')
             ->quality(85)
             ->performOnCollections('seo-twitter');
