@@ -32,29 +32,82 @@ trait HasSeoFields
                             ->label('SEO Title')
                             ->helperText('The title that appears in search results. Leave blank to use the post/page title.')
                             ->maxLength(60)
-                            ->live(debounce: 500)
                             ->afterStateHydrated(function ($component, $state, $record): void {
                                 if ($record) {
                                     $component->state($record->getMeta('seo_title', ''));
                                 }
                             })
                             ->dehydrated(false)
-                            ->afterStateUpdated(function ($state, callable $set, $record): void {
-                                $set('_seo_title_length', mb_strlen($state ?? ''));
+                            ->afterStateUpdated(function ($state, $record): void {
                                 if ($record) {
                                     $record->setMeta('seo_title', $state);
                                 }
                             })
+                            ->extraInputAttributes([
+                                'x-init' => "\$dispatch('seo-title-update', { length: \$el.value.length })",
+                                'x-on:input.debounce.50ms' => "\$dispatch('seo-title-update', { length: \$el.value.length })",
+                            ])
                             ->columnSpanFull(),
 
                         Placeholder::make('_seo_title_length')
                             ->label('Title Length')
-                            ->content(function (Get $get) {
-                                $length = mb_strlen($get('seo_title') ?? '');
-                                $color = $length <= 60 ? 'success' : 'danger';
+                            ->content(function () {
+                                $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
+
+                                // Calculate additional characters from site name if appending is enabled
+                                $additionalLength = 0;
+                                if ($seoSettings->append_site_name) {
+                                    $siteName = $seoSettings->site_name ?? '';
+                                    $separator = $seoSettings->title_separator ?? '-';
+                                    // Account for separator with spaces: " - "
+                                    $additionalLength = mb_strlen($siteName) + mb_strlen($separator) + 2;
+                                }
 
                                 return new \Illuminate\Support\HtmlString(
-                                    "<span style='color: var(--{$color}-600);'>{$length} / 60 characters</span>"
+                                    "<div
+                                        wire:ignore
+                                        x-data='{
+                                            titleLength: 0,
+                                            additionalLength: {$additionalLength}
+                                        }'
+                                        x-on:seo-title-update.window='titleLength = \$event.detail.length'
+                                    >
+                                        <span
+                                            x-text='
+                                                (() => {
+                                                    const total = titleLength + additionalLength;
+                                                    if (titleLength === 0) return \"Using default title\";
+
+                                                    let msg = titleLength + \" characters\";
+                                                    if (additionalLength > 0) {
+                                                        msg += \" (+\" + additionalLength + \" from site name) = \" + total + \" total\";
+                                                    }
+                                                    msg += \" / 60 recommended\";
+
+                                                    if (total > 60) {
+                                                        // Too long
+                                                    } else if (total < 50 && titleLength > 0) {
+                                                        msg += \" (too short)\";
+                                                    }
+
+                                                    return msg;
+                                                })()
+                                            '
+                                            x-bind:style='
+                                                (() => {
+                                                    const total = titleLength + additionalLength;
+                                                    let color = \"gray\";
+
+                                                    if (titleLength === 0) color = \"gray\";
+                                                    else if (total > 60) color = \"danger\";
+                                                    else if (total >= 50 && total <= 60) color = \"success\";
+                                                    else if (total > 0 && total < 50) color = \"warning\";
+
+                                                    return \"color: var(--\" + color + \"-600);\";
+                                                })()
+                                            '
+                                        ></span>
+                                    </div>"
                                 );
                             })
                             ->columnSpanFull(),
@@ -64,29 +117,64 @@ trait HasSeoFields
                             ->helperText('A brief description that appears in search results. 150-160 characters recommended.')
                             ->rows(3)
                             ->maxLength(160)
-                            ->live(debounce: 500)
                             ->afterStateHydrated(function ($component, $state, $record): void {
                                 if ($record) {
                                     $component->state($record->getMeta('seo_description', ''));
                                 }
                             })
                             ->dehydrated(false)
-                            ->afterStateUpdated(function ($state, callable $set, $record): void {
-                                $set('_seo_description_length', mb_strlen($state ?? ''));
+                            ->afterStateUpdated(function ($state, $record): void {
                                 if ($record) {
                                     $record->setMeta('seo_description', $state);
                                 }
                             })
+                            ->extraInputAttributes([
+                                'x-init' => "\$dispatch('seo-description-update', { length: \$el.value.length })",
+                                'x-on:input.debounce.50ms' => "\$dispatch('seo-description-update', { length: \$el.value.length })",
+                            ])
                             ->columnSpanFull(),
 
                         Placeholder::make('_seo_description_length')
                             ->label('Description Length')
-                            ->content(function (Get $get) {
-                                $length = mb_strlen($get('seo_description') ?? '');
-                                $color = $length >= 150 && $length <= 160 ? 'success' : ($length > 160 ? 'danger' : 'warning');
-
+                            ->content(function () {
                                 return new \Illuminate\Support\HtmlString(
-                                    "<span style='color: var(--{$color}-600);'>{$length} / 160 characters</span>"
+                                    "<div
+                                        wire:ignore
+                                        x-data='{ descLength: 0 }'
+                                        x-on:seo-description-update.window='descLength = \$event.detail.length'
+                                    >
+                                        <span
+                                            x-text='
+                                                (() => {
+                                                    if (descLength === 0) return \"Using default description\";
+
+                                                    let msg = descLength + \" / 160 characters\";
+
+                                                    if (descLength > 160) {
+                                                        msg += \" (too long)\";
+                                                    } else if (descLength >= 120 && descLength <= 160) {
+                                                        msg += \" (good)\";
+                                                    } else if (descLength > 0 && descLength < 120) {
+                                                        msg += \" (too short - aim for 120-160)\";
+                                                    }
+
+                                                    return msg;
+                                                })()
+                                            '
+                                            x-bind:style='
+                                                (() => {
+                                                    let color = \"gray\";
+
+                                                    if (descLength === 0) color = \"gray\";
+                                                    else if (descLength > 160) color = \"danger\";
+                                                    else if (descLength >= 120 && descLength <= 160) color = \"success\";
+                                                    else if (descLength > 0 && descLength < 120) color = \"warning\";
+
+                                                    return \"color: var(--\" + color + \"-600);\";
+                                                })()
+                                            '
+                                        ></span>
+                                    </div>"
                                 );
                             })
                             ->columnSpanFull(),
