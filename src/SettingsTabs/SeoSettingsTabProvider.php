@@ -118,6 +118,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->default('index')
                             ->required()
                             ->native(false)
+                            ->selectablePlaceholder(false)
                             ->columnSpan(1),
 
                         Select::make('default_robots_follow')
@@ -130,6 +131,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->default('follow')
                             ->required()
                             ->native(false)
+                            ->selectablePlaceholder(false)
                             ->columnSpan(1),
                     ])
                     ->columns(2),
@@ -164,6 +166,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->default('website')
                             ->required()
                             ->native(false)
+                            ->selectablePlaceholder(false)
                             ->columnSpan(1),
 
                         TextInput::make('fb_app_id')
@@ -189,6 +192,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->default('summary_large_image')
                             ->required()
                             ->native(false)
+                            ->selectablePlaceholder(false)
                             ->live()
                             ->columnSpanFull(),
 
@@ -206,17 +210,11 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->model(fn () => SeoMedia::getInstance())
                             ->image()
                             ->imageEditor()
-                            ->imageEditorAspectRatios(function (Get $get) {
-                                $cardType = $get('twitter_card_type');
-
-                                // summary = 1:1 (600x600), summary_large_image = 16:9 (1200x675)
-                                $aspectRatio = $cardType === 'summary' ? '1:1' : '16:9';
-
-                                return [
-                                    $aspectRatio,
-                                    null, // Free crop
-                                ];
-                            })
+                            ->imageEditorAspectRatios([
+                                '1:1',
+                                '16:9',
+                                null
+                            ])
                             ->maxSize(5120)
                             ->columnSpanFull(),
                     ]),
