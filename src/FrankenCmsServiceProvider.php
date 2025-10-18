@@ -9,6 +9,9 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use FrankenCms\Commands\GenerateSitemapCommand;
 use FrankenCms\Commands\InstallCommand;
+use FrankenCms\Listeners\ClearSitemapCacheListener;
+use FrankenCms\Models\Post;
+use FrankenCms\Observers\PostObserver;
 use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
 use FrankenCms\Services\BladeFormDirectiveRegistry;
@@ -25,6 +28,7 @@ use FrankenCms\View\Components\CmsPost;
 use FrankenCms\View\Composers\CmsFieldComposer;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -120,6 +124,15 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // SetCurrentPage must run before AddSeoDefaults so the SEO service can access the current page
         $router->pushMiddlewareToGroup('web', \FrankenCms\Http\Middleware\SetCurrentPage::class);
         $router->pushMiddlewareToGroup('web', \FrankenCms\Http\Middleware\AddSeoDefaults::class);
+
+        // Register model observers
+        Post::observe(PostObserver::class);
+
+        // Register event listeners
+        Event::listen(
+            \Spatie\LaravelSettings\Events\SettingsSaved::class,
+            ClearSitemapCacheListener::class
+        );
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);

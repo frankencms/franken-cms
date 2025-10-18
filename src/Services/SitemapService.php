@@ -9,12 +9,23 @@ use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\SitemapSettings;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\SitemapIndex;
 use Spatie\Sitemap\Tags\Url;
 
 class SitemapService
 {
+    /**
+     * Cache key for sitemap index
+     */
+    protected const CACHE_KEY_INDEX = 'sitemap_index';
+
+    /**
+     * Cache key prefix for post type sitemaps
+     */
+    protected const CACHE_KEY_PREFIX = 'sitemap_';
+
     public function __construct(
         protected SitemapSettings $settings
     ) {}
@@ -32,24 +43,26 @@ class SitemapService
      */
     public function generate(): SitemapIndex
     {
-        $sitemapIndex = SitemapIndex::create();
+        return Cache::rememberForever(self::CACHE_KEY_INDEX, function () {
+            $sitemapIndex = SitemapIndex::create();
 
-        // Always add pages sitemap
-        $sitemapIndex->add(url('sitemap-pages.xml'));
+            // Always add pages sitemap
+            $sitemapIndex->add(url('sitemap-pages.xml'));
 
-        // Always add posts sitemap
-        $sitemapIndex->add(url('sitemap-posts.xml'));
+            // Always add posts sitemap
+            $sitemapIndex->add(url('sitemap-posts.xml'));
 
-        // Add custom sitemaps
-        foreach ($this->settings->custom_sitemaps as $customSitemap) {
-            // Convert relative URLs to absolute
-            if (str_starts_with($customSitemap, '/')) {
-                $customSitemap = url($customSitemap);
+            // Add custom sitemaps
+            foreach ($this->settings->custom_sitemaps as $customSitemap) {
+                // Convert relative URLs to absolute
+                if (str_starts_with($customSitemap, '/')) {
+                    $customSitemap = url($customSitemap);
+                }
+                $sitemapIndex->add($customSitemap);
             }
-            $sitemapIndex->add($customSitemap);
-        }
 
-        return $sitemapIndex;
+            return $sitemapIndex;
+        });
     }
 
     /**
@@ -57,15 +70,19 @@ class SitemapService
      */
     public function generateForPostType(string $postType): Sitemap
     {
-        $posts = $this->getPostsForType($postType);
-        $sitemap = Sitemap::create();
+        $cacheKey = self::CACHE_KEY_PREFIX . $postType;
 
-        foreach ($posts as $post) {
-            $url = $this->createUrlForPost($post);
-            $sitemap->add($url);
-        }
+        return Cache::rememberForever($cacheKey, function () use ($postType) {
+            $posts = $this->getPostsForType($postType);
+            $sitemap = Sitemap::create();
 
-        return $sitemap;
+            foreach ($posts as $post) {
+                $url = $this->createUrlForPost($post);
+                $sitemap->add($url);
+            }
+
+            return $sitemap;
+        });
     }
 
     /**
@@ -300,5 +317,15 @@ class SitemapService
         }
 
         return $this->generate()->render();
+    }
+
+    /**
+     * Clear all sitemap caches
+     */
+    public function clearCache(): void
+    {
+        Cache::forget(self::CACHE_KEY_INDEX);
+        Cache::forget(self::CACHE_KEY_PREFIX . 'post');
+        Cache::forget(self::CACHE_KEY_PREFIX . 'page');
     }
 }
