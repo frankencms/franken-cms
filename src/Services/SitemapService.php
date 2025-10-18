@@ -34,15 +34,11 @@ class SitemapService
     {
         $sitemapIndex = SitemapIndex::create();
 
-        // Add pages sitemap if pages are included
-        if (in_array('page', $this->settings->included_post_types)) {
-            $sitemapIndex->add(url('sitemap-pages.xml'));
-        }
+        // Always add pages sitemap
+        $sitemapIndex->add(url('sitemap-pages.xml'));
 
-        // Add posts sitemap if posts are included
-        if (in_array('post', $this->settings->included_post_types)) {
-            $sitemapIndex->add(url('sitemap-posts.xml'));
-        }
+        // Always add posts sitemap
+        $sitemapIndex->add(url('sitemap-posts.xml'));
 
         // Add custom sitemaps
         foreach ($this->settings->custom_sitemaps as $customSitemap) {
@@ -138,11 +134,11 @@ class SitemapService
      */
     protected function getIncludedPosts(): Collection
     {
-        // First, get the posts we want to include
+        // First, get the posts we want to include (always posts and pages)
         $posts = Post::query()
             ->withoutGlobalScopes()
             ->with(['author', 'media', 'meta'])
-            ->whereIn('post_type', $this->settings->included_post_types)
+            ->whereIn('post_type', ['post', 'page'])
             ->where('post_status', PostStatus::PUBLISH)
             ->where(function ($query) {
                 $query->whereNull('post_published_at')

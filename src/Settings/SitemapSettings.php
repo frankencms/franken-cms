@@ -14,12 +14,6 @@ class SitemapSettings extends Settings
     public bool $enabled;
 
     /**
-     * Post types to include in sitemap
-     * Example: ['post', 'page']
-     */
-    public array $included_post_types;
-
-    /**
      * Default change frequency for posts
      * Options: always, hourly, daily, weekly, monthly, yearly, never
      */

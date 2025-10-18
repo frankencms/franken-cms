@@ -9,9 +9,6 @@ return new class extends SettingsMigration
         // Sitemap Settings Group (franken-cms-sitemap)
         $this->migrator->add('franken-cms-sitemap.enabled', true);
 
-        // Include both posts and pages by default
-        $this->migrator->add('franken-cms-sitemap.included_post_types', ['post', 'page']);
-
         // Default change frequency: weekly
         $this->migrator->add('franken-cms-sitemap.default_change_frequency', 'weekly');
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FrankenCms\SettingsTabs;
 
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -31,21 +30,9 @@ class SitemapSettingsTabProvider implements SettingsTabProviderInterface
                     ->schema([
                         Toggle::make('enabled')
                             ->label('Enable Sitemap Generation')
-                            ->helperText('Automatically generate XML sitemaps for your content.')
+                            ->helperText('Automatically generate XML sitemaps for your content (includes both posts and pages).')
                             ->default(true)
                             ->columnSpanFull(),
-
-                        CheckboxList::make('included_post_types')
-                            ->label('Include Content Types')
-                            ->helperText('Select which post types to include in the sitemap')
-                            ->options([
-                                'post' => 'Posts',
-                                'page' => 'Pages',
-                            ])
-                            ->default(['post', 'page'])
-                            ->required()
-                            ->columnSpanFull()
-                            ->columns(2),
 
                         Select::make('default_change_frequency')
                             ->label('Default Change Frequency')
