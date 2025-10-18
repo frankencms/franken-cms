@@ -48,7 +48,21 @@ class RobotsSettingsTabProvider implements SettingsTabProviderInterface
                                     ->helperText('Enter rules like "Disallow: /admin" or "Allow: /public" (press Enter after each)')
                                     ->placeholder('Example: Disallow: /admin')
                                     ->reorderable()
-                                    ->required(),
+                                    ->required()
+                                    ->rule(function () {
+                                        return function (string $attribute, $value, \Closure $fail) {
+                                            if (! is_array($value)) {
+                                                return;
+                                            }
+
+                                            foreach ($value as $rule) {
+                                                // Check if the rule starts with Allow: or Disallow:
+                                                if (! preg_match('/^(allow|disallow)\s*:/i', trim($rule))) {
+                                                    $fail("Each rule must start with 'Allow:' or 'Disallow:'. Invalid rule: {$rule}");
+                                                }
+                                            }
+                                        };
+                                    }),
 
                                 TextInput::make('crawl_delay')
                                     ->label('Crawl Delay (seconds)')
