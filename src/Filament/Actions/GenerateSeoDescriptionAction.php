@@ -20,7 +20,7 @@ class GenerateSeoDescriptionAction extends BaseAiAction
     {
         return [
             'title'   => $get('post_title') ?? $get('title') ?? '',
-            'content' => $get('post_content') ?? $get('content') ?? '',
+            'content' => $this->extractPlainText($get('post_content') ?? $get('content') ?? ''),
         ];
     }
 

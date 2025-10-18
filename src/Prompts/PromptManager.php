@@ -64,6 +64,15 @@ class PromptManager
     public function formatPrompt(string $template, array $variables): string
     {
         foreach ($variables as $key => $value) {
+            // Convert value to string - handle arrays, nulls, etc.
+            if (is_array($value)) {
+                $value = json_encode($value);
+            } elseif (is_null($value)) {
+                $value = '';
+            } elseif (!is_string($value)) {
+                $value = (string) $value;
+            }
+
             $template = str_replace('{' . $key . '}', $value, $template);
         }
 

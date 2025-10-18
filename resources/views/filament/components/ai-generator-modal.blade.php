@@ -1,6 +1,19 @@
 <div
     x-data="{}"
     @open-ai-modal.window="$dispatch('open-modal', { id: 'ai-generator-modal' })"
+    @ai-content-generated.window="
+        const fieldName = $event.detail[0].fieldName;
+        const value = $event.detail[0].value;
+        const componentId = $event.detail[0].componentId;
+
+        // Find the specific Livewire component using its ID
+        const formComponent = Livewire.find(componentId);
+
+        if (formComponent) {
+            // In Filament forms, data is stored in the 'data' property
+            formComponent.set('data.' + fieldName, value);
+        }
+    "
 >
     <!-- AI Generator Modal Component -->
     <x-filament::modal
@@ -136,7 +149,7 @@
 
         {{-- Cancel Button --}}
         <x-filament::button
-            wire:click="close"
+            x-on:click="$dispatch('close-modal', { id: 'ai-generator-modal' })"
             color="gray"
             outlined
         >

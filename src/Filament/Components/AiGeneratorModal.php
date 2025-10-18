@@ -28,6 +28,8 @@ class AiGeneratorModal extends Component
 
     public string $fieldName = '';
 
+    public string $componentId = '';
+
     // Generation state
     public ?string $generatedText = null;
 
@@ -51,8 +53,6 @@ class AiGeneratorModal extends Component
     #[On('open-ai-modal')]
     public function openModal(array $payload): void
     {
-        \Log::info('AI Modal openModal called', $payload);
-
         $this->actionKey = $payload['actionKey'] ?? '';
         $this->promptLabel = $payload['promptLabel'] ?? '';
         $this->context = $payload['context'] ?? [];
@@ -60,9 +60,7 @@ class AiGeneratorModal extends Component
         $this->targetMin = $payload['targetMin'] ?? null;
         $this->targetMax = $payload['targetMax'] ?? null;
         $this->fieldName = $payload['fieldName'] ?? '';
-        $this->isOpen = true;
-
-        \Log::info('AI Modal isOpen set to', ['isOpen' => $this->isOpen]);
+        $this->componentId = $payload['componentId'] ?? '';
 
         $this->reset(['generatedText', 'isGenerating', 'error', 'characterCount']);
     }
@@ -117,8 +115,9 @@ class AiGeneratorModal extends Component
 
         // Emit event to update the field
         $this->dispatch('ai-content-generated', [
-            'fieldName' => $this->fieldName,
-            'value'     => $this->generatedText,
+            'fieldName'   => $this->fieldName,
+            'value'       => $this->generatedText,
+            'componentId' => $this->componentId,
         ]);
 
         Notification::make()
@@ -137,6 +136,9 @@ class AiGeneratorModal extends Component
     {
         $this->isOpen = false;
         $this->reset(['generatedText', 'isGenerating', 'error', 'characterCount']);
+
+        // Dispatch Alpine.js event to close the Filament modal
+        $this->dispatch('close-modal', id: 'ai-generator-modal');
     }
 
     /**

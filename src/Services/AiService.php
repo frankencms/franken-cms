@@ -40,12 +40,17 @@ class AiService
 
         try {
             // Call Prism to generate content
-            $response = Prism::text()
+            $prismRequest = Prism::text()
                 ->using($settings->provider, $settings->model)
                 ->withPrompt($formattedPrompt)
-                ->withMaxTokens($promptConfig['max_tokens'] ?? 500)
-                ->withTemperature($promptConfig['temperature'] ?? 0.7)
-                ->generate();
+                ->withMaxTokens($promptConfig['max_tokens'] ?? 500);
+
+            // Only set temperature if configured in the prompt
+            if (isset($promptConfig['temperature'])) {
+                $prismRequest->usingTemperature($promptConfig['temperature']);
+            }
+
+            $response = $prismRequest->generate();
 
             return trim($response->text);
         } catch (Exception $e) {

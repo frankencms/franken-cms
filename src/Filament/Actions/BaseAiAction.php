@@ -31,10 +31,22 @@ abstract class BaseAiAction extends Action
 
     /**
      * Get the field name to update
+     * Override this in child classes to specify the correct field name
      */
     protected function getFieldName(): string
     {
-        return $this->getName();
+        // Default: derive from action key by removing 'generate_' prefix
+        $actionKey = $this->getActionKey();
+
+        // Map action keys to field names
+        $fieldMap = [
+            'generate_seo_title' => 'seo_title',
+            'generate_seo_description' => 'seo_description',
+            'generate_teaser' => 'post_teaser',
+            'generate_alt_text' => 'alt_text',
+        ];
+
+        return $fieldMap[$actionKey] ?? $actionKey;
     }
 
     /**
@@ -58,13 +70,14 @@ abstract class BaseAiAction extends Action
 
                 // Dispatch event to open modal
                 $livewire->dispatch('open-ai-modal', [
-                    'actionKey'    => $this->getActionKey(),
-                    'promptLabel'  => $this->getPromptLabel(),
-                    'context'      => $this->getPromptContext($get),
-                    'currentValue' => $currentValue,
-                    'targetMin'    => $this->targetMin,
-                    'targetMax'    => $this->targetMax,
-                    'fieldName'    => $this->getFieldName(),
+                    'actionKey'     => $this->getActionKey(),
+                    'promptLabel'   => $this->getPromptLabel(),
+                    'context'       => $this->getPromptContext($get),
+                    'currentValue'  => $currentValue,
+                    'targetMin'     => $this->targetMin,
+                    'targetMax'     => $this->targetMax,
+                    'fieldName'     => $this->getFieldName(),
+                    'componentId'   => $livewire->getId(),
                 ]);
             });
 
@@ -90,5 +103,55 @@ abstract class BaseAiAction extends Action
     {
         // Note: The actual listener will be in the form component
         // This is handled by Livewire's event system
+    }
+
+    /**
+     * Extract plain text from RichEditor JSON content
+     */
+    protected function extractPlainText($content): string
+    {
+        if (empty($content)) {
+            return '';
+        }
+
+        // If it's already a string, return it
+        if (is_string($content) && !str_starts_with($content, '{')) {
+            return $content;
+        }
+
+        // Try to decode JSON content from RichEditor
+        if (is_string($content)) {
+            $decoded = json_decode($content, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $content = $decoded;
+            }
+        }
+
+        // Extract text from Tiptap/ProseMirror JSON structure
+        if (is_array($content)) {
+            return $this->extractTextFromNodes($content);
+        }
+
+        return (string) $content;
+    }
+
+    /**
+     * Recursively extract text from Tiptap nodes
+     */
+    private function extractTextFromNodes(array $node): string
+    {
+        $text = '';
+
+        if (isset($node['text'])) {
+            $text .= $node['text'];
+        }
+
+        if (isset($node['content']) && is_array($node['content'])) {
+            foreach ($node['content'] as $child) {
+                $text .= $this->extractTextFromNodes($child) . ' ';
+            }
+        }
+
+        return trim($text);
     }
 }

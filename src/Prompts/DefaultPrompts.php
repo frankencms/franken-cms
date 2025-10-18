@@ -27,7 +27,6 @@ Requirements:
 
 Return only the SEO title, nothing else.',
                 'max_tokens'  => 100,
-                'temperature' => 0.7,
                 'enabled'     => true,
             ],
 
@@ -48,7 +47,6 @@ Requirements:
 
 Return only the meta description, nothing else.',
                 'max_tokens'  => 150,
-                'temperature' => 0.7,
                 'enabled'     => true,
             ],
 
@@ -68,7 +66,6 @@ Requirements:
 
 Return only the teaser.',
                 'max_tokens'  => 200,
-                'temperature' => 0.8,
                 'enabled'     => true,
             ],
 
@@ -90,7 +87,6 @@ Requirements:
 
 Return only the alt text.',
                 'max_tokens'  => 100,
-                'temperature' => 0.5,
                 'enabled'     => true,
             ],
         ];
