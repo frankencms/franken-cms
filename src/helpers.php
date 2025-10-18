@@ -104,13 +104,13 @@ if (! function_exists('setting')) {
 
         // Map short group names to settings classes
         $settingsMap = [
-            'general' => \FrankenCms\Settings\GeneralSettings::class,
-            'reading' => \FrankenCms\Settings\ReadingSettings::class,
-            'seo' => \FrankenCms\Settings\SeoSettings::class,
-            'media' => \FrankenCms\Settings\MediaSettings::class,
+            'general'   => \FrankenCms\Settings\GeneralSettings::class,
+            'reading'   => \FrankenCms\Settings\ReadingSettings::class,
+            'seo'       => \FrankenCms\Settings\SeoSettings::class,
+            'media'     => \FrankenCms\Settings\MediaSettings::class,
             'permalink' => \FrankenCms\Settings\PermalinkSettings::class,
-            'robots' => \FrankenCms\Settings\RobotsSettings::class,
-            'sitemap' => \FrankenCms\Settings\SitemapSettings::class,
+            'robots'    => \FrankenCms\Settings\RobotsSettings::class,
+            'sitemap'   => \FrankenCms\Settings\SitemapSettings::class,
         ];
 
         // Check if the group exists
@@ -147,30 +147,61 @@ if (! function_exists('favicon_tags')) {
     }
 }
 
-
-if (!function_exists('aspect_ratio')) {
+if (! function_exists('aspect_ratio')) {
     /**
-     * Calculate and return a simplified aspect ratio (e.g. "16:9").
+     * Calculates the aspect ratio of a given width and height value.
      *
-     * @param  int|float  $width
-     * @param  int|float  $height
-     * @return string
+     * This function computes the greatest common divisor (GCD) of the width and height
+     * to derive a whole number ratio. Optionally, if `$cleanRatio` is set to true,
+     * it matches the calculated decimal ratio to the closest common aspect ratio.
      */
-    function aspect_ratio($width, $height): string
+    function aspect_ratio(float | int $width, float | int $height, bool $cleanRatio = false): string
     {
-        if ($width == 0 || $height == 0) {
-            return 'Invalid dimensions';
-        }
-
-        $gcd = function ($a, $b) use (&$gcd) {
-            return $b == 0 ? $a : $gcd($b, fmod($a, $b));
+        // Calculate GCD (Greatest Common Divisor) using Euclidean algorithm
+        $gcd = function (int|float $a, int|float $b) use (&$gcd): int|float {
+            return $b ? $gcd($b, $a % $b) : $a;
         };
 
         $divisor = $gcd($width, $height);
 
+        // Calculate exact whole number ratio
         $ratioWidth = $width / $divisor;
         $ratioHeight = $height / $divisor;
 
-        return sprintf('%d:%d', $ratioWidth, $ratioHeight);
+        // Calculate decimal ratio
+        $decimal = round($width / $height, 2);
+
+        if ($cleanRatio) {
+            // Common aspect ratios to match against
+            $commonRatios = [
+                ['ratio' => '1:1', 'decimal' => 1.0],      // Square - Instagram posts, profile pictures
+                ['ratio' => '4:3', 'decimal' => 1.33],     // Traditional TV, iPad, some cameras
+                ['ratio' => '3:2', 'decimal' => 1.5],      // 35mm film, DSLR cameras, print photos
+                ['ratio' => '16:10', 'decimal' => 1.6],    // Older widescreen monitors, some laptops
+                ['ratio' => '16:9', 'decimal' => 1.78],    // HD video, modern TV, YouTube, most monitors
+                ['ratio' => '1.85:1', 'decimal' => 1.85],  // Common cinema/movie format
+                ['ratio' => '2:1', 'decimal' => 2.0],      // Univisium, some social media covers
+                ['ratio' => '21:9', 'decimal' => 2.33],    // Ultrawide monitors, cinematic gaming
+                ['ratio' => '2.39:1', 'decimal' => 2.39],  // Anamorphic widescreen cinema (CinemaScope)
+                ['ratio' => '3:1', 'decimal' => 3.0],      // Panoramic images, ultra-wide displays
+            ];
+
+            // Find closest common ratio
+            $closest = $commonRatios[0]['ratio'];
+            $smallestDiff = PHP_FLOAT_MAX;
+
+            foreach ($commonRatios as $common) {
+                $diff = abs($decimal - $common['decimal']);
+                if ($diff < $smallestDiff) {
+                    $smallestDiff = $diff;
+                    $closest = $common['ratio'];
+                }
+            }
+
+            return $closest;
+        }
+
+        // Return precise decimal ratio
+        return $decimal . ':1';
     }
 }
