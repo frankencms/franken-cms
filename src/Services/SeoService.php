@@ -111,23 +111,23 @@ class SeoService
      */
     public function getOgImage(?Post $post = null): ?string
     {
-        // Check for post-specific OG image
-        if ($post && $post->hasMedia('seo-og')) {
-            $media = $post->getFirstMedia('seo-og');
-            return $media?->getFullUrl('og');
+        // Use the clean accessor method
+        if ($post) {
+            $media = $post->seoOgImage();
+            if ($media) {
+                return $media->getFullUrl('og');
+            }
+
+            // Fallback to featured image if no SEO image
+            if ($post->hasMedia('featured')) {
+                return $post->getFirstMedia('featured')?->getFullUrl();
+            }
         }
 
-        // Check for default OG image from SeoMedia model
+        // No post provided, check for default OG image
         $seoMedia = SeoMedia::getInstance();
         if ($seoMedia->hasMedia('og-default')) {
-            $media = $seoMedia->getFirstMedia('og-default');
-            return $media?->getFullUrl('og');
-        }
-
-        // Check for featured image as fallback
-        if ($post && $post->hasMedia('featured')) {
-            $media = $post->getFirstMedia('featured');
-            return $media?->getFullUrl();
+            return $seoMedia->getFirstMedia('og-default')?->getFullUrl('og');
         }
 
         return null;
@@ -156,21 +156,38 @@ class SeoService
      */
     public function getTwitterImage(?Post $post = null): ?string
     {
-        // Check for post-specific Twitter image
-        if ($post && $post->hasMedia('seo-twitter')) {
-            $media = $post->getFirstMedia('seo-twitter');
-            return $media?->getFullUrl('twitter');
+        $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
+
+        // Use the clean accessor method
+        if ($post) {
+            $media = $post->seoTwitterImage();
+            if ($media) {
+                // Determine which conversion to use based on the collection
+                $conversionName = $media->collection_name === 'seo-twitter' || $media->collection_name === 'twitter-default'
+                    ? 'twitter-summary'
+                    : 'twitter';
+
+                return $media->getFullUrl($conversionName);
+            }
+
+            // Fallback to featured image if no SEO image
+            if ($post->hasMedia('featured')) {
+                return $post->getFirstMedia('featured')?->getFullUrl();
+            }
         }
 
-        // Check for default Twitter image from SeoMedia model
+        // No post provided, check for default images based on settings
         $seoMedia = SeoMedia::getInstance();
-        if ($seoMedia->hasMedia('twitter-default')) {
-            $media = $seoMedia->getFirstMedia('twitter-default');
-            return $media?->getFullUrl('twitter');
+
+        if ($seoSettings->use_twitter_summary_card && $seoMedia->hasMedia('twitter-default')) {
+            return $seoMedia->getFirstMedia('twitter-default')?->getFullUrl('twitter-summary');
         }
 
-        // Fallback to OG image
-        return $this->getOgImage($post);
+        if ($seoMedia->hasMedia('og-default')) {
+            return $seoMedia->getFirstMedia('og-default')?->getFullUrl('twitter');
+        }
+
+        return null;
     }
 
     /**

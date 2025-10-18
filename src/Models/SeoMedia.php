@@ -40,8 +40,6 @@ class SeoMedia extends Model implements HasMedia
      */
     public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
-        $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
-
         // OpenGraph default image - exact 1200x630 dimensions (no focal point needed)
         $this->addMediaConversion('og')
             ->fit(Fit::Crop, 1200, 630)
@@ -49,13 +47,16 @@ class SeoMedia extends Model implements HasMedia
             ->quality(85)
             ->performOnCollections('og-default');
 
-        // Twitter default image - dimensions based on card type (no focal point needed)
-        // summary = 1:1 (600x600), summary_large_image = 1200x675
-        $twitterWidth = $seoSettings->twitter_card_type === 'summary' ? 600 : 1200;
-        $twitterHeight = $seoSettings->twitter_card_type === 'summary' ? 600 : 675;
-
+        // Twitter conversion for OG images - always 1200x675 for large image cards
         $this->addMediaConversion('twitter')
-            ->fit(Fit::Crop, $twitterWidth, $twitterHeight)
+            ->fit(Fit::Crop, 1200, 675)
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('og-default');
+
+        // Twitter summary card conversion - 600x600 square for dedicated summary images
+        $this->addMediaConversion('twitter-summary')
+            ->fit(Fit::Crop, 600, 600)
             ->format('jpg')
             ->quality(85)
             ->performOnCollections('twitter-default');

@@ -338,13 +338,16 @@ class Post extends Model implements HasMedia, HasRichContent
             ->quality(85)
             ->performOnCollections('seo-og');
 
-        // SEO Twitter image - dimensions based on card type
-        // summary = 1:1 (600x600), summary_large_image = 1200x675
-        $twitterWidth = $seoSettings->twitter_card_type === 'summary' ? 600 : 1200;
-        $twitterHeight = $seoSettings->twitter_card_type === 'summary' ? 600 : 675;
-
+        // Twitter conversion for OG images - always 1200x675 for large image cards
         $this->addMediaConversion('twitter')
-            ->fit(Fit::Crop, $twitterWidth, $twitterHeight)
+            ->fit(Fit::Crop, 1200, 675)
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('seo-og');
+
+        // Twitter summary card conversion - 600x600 square for dedicated summary images
+        $this->addMediaConversion('twitter-summary')
+            ->fit(Fit::Crop, 600, 600)
             ->format('jpg')
             ->quality(85)
             ->performOnCollections('seo-twitter');
@@ -364,6 +367,54 @@ class Post extends Model implements HasMedia, HasRichContent
     //    {
     //        // TODO: Implement hasRichContentAttribute() method.
     //    }
+
+    /**
+     * Get the SEO OpenGraph image for this post
+     * Checks post-specific image first, then falls back to default
+     */
+    public function seoOgImage(): ?\Spatie\MediaLibrary\MediaCollections\Models\Media
+    {
+        // Check for post-specific OG image
+        if ($this->hasMedia('seo-og')) {
+            return $this->getFirstMedia('seo-og');
+        }
+
+        // Fallback to default OG image
+        $seoMedia = SeoMedia::getInstance();
+        if ($seoMedia->hasMedia('og-default')) {
+            return $seoMedia->getFirstMedia('og-default');
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the SEO Twitter image for this post
+     * Checks post-specific image first, then falls back to default
+     * Respects the use_twitter_summary_card setting
+     */
+    public function seoTwitterImage(): ?\Spatie\MediaLibrary\MediaCollections\Models\Media
+    {
+        $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
+
+        // If using summary cards, check for dedicated Twitter summary image
+        if ($seoSettings->use_twitter_summary_card) {
+            // Check for post-specific Twitter summary image
+            if ($this->hasMedia('seo-twitter')) {
+                return $this->getFirstMedia('seo-twitter');
+            }
+
+            // Fallback to default Twitter summary image
+            $seoMedia = SeoMedia::getInstance();
+            if ($seoMedia->hasMedia('twitter-default')) {
+                return $seoMedia->getFirstMedia('twitter-default');
+            }
+        }
+
+        // Default: Use OG image for Twitter large image cards
+        // This will fall back through the same logic as seoOgImage()
+        return $this->seoOgImage();
+    }
 
     /**
      * Create a new factory instance for the model.

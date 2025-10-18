@@ -136,14 +136,14 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                     ])
                     ->columns(2),
 
-                Section::make('Open Graph (Facebook, LinkedIn, etc.)')
+                Section::make('Social Media Sharing')
                     ->collapsible()
                     ->collapsed()
-                    ->description('Configure how your content appears when shared on social media')
+                    ->description('Configure how your content appears when shared on social media platforms (Facebook, Twitter, LinkedIn, etc.)')
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('og_default_image')
-                            ->label('Default OpenGraph Image')
-                            ->helperText('Default image for social sharing (1200×630px recommended). Used when individual pages don\'t have their own OG image.')
+                            ->label('Default Social Media Image')
+                            ->helperText('Default image for social sharing (1200×630px recommended). Used for Facebook, LinkedIn, Twitter, and other platforms when individual pages don\'t have their own image.')
                             ->collection('og-default')
                             ->model(fn () => SeoMedia::getInstance())
                             ->image()
@@ -156,7 +156,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->columnSpanFull(),
 
                         Select::make('og_type')
-                            ->label('Default OpenGraph Type')
+                            ->label('OpenGraph Type')
                             ->helperText('The type of content your site represents')
                             ->options([
                                 'website' => 'Website',
@@ -174,50 +174,38 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->helperText('Your Facebook App ID for Facebook Insights (optional)')
                             ->maxLength(255)
                             ->columnSpan(1),
-                    ])
-                    ->columns(2),
-
-                Section::make('Twitter (X) Card Settings')
-                    ->collapsible()
-                    ->collapsed()
-                    ->description('Configure how your content appears on Twitter/X')
-                    ->schema([
-                        Select::make('twitter_card_type')
-                            ->label('Twitter Card Type')
-                            ->helperText('The type of Twitter card to use')
-                            ->options([
-                                'summary'             => 'Summary (Small image)',
-                                'summary_large_image' => 'Summary with Large Image',
-                            ])
-                            ->default('summary_large_image')
-                            ->required()
-                            ->native(false)
-                            ->selectablePlaceholder(false)
-                            ->live()
-                            ->columnSpanFull(),
 
                         TextInput::make('twitter_username')
-                            ->label('Twitter Username')
+                            ->label('Twitter/X Username')
                             ->helperText('Your Twitter/X handle (e.g., @yourhandle)')
                             ->prefix('@')
                             ->maxLength(255)
-                            ->columnSpanFull(),
+                            ->columnSpan(1),
+
+                        Toggle::make('use_twitter_summary_card')
+                            ->label('Use Twitter Summary Card')
+                            ->helperText('Enable to use small square Twitter cards instead of large image cards')
+                            ->default(false)
+                            ->live()
+                            ->columnSpan(1),
 
                         SpatieMediaLibraryFileUpload::make('twitter_default_image')
-                            ->label('Default Twitter Card Image')
-                            ->helperText('Default image for Twitter cards (1200×675px recommended). Used when individual pages don\'t have their own Twitter image.')
+                            ->label('Twitter Summary Card Image')
+                            ->helperText('Square image for Twitter summary cards (minimum 240×240px, recommended 600×600px). Only used when summary card is enabled above.')
                             ->collection('twitter-default')
                             ->model(fn () => SeoMedia::getInstance())
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios([
-                                '1:1',
-                                '16:9',
-                                null
+                                '1:1', // Square for summary cards
+                                null, // Free crop
                             ])
                             ->maxSize(5120)
+                            ->required(fn (Get $get) => $get('use_twitter_summary_card'))
+                            ->visible(fn (Get $get) => $get('use_twitter_summary_card'))
                             ->columnSpanFull(),
-                    ]),
+                    ])
+                    ->columns(2),
 
                 Section::make('Additional Settings')
                     ->collapsible()

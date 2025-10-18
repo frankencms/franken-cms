@@ -35,7 +35,7 @@ class SeoSettings extends Settings
     public ?string $fb_app_id;
 
     // Twitter
-    public string $twitter_card_type;
+    public bool $use_twitter_summary_card;
 
     public ?string $twitter_username;
 

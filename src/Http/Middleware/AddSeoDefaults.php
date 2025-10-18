@@ -129,7 +129,7 @@ class AddSeoDefaults
         seo()->add(
             Twitter::make()
                 ->name('card')
-                ->content($this->settings->twitter_card_type)
+                ->content($this->settings->use_twitter_summary_card ? 'summary' : 'summary_large_image')
         );
 
         // Add Twitter username if configured
