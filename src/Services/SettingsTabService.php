@@ -11,6 +11,7 @@ use FrankenCms\SettingsTabs\ReadingSettingsTabProvider;
 use FrankenCms\SettingsTabs\RobotsSettingsTabProvider;
 use FrankenCms\SettingsTabs\SeoSettingsTabProvider;
 use FrankenCms\SettingsTabs\SitemapSettingsTabProvider;
+use FrankenCms\SettingsTabs\StackSettingsTabProvider;
 
 class SettingsTabService
 {
@@ -31,6 +32,7 @@ class SettingsTabService
         $this->registry->register(new SeoSettingsTabProvider());
         $this->registry->register(new RobotsSettingsTabProvider());
         $this->registry->register(new SitemapSettingsTabProvider());
+        $this->registry->register(new StackSettingsTabProvider());
 
         // TODO: Add other tab providers here as they're created
         // $this->registry->register(new WritingSettingsTabProvider());

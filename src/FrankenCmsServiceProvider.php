@@ -70,6 +70,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '17_create_seo_media_table',
                 '18_create_robots_settings',
                 '19_create_sitemap_settings',
+                '20_add_responsive_images_setting',
+                '21_create_stack_settings',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
@@ -143,6 +145,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         // Register view composer to pre-populate CMS fields
         $this->registerCmsFieldComposer();
+
+        // Register view composer to inject custom code stacks
+        $this->registerStackInjection();
 
         // Register theme components directory
         // This allows themes to have their own self-contained components
@@ -260,6 +265,42 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register the composer for all views
         // The composer itself will check if it's a theme template
         View::composer('*', CmsFieldComposer::class);
+    }
+
+    private function registerStackInjection(): void
+    {
+        // Use a singleton to ensure stacks are only injected once per request
+        $this->app->singleton('franken-cms.stacks-injected', function () {
+            return false;
+        });
+
+        // Register a view composer to inject custom code stacks
+        View::composer('*', function ($view) {
+            // Only inject stacks for front-end views (not admin panel)
+            if (request()->route() && str_starts_with(request()->route()->getName() ?? '', 'filament.')) {
+                return;
+            }
+
+            // Guard against multiple injections per request
+            if ($this->app->make('franken-cms.stacks-injected')) {
+                return;
+            }
+            $this->app->instance('franken-cms.stacks-injected', true);
+
+            try {
+                $stackSettings = app(\FrankenCms\Settings\StackSettings::class);
+                $stacksByName = $stackSettings->getEnabledStacksByName();
+
+                foreach ($stacksByName as $stackName => $codeBlocks) {
+                    foreach ($codeBlocks as $code) {
+                        $view->getFactory()->startPush($stackName, $code . PHP_EOL);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Silently fail if settings aren't available yet
+                // This can happen during installation or migrations
+            }
+        });
     }
 
     private function registerAboutInfo(): void
