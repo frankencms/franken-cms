@@ -10,10 +10,12 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use FrankenCms\Settings\SeoSettings;
+use Illuminate\Support\HtmlString;
 
 trait HasSeoFields
 {
@@ -30,7 +32,7 @@ trait HasSeoFields
                     ->schema([
                         TextInput::make('seo_title')
                             ->label('SEO Title')
-                            ->helperText('The title that appears in search results. Leave blank to use the post/page title.')
+                            ->helperText('The title that appears in search results. Recommended: 50-60 characters. Leave blank to use the post/page title.')
                             ->maxLength(60)
                             ->afterStateHydrated(function ($component, $state, $record): void {
                                 if ($record) {
@@ -49,10 +51,10 @@ trait HasSeoFields
                             ])
                             ->columnSpanFull(),
 
-                        Placeholder::make('_seo_title_length')
+                        TextEntry::make('_seo_title_length')
                             ->label('Title Length')
-                            ->content(function () {
-                                $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
+                            ->state(function () {
+                                $seoSettings = app(SeoSettings::class);
 
                                 // Calculate additional characters from site name if appending is enabled
                                 $additionalLength = 0;
@@ -63,7 +65,7 @@ trait HasSeoFields
                                     $additionalLength = mb_strlen($siteName) + mb_strlen($separator) + 2;
                                 }
 
-                                return new \Illuminate\Support\HtmlString(
+                                return new HtmlString(
                                     "<div
                                         wire:ignore
                                         x-data='{
@@ -83,12 +85,6 @@ trait HasSeoFields
                                                         msg += \" (+\" + additionalLength + \" from site name) = \" + total + \" total\";
                                                     }
                                                     msg += \" / 60 recommended\";
-
-                                                    if (total > 60) {
-                                                        // Too long
-                                                    } else if (total < 50 && titleLength > 0) {
-                                                        msg += \" (too short)\";
-                                                    }
 
                                                     return msg;
                                                 })()
@@ -114,7 +110,7 @@ trait HasSeoFields
 
                         Textarea::make('seo_description')
                             ->label('Meta Description')
-                            ->helperText('A brief description that appears in search results. 150-160 characters recommended.')
+                            ->helperText('A brief description that appears in search results. Desktop: 150-160 characters. Mobile: 120-130 characters.')
                             ->rows(3)
                             ->maxLength(160)
                             ->afterStateHydrated(function ($component, $state, $record): void {
@@ -134,10 +130,10 @@ trait HasSeoFields
                             ])
                             ->columnSpanFull(),
 
-                        Placeholder::make('_seo_description_length')
+                        TextEntry::make('_seo_description_length')
                             ->label('Description Length')
-                            ->content(function () {
-                                return new \Illuminate\Support\HtmlString(
+                            ->state(function () {
+                                return new HtmlString(
                                     "<div
                                         wire:ignore
                                         x-data='{ descLength: 0 }'
@@ -154,9 +150,10 @@ trait HasSeoFields
                                                         msg += \" (too long)\";
                                                     } else if (descLength >= 120 && descLength <= 160) {
                                                         msg += \" (good)\";
-                                                    } else if (descLength > 0 && descLength < 120) {
+                                                    } else if (descLength > 0 && descLength < 50) {
                                                         msg += \" (too short - aim for 120-160)\";
                                                     }
+                                                    // 50-119: just show the count, no extra message
 
                                                     return msg;
                                                 })()
@@ -168,7 +165,8 @@ trait HasSeoFields
                                                     if (descLength === 0) color = \"gray\";
                                                     else if (descLength > 160) color = \"danger\";
                                                     else if (descLength >= 120 && descLength <= 160) color = \"success\";
-                                                    else if (descLength > 0 && descLength < 120) color = \"warning\";
+                                                    else if (descLength >= 50 && descLength < 120) color = \"warning\";
+                                                    else if (descLength > 0 && descLength < 50) color = \"danger\";
 
                                                     return \"color: var(--\" + color + \"-600);\";
                                                 })()
@@ -304,12 +302,12 @@ trait HasSeoFields
                         Toggle::make('seo_use_twitter_summary')
                             ->label('Use Twitter Summary Card (Small Square Image)')
                             ->helperText('Enable to use a small square Twitter card instead of the large image card above')
-                            ->default(fn () => app(\FrankenCms\Settings\SeoSettings::class)->use_twitter_summary_card)
+                            ->default(fn () => app(SeoSettings::class)->use_twitter_summary_card)
                             ->live()
                             ->afterStateHydrated(function ($component, $state, $record): void {
                                 if ($record) {
                                     // Load from postmeta if exists, otherwise use global setting
-                                    $globalSetting = app(\FrankenCms\Settings\SeoSettings::class)->use_twitter_summary_card;
+                                    $globalSetting = app(SeoSettings::class)->use_twitter_summary_card;
                                     $component->state((bool) $record->getMeta('seo_use_twitter_summary', $globalSetting));
                                 }
                             })
