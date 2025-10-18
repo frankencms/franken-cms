@@ -12,6 +12,7 @@ use FrankenCms\Commands\InstallCommand;
 use FrankenCms\Listeners\ClearFeedCacheListener;
 use FrankenCms\Listeners\ClearRobotsCacheListener;
 use FrankenCms\Listeners\ClearSitemapCacheListener;
+use FrankenCms\Listeners\RegeneratePostImagesListener;
 use FrankenCms\Models\Post;
 use FrankenCms\Observers\PostObserver;
 use FrankenCms\Registries\SettingsTabRegistry;
@@ -135,6 +136,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, ClearSitemapCacheListener::class);
         Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, ClearFeedCacheListener::class);
         Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, ClearRobotsCacheListener::class);
+        Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, RegeneratePostImagesListener::class);
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);

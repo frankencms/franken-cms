@@ -276,11 +276,39 @@ class Post extends Model implements HasMedia, HasRichContent
      */
     public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
-        // Thumbnail for featured images (table view)
+        $mediaSettings = app(\FrankenCms\Settings\MediaSettings::class);
+
+        // Thumbnail for admin table view (fixed 80x80)
         $this->addMediaConversion('thumb')
             ->fit(Fit::Crop, 80, 80)
             ->format('jpg')
             ->quality(80)
+            ->performOnCollections('featured');
+
+        // Featured image conversion (single post view)
+        $featuredWidth = $mediaSettings->featured_aspect_ratio === 'custom'
+            ? $mediaSettings->featured_custom_width
+            : $mediaSettings->featured_width;
+        $featuredHeight = $mediaSettings->getFeaturedHeight();
+        $featuredFit = $mediaSettings->featured_crop ? Fit::Crop : Fit::Contain;
+
+        $this->addMediaConversion('featured')
+            ->fit($featuredFit, $featuredWidth, $featuredHeight)
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('featured');
+
+        // Listing image conversion (blog index/archive pages)
+        $listingWidth = $mediaSettings->listing_aspect_ratio === 'custom'
+            ? $mediaSettings->listing_custom_width
+            : $mediaSettings->listing_width;
+        $listingHeight = $mediaSettings->getListingHeight();
+        $listingFit = $mediaSettings->listing_crop ? Fit::Crop : Fit::Contain;
+
+        $this->addMediaConversion('listing')
+            ->fit($listingFit, $listingWidth, $listingHeight)
+            ->format('jpg')
+            ->quality(85)
             ->performOnCollections('featured');
 
         // SEO OpenGraph image - exact 1200x630 dimensions

@@ -2,8 +2,9 @@
 
 namespace FrankenCms\SettingsTabs;
 
-use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -17,78 +18,123 @@ class MediaSettingsTabProvider implements SettingsTabProviderInterface
         return Tab::make('Media')
             ->icon('heroicon-o-photo')
             ->schema([
-                Section::make('Image Sizes')
-                    ->description('The sizes listed below determine the maximum dimensions in pixels to use when adding an image to the Media Library.')
+                Section::make('Post Image Conversions')
+                    ->description('Configure how featured images are displayed on single posts and in post listings. Images will be automatically resized and cropped based on these settings.')
                     ->columnSpanFull()
                     ->schema([
-                        Fieldset::make('Thumbnail')
+                        Fieldset::make('Featured Image (Single Post View)')
                             ->columns(3)
                             ->columnSpanFull()
                             ->schema([
-                                TextInput::make('thumbnail_width')
-                                    ->label('Width')
+                                Select::make('featured_aspect_ratio')
+                                    ->label('Aspect Ratio')
+                                    ->inlineLabel()
+                                    ->options([
+                                        '16:9' => '16:9 (Widescreen)',
+                                        '4:3' => '4:3 (Traditional)',
+                                        '3:2' => '3:2 (Classic Photo)',
+                                        '1:1' => '1:1 (Square)',
+                                        '21:9' => '21:9 (Ultrawide)',
+                                        'custom' => 'Custom Dimensions',
+                                    ])
+                                    ->default('16:9')
+                                    ->required()
+                                    ->live()
+                                    ->helperText('The aspect ratio for featured images on single post pages.')
+                                    ->columnSpan(2),
+
+                                TextInput::make('featured_width')
+                                    ->label('Max Width')
                                     ->inlineLabel()
                                     ->postfix('px')
                                     ->numeric()
-                                    ->default(150)
+                                    ->default(1200)
                                     ->required()
+                                    ->helperText('Maximum width in pixels. Height will be calculated from aspect ratio.')
+                                    ->visible(fn ($get) => $get('featured_aspect_ratio') !== 'custom')
                                     ->columnSpan(2),
-                                TextInput::make('thumbnail_height')
-                                    ->label('Height')
+
+                                TextInput::make('featured_custom_width')
+                                    ->label('Custom Width')
                                     ->inlineLabel()
                                     ->postfix('px')
                                     ->numeric()
-                                    ->default(150)
                                     ->required()
+                                    ->visible(fn ($get) => $get('featured_aspect_ratio') === 'custom')
                                     ->columnSpan(2),
-                                Checkbox::make('thumbnail_crop')
+
+                                TextInput::make('featured_custom_height')
+                                    ->label('Custom Height')
                                     ->inlineLabel()
-                                    ->label('Crop Thumbnail To Exact Dimensions')
-                                    ->helperText('Normally thumbnails are proportional to the original image. Enable this to crop the thumbnail to exact dimensions.')
+                                    ->postfix('px')
+                                    ->numeric()
+                                    ->required()
+                                    ->visible(fn ($get) => $get('featured_aspect_ratio') === 'custom')
+                                    ->columnSpan(2),
+
+                                Toggle::make('featured_crop')
+                                    ->label('Crop To Exact Dimensions')
+                                    ->inlineLabel()
+                                    ->helperText('Crop images to exact dimensions. If disabled, images will be resized proportionally within the dimensions.')
+                                    ->default(true)
                                     ->columnSpan(2),
                             ]),
 
-                        Fieldset::make('Medium Size')
+                        Fieldset::make('Listing Image (Blog Index & Archive Pages)')
                             ->columns(3)
                             ->columnSpanFull()
                             ->schema([
-                                TextInput::make('medium_width')
-                                    ->label('Width')
+                                Select::make('listing_aspect_ratio')
+                                    ->label('Aspect Ratio')
                                     ->inlineLabel()
-                                    ->postfix('px')
-                                    ->numeric()
-                                    ->default(300)
+                                    ->options([
+                                        '16:9' => '16:9 (Widescreen)',
+                                        '4:3' => '4:3 (Traditional)',
+                                        '3:2' => '3:2 (Classic Photo)',
+                                        '1:1' => '1:1 (Square)',
+                                        '21:9' => '21:9 (Ultrawide)',
+                                        'custom' => 'Custom Dimensions',
+                                    ])
+                                    ->default('3:2')
                                     ->required()
+                                    ->live()
+                                    ->helperText('The aspect ratio for images in post listings and archives.')
                                     ->columnSpan(2),
-                                TextInput::make('medium_height')
-                                    ->label('Height')
-                                    ->inlineLabel()
-                                    ->postfix('px')
-                                    ->numeric()
-                                    ->default(300)
-                                    ->required()
-                                    ->columnSpan(2),
-                            ]),
 
-                        Fieldset::make('Large Size')
-                            ->columns(3)
-                            ->columnSpanFull()
-                            ->schema([
-                                TextInput::make('large_width')
-                                    ->label('Width')
+                                TextInput::make('listing_width')
+                                    ->label('Max Width')
                                     ->inlineLabel()
                                     ->postfix('px')
                                     ->numeric()
-                                    ->default(1024)
+                                    ->default(800)
                                     ->required()
+                                    ->helperText('Maximum width in pixels. Height will be calculated from aspect ratio.')
+                                    ->visible(fn ($get) => $get('listing_aspect_ratio') !== 'custom')
                                     ->columnSpan(2),
-                                TextInput::make('large_height')
-                                    ->label('Height')
+
+                                TextInput::make('listing_custom_width')
+                                    ->label('Custom Width')
                                     ->inlineLabel()
                                     ->postfix('px')
                                     ->numeric()
-                                    ->default(1024)
                                     ->required()
+                                    ->visible(fn ($get) => $get('listing_aspect_ratio') === 'custom')
+                                    ->columnSpan(2),
+
+                                TextInput::make('listing_custom_height')
+                                    ->label('Custom Height')
+                                    ->inlineLabel()
+                                    ->postfix('px')
+                                    ->numeric()
+                                    ->required()
+                                    ->visible(fn ($get) => $get('listing_aspect_ratio') === 'custom')
+                                    ->columnSpan(2),
+
+                                Toggle::make('listing_crop')
+                                    ->label('Crop To Exact Dimensions')
+                                    ->inlineLabel()
+                                    ->helperText('Crop images to exact dimensions. If disabled, images will be resized proportionally within the dimensions.')
+                                    ->default(true)
                                     ->columnSpan(2),
                             ]),
                     ]),

@@ -7,12 +7,19 @@ return new class extends SettingsMigration
     public function up(): void
     {
         // Media Settings Group (cms_media)
-        $this->migrator->add('cms_media.thumbnail_width', 150);
-        $this->migrator->add('cms_media.thumbnail_height', 150);
-        $this->migrator->add('cms_media.thumbnail_crop', false);
-        $this->migrator->add('cms_media.medium_width', 300);
-        $this->migrator->add('cms_media.medium_height', 300);
-        $this->migrator->add('cms_media.large_width', 1024);
-        $this->migrator->add('cms_media.large_height', 1024);
+
+        // Featured Image (Single Post View)
+        $this->migrator->add('cms_media.featured_aspect_ratio', '16:9');
+        $this->migrator->add('cms_media.featured_width', 1200);
+        $this->migrator->add('cms_media.featured_custom_width', null);
+        $this->migrator->add('cms_media.featured_custom_height', null);
+        $this->migrator->add('cms_media.featured_crop', true);
+
+        // Listing Image (Blog Index/Archive Pages)
+        $this->migrator->add('cms_media.listing_aspect_ratio', '3:2');
+        $this->migrator->add('cms_media.listing_width', 800);
+        $this->migrator->add('cms_media.listing_custom_width', null);
+        $this->migrator->add('cms_media.listing_custom_height', null);
+        $this->migrator->add('cms_media.listing_crop', true);
     }
 };
