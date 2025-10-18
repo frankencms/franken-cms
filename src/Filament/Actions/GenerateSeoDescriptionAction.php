@@ -16,7 +16,7 @@ class GenerateSeoDescriptionAction extends BaseAiAction
         return 'SEO Meta Description';
     }
 
-    protected function getPromptContext(Get $get): array
+    protected function getPromptContext(Get $get, $livewire = null): array
     {
         return [
             'title'   => $get('post_title') ?? $get('title') ?? '',

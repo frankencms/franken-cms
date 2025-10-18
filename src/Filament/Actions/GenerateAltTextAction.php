@@ -16,13 +16,27 @@ class GenerateAltTextAction extends BaseAiAction
         return 'Image Alt Text';
     }
 
-    protected function getPromptContext(Get $get): array
+    protected function getPromptContext(Get $get, $livewire = null): array
     {
-        return [
+        $context = [
             'title'    => $get('../../post_title') ?? $get('../../title') ?? '',
             'content'  => $get('../../post_content') ?? $get('../../content') ?? '',
             'filename' => $get('file_name') ?? $get('name') ?? '',
         ];
+
+        // Try to get the image URL from the record's media
+        if ($livewire && method_exists($livewire, 'getRecord')) {
+            $record = $livewire->getRecord();
+
+            if ($record && method_exists($record, 'hasMedia') && $record->hasMedia('featured')) {
+                $media = $record->getFirstMedia('featured');
+                if ($media) {
+                    $context['image_url'] = $media->getUrl();
+                }
+            }
+        }
+
+        return $context;
     }
 
     protected function setUp(): void

@@ -26,8 +26,11 @@ abstract class BaseAiAction extends Action
 
     /**
      * Get the context data for the AI prompt
+     *
+     * @param  Get  $get  The form field getter
+     * @param  mixed  $livewire  The Livewire component (for accessing record, etc.)
      */
-    abstract protected function getPromptContext(Get $get): array;
+    abstract protected function getPromptContext(Get $get, $livewire = null): array;
 
     /**
      * Get the field name to update
@@ -72,7 +75,7 @@ abstract class BaseAiAction extends Action
                 $livewire->dispatch('open-ai-modal', [
                     'actionKey'     => $this->getActionKey(),
                     'promptLabel'   => $this->getPromptLabel(),
-                    'context'       => $this->getPromptContext($get),
+                    'context'       => $this->getPromptContext($get, $livewire),
                     'currentValue'  => $currentValue,
                     'targetMin'     => $this->targetMin,
                     'targetMax'     => $this->targetMax,

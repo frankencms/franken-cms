@@ -7,6 +7,7 @@ use Exception;
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Settings\AiSettings;
 use Prism\Prism\Prism;
+use Prism\Prism\ValueObjects\Media\Image;
 
 class AiService
 {
@@ -29,6 +30,13 @@ class AiService
         // Get prompt configuration
         $promptConfig = $this->promptManager->getPrompt($actionKey);
 
+        // Check if this is a vision prompt with an image
+        $isVisionPrompt = ($promptConfig['supports_vision'] ?? false) && ! empty($context['image_url']);
+
+        // Extract image URL if present
+        $imageUrl = $context['image_url'] ?? null;
+        unset($context['image_url']); // Remove from context so it doesn't get into the text prompt
+
         // Format prompt with context variables
         $formattedPrompt = $this->promptManager->formatPrompt(
             $promptConfig['prompt'],
@@ -42,8 +50,17 @@ class AiService
             // Call Prism to generate content
             $prismRequest = Prism::text()
                 ->using($settings->provider, $settings->model)
-                ->withPrompt($formattedPrompt)
                 ->withMaxTokens($promptConfig['max_tokens'] ?? 500);
+
+            // Add prompt with optional image
+            if ($isVisionPrompt && $imageUrl) {
+                $prismRequest->withPrompt(
+                    $formattedPrompt,
+                    [Image::fromUrl(url: $imageUrl)]
+                );
+            } else {
+                $prismRequest->withPrompt($formattedPrompt);
+            }
 
             // Only set temperature if configured in the prompt
             if (isset($promptConfig['temperature'])) {

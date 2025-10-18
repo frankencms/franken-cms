@@ -206,6 +206,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                                     ->columnSpanFull(),
 
                                                 Grid::make(3)
+                                                    ->columnSpanFull()
                                                     ->schema([
                                                         TextInput::make('max_tokens')
                                                             ->label('Max Tokens')

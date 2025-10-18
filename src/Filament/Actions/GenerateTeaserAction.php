@@ -16,7 +16,7 @@ class GenerateTeaserAction extends BaseAiAction
         return 'Post Teaser';
     }
 
-    protected function getPromptContext(Get $get): array
+    protected function getPromptContext(Get $get, $livewire = null): array
     {
         return [
             'content' => $this->extractPlainText($get('post_content') ?? $get('content') ?? ''),

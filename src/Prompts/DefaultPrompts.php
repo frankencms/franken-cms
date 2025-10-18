@@ -70,19 +70,21 @@ Return only the teaser.',
             ],
 
             [
-                'label'      => 'Image Alt Text',
-                'action_key' => 'generate_alt_text',
-                'context'    => 'media',
-                'prompt'     => 'Generate descriptive alt text for accessibility based on this context:
+                'label'          => 'Image Alt Text',
+                'action_key'     => 'generate_alt_text',
+                'context'        => 'media',
+                'supports_vision' => true,
+                'prompt'         => 'Analyze this image and generate descriptive alt text for accessibility.
 
+Additional Context:
 Post Title: {title}
 Post Content: {content}
 Image Filename: {filename}
 
 Requirements:
 - Maximum 125 characters
-- Describe image content
-- Provide context
+- Describe what you see in the image
+- Include relevant details for accessibility
 - Be specific and descriptive
 
 Return only the alt text.',

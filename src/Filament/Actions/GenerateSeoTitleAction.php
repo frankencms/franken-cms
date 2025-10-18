@@ -16,7 +16,7 @@ class GenerateSeoTitleAction extends BaseAiAction
         return 'SEO Title Generator';
     }
 
-    protected function getPromptContext(Get $get): array
+    protected function getPromptContext(Get $get, $livewire = null): array
     {
         return [
             'title'   => $get('post_title') ?? $get('title') ?? '',
