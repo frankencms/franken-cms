@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FrankenCms\Filament\Resources\Post\Schemas;
 
 use Exception;
-use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
@@ -15,9 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -25,6 +22,8 @@ use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
+use FrankenCms\Filament\Actions\GenerateAltTextAction;
+use FrankenCms\Filament\Actions\GenerateTeaserAction;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
 use FrankenCms\Filament\Plugins\RichEditor\SourceCodePlugin;
@@ -72,31 +71,22 @@ class PostForm
                                     ],
                                 ),
 
-                                Group::make()->schema([
-                                    Textarea::make('post_teaser')
-                                        ->helperText('A short excerpt or teaser for the blog post')
-                                        ->rows(3)
-                                        ->autosize()
-                                        ->afterStateHydrated(function ($component, $state, $record): void {
-                                            if ($record) {
-                                                $component->state($record->getMeta('post_teaser', ''));
-                                            }
-                                        })
-                                        ->dehydrated(false)
-                                        ->afterStateUpdated(function ($state, $record): void {
-                                            if ($record) {
-                                                $record->setMeta('post_teaser', $state);
-                                            }
-                                        }),
-                                    Actions::make([
-                                        Action::make('generate_teaser')
-                                            ->label('Generate Teaser')
-                                            ->icon('heroicon-o-sparkles')
-                                        // TODO: Abstract create teaser to action if prism is installed
-                                        ,
-                                    ]),
-
-                                ]),
+                                Textarea::make('post_teaser')
+                                    ->helperText('A short excerpt or teaser for the blog post')
+                                    ->rows(3)
+                                    ->autosize()
+                                    ->afterStateHydrated(function ($component, $state, $record): void {
+                                        if ($record) {
+                                            $component->state($record->getMeta('post_teaser', ''));
+                                        }
+                                    })
+                                    ->dehydrated(false)
+                                    ->afterStateUpdated(function ($state, $record): void {
+                                        if ($record) {
+                                            $record->setMeta('post_teaser', $state);
+                                        }
+                                    })
+                                    ->hintAction(GenerateTeaserAction::make('generate_teaser')),
 
                                 RichEditor::make('post_content')
                                     ->live()
@@ -372,7 +362,8 @@ class PostForm
                                                             $media = $record->getFirstMedia('featured');
                                                             $component->state($media->getCustomProperty('alt', ''));
                                                         }
-                                                    }),
+                                                    })
+                                                    ->suffixAction(GenerateAltTextAction::make('generate_alt_text')),
 
                                                 TextInput::make('featured_image_title')
                                                     ->label(__('Title'))

@@ -12,6 +12,20 @@ class CreatePost extends CreateRecord
 
     protected array $featuredImageMetadata = [];
 
+    protected function getListeners(): array
+    {
+        return [
+            'ai-content-generated' => 'handleAiContentGenerated',
+        ];
+    }
+
+    public function handleAiContentGenerated(array $data): void
+    {
+        if (isset($data['fieldName']) && isset($data['value'])) {
+            $this->data[$data['fieldName']] = $data['value'];
+        }
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Extract featured image metadata before mass assignment

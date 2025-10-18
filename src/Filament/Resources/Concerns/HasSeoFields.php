@@ -13,6 +13,8 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
+use FrankenCms\Filament\Actions\GenerateSeoDescriptionAction;
+use FrankenCms\Filament\Actions\GenerateSeoTitleAction;
 use FrankenCms\Settings\SeoSettings;
 use Illuminate\Support\HtmlString;
 
@@ -48,6 +50,7 @@ trait HasSeoFields
                                 'x-init'                   => "\$dispatch('seo-title-update', { length: \$el.value.length })",
                                 'x-on:input.debounce.50ms' => "\$dispatch('seo-title-update', { length: \$el.value.length })",
                             ])
+                            ->suffixAction(GenerateSeoTitleAction::make('generate_seo_title'))
                             ->columnSpanFull(),
 
                         TextEntry::make('_seo_title_length')
@@ -127,6 +130,7 @@ trait HasSeoFields
                                 'x-init'                   => "\$dispatch('seo-description-update', { length: \$el.value.length })",
                                 'x-on:input.debounce.50ms' => "\$dispatch('seo-description-update', { length: \$el.value.length })",
                             ])
+                            ->hintAction(GenerateSeoDescriptionAction::make('generate_seo_description'))
                             ->columnSpanFull(),
 
                         TextEntry::make('_seo_description_length')

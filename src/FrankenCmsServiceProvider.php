@@ -7,34 +7,53 @@ use Exception;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use FrankenCms\Commands\GenerateSitemapCommand;
 use FrankenCms\Commands\InstallCommand;
+use FrankenCms\Filament\Components\AiGeneratorModal;
+use FrankenCms\Http\Middleware\AddSeoDefaults;
+use FrankenCms\Http\Middleware\SetCurrentPage;
 use FrankenCms\Listeners\ClearFeedCacheListener;
 use FrankenCms\Listeners\ClearRobotsCacheListener;
 use FrankenCms\Listeners\ClearSitemapCacheListener;
 use FrankenCms\Listeners\RegeneratePostImagesListener;
+use FrankenCms\Models\Menu;
 use FrankenCms\Models\Post;
+use FrankenCms\Models\Taxonomy;
+use FrankenCms\Models\Term;
 use FrankenCms\Observers\PostObserver;
+use FrankenCms\Prompts\PromptManager;
+use FrankenCms\Providers\SeoServiceProvider;
 use FrankenCms\Registries\SettingsTabRegistry;
+use FrankenCms\Services\AiService;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
 use FrankenCms\Services\BladeFormDirectiveRegistry;
 use FrankenCms\Services\CmsFieldBuilder;
 use FrankenCms\Services\CmsFieldRenderer;
 use FrankenCms\Services\CurrentPageService;
+use FrankenCms\Services\FeedService;
 use FrankenCms\Services\MenuService;
 use FrankenCms\Services\PageRouteService;
 use FrankenCms\Services\PostService;
+use FrankenCms\Services\RobotsService;
 use FrankenCms\Services\SettingsTabService;
+use FrankenCms\Services\SitemapService;
 use FrankenCms\Services\TemplateFieldParser;
+use FrankenCms\Settings\StackSettings;
 use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
 use FrankenCms\View\Composers\CmsFieldComposer;
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
+use Livewire\Livewire;
+use Prism\Prism\Prism;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Spatie\LaravelSettings\Events\SettingsSaved;
 
 class FrankenCmsServiceProvider extends PackageServiceProvider
 {
@@ -72,6 +91,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '19_create_sitemap_settings',
                 '20_add_responsive_images_setting',
                 '21_create_stack_settings',
+                '22_create_ai_settings',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
@@ -112,12 +132,29 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->app->singleton(CmsFieldBuilder::class);
 
         // Register robots, sitemap, and feed services
-        $this->app->singleton(\FrankenCms\Services\RobotsService::class);
-        $this->app->singleton(\FrankenCms\Services\SitemapService::class);
-        $this->app->singleton(\FrankenCms\Services\FeedService::class);
+        $this->app->singleton(RobotsService::class);
+        $this->app->singleton(SitemapService::class);
+        $this->app->singleton(FeedService::class);
 
         // Register the SEO service provider
-        $this->app->register(\FrankenCms\Providers\SeoServiceProvider::class);
+        $this->app->register(SeoServiceProvider::class);
+
+        // Register AI services (only if Prism is installed)
+        if (class_exists(Prism::class)) {
+            $this->app->singleton(PromptManager::class);
+            $this->app->singleton(AiService::class);
+        }
+    }
+
+    private function registerLivewireComponents(): void
+    {
+        // Register the AiGeneratorModal Livewire component (only if Prism is installed)
+        if (class_exists(Prism::class)) {
+            Livewire::component(
+                'ai-generator-modal',
+                AiGeneratorModal::class
+            );
+        }
     }
 
     public function packageBooted(): void
@@ -128,17 +165,17 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register middlewares to web group
         $router = $this->app['router'];
         // SetCurrentPage must run before AddSeoDefaults so the SEO service can access the current page
-        $router->pushMiddlewareToGroup('web', \FrankenCms\Http\Middleware\SetCurrentPage::class);
-        $router->pushMiddlewareToGroup('web', \FrankenCms\Http\Middleware\AddSeoDefaults::class);
+        $router->pushMiddlewareToGroup('web', SetCurrentPage::class);
+        $router->pushMiddlewareToGroup('web', AddSeoDefaults::class);
 
         // Register model observers
         Post::observe(PostObserver::class);
 
         // Register event listeners
-        Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, ClearSitemapCacheListener::class);
-        Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, ClearFeedCacheListener::class);
-        Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, ClearRobotsCacheListener::class);
-        Event::listen(\Spatie\LaravelSettings\Events\SettingsSaved::class, RegeneratePostImagesListener::class);
+        Event::listen(SettingsSaved::class, ClearSitemapCacheListener::class);
+        Event::listen(SettingsSaved::class, ClearFeedCacheListener::class);
+        Event::listen(SettingsSaved::class, ClearRobotsCacheListener::class);
+        Event::listen(SettingsSaved::class, RegeneratePostImagesListener::class);
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
@@ -162,6 +199,14 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register the default tabs
         $settingsTabService = $this->app->make(SettingsTabService::class);
         $settingsTabService->registerDefaultTabs();
+
+        // Register AI modal in Filament render hooks
+        $this->registerAiModal();
+
+        // Register Livewire components after Livewire is booted
+        $this->app->booted(function () {
+            $this->registerLivewireComponents();
+        });
 
         $this->registerAboutInfo();
 
@@ -287,7 +332,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             $this->app->instance('franken-cms.stacks-injected', true);
 
             try {
-                $stackSettings = app(\FrankenCms\Settings\StackSettings::class);
+                $stackSettings = app(StackSettings::class);
                 $stacksByName = $stackSettings->getEnabledStacksByName();
 
                 foreach ($stacksByName as $stackName => $codeBlocks) {
@@ -351,9 +396,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                     },
                     'Content Stats' => function (): string {
                         try {
-                            $published = \FrankenCms\Models\Post::where('status', 'published')->count();
-                            $draft = \FrankenCms\Models\Post::where('status', 'draft')->count();
-                            $pages = \FrankenCms\Models\Post::where('type', 'page')->count();
+                            $published = Post::where('status', 'published')->count();
+                            $draft = Post::where('status', 'draft')->count();
+                            $pages = Post::where('type', 'page')->count();
 
                             $parts = [];
                             if ($published > 0) {
@@ -373,8 +418,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                     },
                     'Taxonomies' => function (): string {
                         try {
-                            $taxonomies = \FrankenCms\Models\Taxonomy::count();
-                            $terms = \FrankenCms\Models\Term::count();
+                            $taxonomies = Taxonomy::count();
+                            $terms = Term::count();
 
                             if ($taxonomies > 0 || $terms > 0) {
                                 return "<fg=green;options=bold>{$taxonomies} taxonomies</> with <fg=green;options=bold>{$terms} terms</>";
@@ -387,7 +432,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
                     'Menus' => function (): string {
                         try {
-                            $menus = \FrankenCms\Models\Menu::all();
+                            $menus = Menu::all();
                             $count = $menus->count();
 
                             if ($count > 0) {
@@ -452,5 +497,19 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             }
         }
 
+    }
+
+    private function registerAiModal(): void
+    {
+        // Only register if Prism is installed
+        if (! class_exists(Prism::class)) {
+            return;
+        }
+
+        // Register the AI generator modal in the Filament admin panel
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_END,
+            fn (): string => view('franken-cms::filament.components.ai-generator-modal-wrapper')->render()
+        );
     }
 }
