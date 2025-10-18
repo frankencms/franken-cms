@@ -255,34 +255,47 @@ class Post extends Model implements HasMedia, HasRichContent
      */
     public function registerMediaCollections(): void
     {
-        // Featured image - use default behavior
+        // Featured image - single file only
         $this->addMediaCollection('featured')
             ->singleFile()
             ->useDisk('public');
 
-        // SEO OpenGraph image - exact 1200x630 dimensions
+        // SEO OpenGraph image - single file only
         $this->addMediaCollection('seo-og')
             ->singleFile()
-            ->useDisk('public')
-            ->registerMediaConversions(function () {
-                $this->addMediaConversion('og')
-                    ->fit(Fit::Crop, 1200, 630)
-                    ->format('jpg')
-                    ->quality(85)
-                    ->performOnCollections('seo-og');
-            });
+            ->useDisk('public');
 
-        // SEO Twitter image - exact 1200x675 dimensions
+        // SEO Twitter image - single file only
         $this->addMediaCollection('seo-twitter')
             ->singleFile()
-            ->useDisk('public')
-            ->registerMediaConversions(function () {
-                $this->addMediaConversion('twitter')
-                    ->fit(Fit::Crop, 1200, 675)
-                    ->format('jpg')
-                    ->quality(85)
-                    ->performOnCollections('seo-twitter');
-            });
+            ->useDisk('public');
+    }
+
+    /**
+     * Register media conversions
+     */
+    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        // Thumbnail for featured images (table view)
+        $this->addMediaConversion('thumb')
+            ->fit(Fit::Crop, 80, 80)
+            ->format('jpg')
+            ->quality(80)
+            ->performOnCollections('featured');
+
+        // SEO OpenGraph image - exact 1200x630 dimensions
+        $this->addMediaConversion('og')
+            ->fit(Fit::Crop, 1200, 630)
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('seo-og');
+
+        // SEO Twitter image - exact 1200x675 dimensions
+        $this->addMediaConversion('twitter')
+            ->fit(Fit::Crop, 1200, 675)
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('seo-twitter');
     }
 
     //    public function getRichContentAttribute(string $attribute): ?RichContentAttribute
