@@ -61,16 +61,23 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                             ->maxSize(5120)
                             ->columnSpan(2)
                             ->helperText('Upload a site icon (512x512px or larger recommended). Favicons will be generated automatically.')
-                            ->afterStateUpdated(function ($state) {
-                                if ($state) {
-                                    // Generate favicons from uploaded file
-                                    $faviconGenerator = app(FaviconGenerator::class);
-                                    $sourcePath = Storage::disk('public')->path($state);
+                            ->saveUploadedFileUsing(function ($file) {
+                                // This callback is ONLY called when a NEW file is uploaded
+                                // It does NOT run when just saving the form with an existing file
 
-                                    if (file_exists($sourcePath)) {
-                                        $faviconGenerator->generate($sourcePath);
-                                    }
+                                // Store the file
+                                $path = $file->store('site-icons', 'public');
+
+                                // Generate favicons from the uploaded file
+                                $faviconGenerator = app(FaviconGenerator::class);
+                                $sourcePath = Storage::disk('public')->path($path);
+
+                                if (file_exists($sourcePath)) {
+                                    $faviconGenerator->generate($sourcePath);
                                 }
+
+                                // Return the path to be saved
+                                return $path;
                             }),
 
                         Toggle::make('membership')
