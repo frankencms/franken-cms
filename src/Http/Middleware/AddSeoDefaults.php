@@ -126,10 +126,15 @@ class AddSeoDefaults
      */
     private function includeTwitter($post = null): void
     {
+        // Check per-post setting first, then fall back to global setting
+        $useTwitterSummary = $post
+            ? $post->getMeta('seo_use_twitter_summary', $this->settings->use_twitter_summary_card)
+            : $this->settings->use_twitter_summary_card;
+
         seo()->add(
             Twitter::make()
                 ->name('card')
-                ->content($this->settings->use_twitter_summary_card ? 'summary' : 'summary_large_image')
+                ->content($useTwitterSummary ? 'summary' : 'summary_large_image')
         );
 
         // Add Twitter username if configured

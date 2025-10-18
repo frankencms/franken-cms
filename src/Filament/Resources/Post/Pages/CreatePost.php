@@ -50,6 +50,20 @@ class CreatePost extends CreateRecord
     protected function afterCreate(): void
     {
         $this->saveFeaturedImageMetadata();
+        $this->saveSeoTwitterToggle();
+    }
+
+    protected function saveSeoTwitterToggle(): void
+    {
+        /** @var Post $record */
+        $record = $this->record;
+
+        // Explicitly save SEO Twitter summary toggle to postmeta
+        // This ensures the value is saved even if the user doesn't interact with the toggle
+        $formData = $this->data;
+        if (isset($formData['seo_use_twitter_summary'])) {
+            $record->setMeta('seo_use_twitter_summary', (bool) $formData['seo_use_twitter_summary']);
+        }
     }
 
     protected function saveFeaturedImageMetadata(): void

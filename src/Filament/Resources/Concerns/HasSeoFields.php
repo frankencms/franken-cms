@@ -216,11 +216,13 @@ trait HasSeoFields
                         Toggle::make('seo_use_twitter_summary')
                             ->label('Use Twitter Summary Card (Small Square Image)')
                             ->helperText('Enable to use a small square Twitter card instead of the large image card above')
-                            ->default(false)
+                            ->default(fn () => app(\FrankenCms\Settings\SeoSettings::class)->use_twitter_summary_card)
                             ->live()
                             ->afterStateHydrated(function ($component, $state, $record): void {
                                 if ($record) {
-                                    $component->state((bool) $record->getMeta('seo_use_twitter_summary', false));
+                                    // Load from postmeta if exists, otherwise use global setting
+                                    $globalSetting = app(\FrankenCms\Settings\SeoSettings::class)->use_twitter_summary_card;
+                                    $component->state((bool) $record->getMeta('seo_use_twitter_summary', $globalSetting));
                                 }
                             })
                             ->dehydrated(false)
