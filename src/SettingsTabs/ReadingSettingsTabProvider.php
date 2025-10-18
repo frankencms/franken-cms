@@ -6,6 +6,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
@@ -55,15 +56,25 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
                             ->required()
                             ->columnSpan(2),
 
+                        Toggle::make('enable_feeds')
+                            ->label('Enable RSS & Atom Feeds')
+                            ->inlineLabel()
+                            ->helperText('Allow visitors to subscribe to your content via RSS and Atom feeds')
+                            ->default(true)
+                            ->live()
+                            ->columnSpan(2),
+
                         TextInput::make('syndicate_feeds')
                             ->label('Syndicate Feeds Show The Most Recent')
                             ->postfix('items')
                             ->inlineLabel()
                             ->default(10)
                             ->required()
+                            ->visible(fn ($get) => $get('enable_feeds'))
                             ->columnSpan(2),
 
                         Radio::make('include_in_feed')
+                            ->visible(fn ($get) => $get('enable_feeds'))
                             ->inlineLabel()
                             ->label('For Each Article In A Feed, Include')
                             ->helperText('Your theme determines how content is displayed in browsers.')

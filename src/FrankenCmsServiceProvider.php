@@ -106,9 +106,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->app->singleton(TemplateFieldParser::class);
         $this->app->singleton(CmsFieldBuilder::class);
 
-        // Register robots and sitemap services
+        // Register robots, sitemap, and feed services
         $this->app->singleton(\FrankenCms\Services\RobotsService::class);
         $this->app->singleton(\FrankenCms\Services\SitemapService::class);
+        $this->app->singleton(\FrankenCms\Services\FeedService::class);
 
         // Register the SEO service provider
         $this->app->register(\FrankenCms\Providers\SeoServiceProvider::class);
