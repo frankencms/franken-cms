@@ -140,14 +140,13 @@ class FeedService
                 $xml .= '      <category>' . htmlspecialchars($category->name) . '</category>' . PHP_EOL;
             }
 
-            // Add description/content
+            // Add description (always an excerpt) and content:encoded (full HTML when enabled)
+            $excerpt = $this->getExcerpt($post);
+            $xml .= '      <description><![CDATA[' . $excerpt . ']]></description>' . PHP_EOL;
+
             if ($includeFullText) {
                 $content = $this->getPostContent($post);
-                $xml .= '      <description><![CDATA[' . $content . ']]></description>' . PHP_EOL;
                 $xml .= '      <content:encoded><![CDATA[' . $content . ']]></content:encoded>' . PHP_EOL;
-            } else {
-                $excerpt = $post->post_teaser ?? strip_tags($this->getPostContent($post));
-                $xml .= '      <description><![CDATA[' . $excerpt . ']]></description>' . PHP_EOL;
             }
 
             $xml .= '    </item>' . PHP_EOL;
@@ -200,13 +199,13 @@ class FeedService
                 $xml .= '    <category term="' . htmlspecialchars($category->slug) . '" label="' . htmlspecialchars($category->name) . '" />' . PHP_EOL;
             }
 
-            // Add content
+            // Add summary (always plain text excerpt) and content (full HTML when enabled)
+            $excerpt = $this->getExcerpt($post);
+            $xml .= '    <summary><![CDATA[' . $excerpt . ']]></summary>' . PHP_EOL;
+
             if ($includeFullText) {
                 $content = $this->getPostContent($post);
                 $xml .= '    <content type="html"><![CDATA[' . $content . ']]></content>' . PHP_EOL;
-            } else {
-                $excerpt = $post->post_teaser ?? strip_tags($this->getPostContent($post));
-                $xml .= '    <summary><![CDATA[' . $excerpt . ']]></summary>' . PHP_EOL;
             }
 
             $xml .= '  </entry>' . PHP_EOL;
@@ -218,7 +217,40 @@ class FeedService
     }
 
     /**
+     * Get excerpt for RSS description (plain text summary)
+     */
+    protected function getExcerpt(Post $post, int $length = 250): string
+    {
+        // Use post_teaser if available
+        if (! empty($post->post_teaser)) {
+            return strip_tags($post->post_teaser);
+        }
+
+        // Get the full content and strip HTML
+        $content = $this->getPostContent($post);
+        $plainText = strip_tags($content);
+
+        // Remove extra whitespace
+        $plainText = preg_replace('/\s+/', ' ', $plainText);
+        $plainText = trim($plainText);
+
+        // Truncate to specified length
+        if (mb_strlen($plainText) > $length) {
+            $plainText = mb_substr($plainText, 0, $length);
+            // Try to break at the last complete word
+            $lastSpace = mb_strrpos($plainText, ' ');
+            if ($lastSpace !== false) {
+                $plainText = mb_substr($plainText, 0, $lastSpace);
+            }
+            $plainText .= '...';
+        }
+
+        return $plainText;
+    }
+
+    /**
      * Get post content (handle both string and array formats)
+     * Converts TipTap JSON to HTML
      */
     protected function getPostContent(Post $post): string
     {
@@ -234,19 +266,166 @@ class FeedService
             return $content;
         }
 
-        // If content is an array, try to extract the content field
+        // If content is an array, convert TipTap JSON to HTML
         if (is_array($content)) {
-            // Handle nested content structure
-            if (isset($content['content'])) {
-                return is_string($content['content']) ? $content['content'] : '';
-            }
-
-            // If no 'content' key, try to convert the array to a string
-            // This handles cases where the array might be structured differently
-            return '';
+            return $this->tiptapToHtml($content);
         }
 
         // Fallback: cast to string
         return (string) $content;
+    }
+
+    /**
+     * Convert TipTap JSON structure to HTML
+     */
+    protected function tiptapToHtml(array $doc): string
+    {
+        if (! isset($doc['type']) || $doc['type'] !== 'doc' || ! isset($doc['content'])) {
+            return '';
+        }
+
+        $html = '';
+
+        foreach ($doc['content'] as $node) {
+            $html .= $this->renderTiptapNode($node);
+        }
+
+        return $html;
+    }
+
+    /**
+     * Render a single TipTap node to HTML
+     */
+    protected function renderTiptapNode(array $node): string
+    {
+        $type = $node['type'] ?? '';
+
+        return match ($type) {
+            'paragraph' => $this->renderParagraph($node),
+            'heading' => $this->renderHeading($node),
+            'bulletList' => $this->renderBulletList($node),
+            'orderedList' => $this->renderOrderedList($node),
+            'listItem' => $this->renderListItem($node),
+            'image' => $this->renderImage($node),
+            'codeBlock' => $this->renderCodeBlock($node),
+            'blockquote' => $this->renderBlockquote($node),
+            'horizontalRule' => '<hr>',
+            'hardBreak' => '<br>',
+            default => $this->renderGenericNode($node),
+        };
+    }
+
+    protected function renderParagraph(array $node): string
+    {
+        $content = $this->renderContent($node['content'] ?? []);
+
+        return $content ? "<p>{$content}</p>" : '';
+    }
+
+    protected function renderHeading(array $node): string
+    {
+        $level = $node['attrs']['level'] ?? 1;
+        $content = $this->renderContent($node['content'] ?? []);
+
+        return "<h{$level}>{$content}</h{$level}>";
+    }
+
+    protected function renderBulletList(array $node): string
+    {
+        $items = '';
+        foreach ($node['content'] ?? [] as $item) {
+            $items .= $this->renderTiptapNode($item);
+        }
+
+        return "<ul>{$items}</ul>";
+    }
+
+    protected function renderOrderedList(array $node): string
+    {
+        $items = '';
+        foreach ($node['content'] ?? [] as $item) {
+            $items .= $this->renderTiptapNode($item);
+        }
+
+        return "<ol>{$items}</ol>";
+    }
+
+    protected function renderListItem(array $node): string
+    {
+        $content = '';
+        foreach ($node['content'] ?? [] as $item) {
+            $content .= $this->renderTiptapNode($item);
+        }
+
+        return "<li>{$content}</li>";
+    }
+
+    protected function renderImage(array $node): string
+    {
+        $src = $node['attrs']['src'] ?? '';
+        $alt = $node['attrs']['alt'] ?? '';
+        $title = $node['attrs']['title'] ?? '';
+
+        if (! $src) {
+            return '';
+        }
+
+        $titleAttr = $title ? " title=\"" . htmlspecialchars($title) . "\"" : '';
+
+        return "<img src=\"" . htmlspecialchars($src) . "\" alt=\"" . htmlspecialchars($alt) . "\"{$titleAttr}>";
+    }
+
+    protected function renderCodeBlock(array $node): string
+    {
+        $content = $this->renderContent($node['content'] ?? []);
+
+        return "<pre><code>{$content}</code></pre>";
+    }
+
+    protected function renderBlockquote(array $node): string
+    {
+        $content = '';
+        foreach ($node['content'] ?? [] as $item) {
+            $content .= $this->renderTiptapNode($item);
+        }
+
+        return "<blockquote>{$content}</blockquote>";
+    }
+
+    protected function renderGenericNode(array $node): string
+    {
+        return $this->renderContent($node['content'] ?? []);
+    }
+
+    protected function renderContent(array $content): string
+    {
+        $html = '';
+
+        foreach ($content as $item) {
+            if (isset($item['type']) && $item['type'] === 'text') {
+                $text = htmlspecialchars($item['text'] ?? '', ENT_NOQUOTES);
+                $marks = $item['marks'] ?? [];
+
+                // Apply text marks (bold, italic, etc.)
+                foreach ($marks as $mark) {
+                    $text = match ($mark['type'] ?? '') {
+                        'bold' => "<strong>{$text}</strong>",
+                        'italic' => "<em>{$text}</em>",
+                        'underline' => "<u>{$text}</u>",
+                        'strike' => "<s>{$text}</s>",
+                        'code' => "<code>{$text}</code>",
+                        'link' => "<a href=\"" . htmlspecialchars($mark['attrs']['href'] ?? '') . "\">{$text}</a>",
+                        default => $text,
+                    };
+                }
+
+                $html .= $text;
+            } elseif (isset($item['type'])) {
+                // Handle nested nodes
+                $html .= $this->renderTiptapNode($item);
+            }
+        }
+
+        return $html;
     }
 }
