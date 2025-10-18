@@ -22,18 +22,6 @@ class RobotsSettings extends Settings
      */
     public array $user_agents;
 
-    /**
-     * Additional sitemap URLs to include in robots.txt
-     * Auto-generated sitemaps will be added automatically
-     */
-    public array $additional_sitemaps;
-
-    /**
-     * Canonical host directive (optional)
-     * Example: https://example.com
-     */
-    public ?string $host;
-
     public static function group(): string
     {
         return 'franken-cms-robots';

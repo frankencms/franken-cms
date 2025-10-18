@@ -63,19 +63,6 @@ class RobotsSettingsTabProvider implements SettingsTabProviderInterface
                             ->addActionLabel('Add User Agent')
                             ->collapsible()
                             ->itemLabel(fn (array $state): ?string => $state['user_agent'] ?? 'New User Agent'),
-
-                        TagsInput::make('additional_sitemaps')
-                            ->label('Additional Sitemaps')
-                            ->helperText('Add custom sitemap URLs. Auto-generated sitemaps are added automatically.')
-                            ->placeholder('/custom-sitemap.xml')
-                            ->columnSpanFull(),
-
-                        TextInput::make('host')
-                            ->label('Canonical Host')
-                            ->helperText('Optional: Specify the preferred domain (e.g., https://example.com)')
-                            ->url()
-                            ->placeholder('https://example.com')
-                            ->columnSpanFull(),
                     ]),
             ]);
     }

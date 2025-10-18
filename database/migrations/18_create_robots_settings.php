@@ -17,8 +17,5 @@ return new class extends SettingsMigration
                 'crawl_delay' => null,
             ],
         ]);
-
-        $this->migrator->add('franken-cms-robots.additional_sitemaps', []);
-        $this->migrator->add('franken-cms-robots.host', null);
     }
 };

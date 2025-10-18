@@ -50,6 +50,10 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                             ->inlineLabel()
                             ->image()
                             ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                '1:1',
+                                null,
+                            ])
                             ->directory('site-icons')
                             ->visibility('public')
                             ->disk('public')
