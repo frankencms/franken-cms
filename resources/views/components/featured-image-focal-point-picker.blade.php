@@ -14,7 +14,9 @@
         x-data="featuredImageFocalPicker(
             @if($existingImageSrc ?? null)'{{ $existingImageSrc }}'@else null @endif,
             {{ $existingFocalX ?? 50 }},
-            {{ $existingFocalY ?? 50 }}
+            {{ $existingFocalY ?? 50 }},
+            '{{ $statePaths['focal_x'] ?? 'data.featured_image_focal_x' }}',
+            '{{ $statePaths['focal_y'] ?? 'data.featured_image_focal_y' }}'
         )"
         class="space-y-4"
     >
@@ -62,7 +64,7 @@
             </div>
         </div>
 
-        <!-- Coordinate inputs -->
+        <!-- Coordinate inputs (display only) -->
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -73,10 +75,8 @@
                     min="0"
                     max="100"
                     step="0.1"
-                    wire:model.live="{{ $statePaths['focal_x'] ?? 'mountedActions.0.data.modal_featured_image_focal_x' }}"
                     x-model="focalX"
                     @input="updateFocalPoint"
-                    value="{{ $existingFocalX ?? 50 }}"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-600 focus:ring-primary-600 dark:bg-gray-900 dark:text-white text-sm"
                 />
             </div>
@@ -89,10 +89,8 @@
                     min="0"
                     max="100"
                     step="0.1"
-                    wire:model.live="{{ $statePaths['focal_y'] ?? 'mountedActions.0.data.modal_featured_image_focal_y' }}"
                     x-model="focalY"
                     @input="updateFocalPoint"
-                    value="{{ $existingFocalY ?? 50 }}"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-600 focus:ring-primary-600 dark:bg-gray-900 dark:text-white text-sm"
                 />
             </div>

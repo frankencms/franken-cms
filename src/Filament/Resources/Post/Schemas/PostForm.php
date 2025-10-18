@@ -14,7 +14,6 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
@@ -24,7 +23,6 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\Width;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
@@ -284,247 +282,234 @@ class PostForm
                             ->schema([
                                 Section::make()
                                     ->schema([
-                                        // Preview Image
-                                        SpatieMediaLibraryImageEntry::make('featured_image')
-                                            ->hiddenLabel()
-                                            ->extraImgAttributes(['class' => 'rounded-md'])
-                                            ->imageWidth('inherit')
-                                            ->imageHeight('inherit')
+                                        SpatieMediaLibraryFileUpload::make('featured_image')
+                                            ->label(__('Featured Image'))
                                             ->collection('featured')
-                                            ->hidden(fn (?Post $record): bool => ! ($record?->hasMedia('featured') ?? false)),
+                                            ->disk('public')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->previewable()
+                                            ->maxSize(10240)
+                                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                                            ->visibility('public')
+                                            ->multiple(false)
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, callable $set, Component $livewire) {
+                                                if (! $state) {
+                                                    return;
+                                                }
 
-                                        // Fallback image if preview is unavailable
-                                        View::make('franken-cms::components.image-placeholder')
-                                            ->hidden(fn (?Post $record): bool => ($record?->hasMedia('featured') ?? false)),
-
-                                        Actions::make([
-                                            Action::make('edit_featured_image_details')
-                                                ->label(__('Update Image'))
-                                                ->icon('heroicon-o-pencil-square')
-                                                ->color('gray')
-                                                ->size('sm')
-                                                ->modalHeading(__('Featured Image Details'))
-                                                ->modalDescription(__('Configure accessibility, display options, and metadata for your featured image.'))
-                                                ->modalWidth(Width::ThreeExtraLarge)
-                                                ->fillForm(function (?Post $record, $livewire): array {
-                                                    if (! $record || ! $record->hasMedia('featured')) {
-                                                        return [
-                                                            'modal_featured_image_alt'          => '',
-                                                            'modal_featured_image_title'        => '',
-                                                            'modal_featured_image_caption'      => '',
-                                                            'modal_featured_image_attribution'  => '',
-                                                            'modal_featured_image_css'          => '',
-                                                            'modal_featured_image_lazy_loading' => false,
-                                                            'modal_featured_image_width'        => null,
-                                                            'modal_featured_image_height'       => null,
-                                                            'modal_featured_image_focal_x'      => 50,
-                                                            'modal_featured_image_focal_y'      => 50,
-                                                        ];
+                                                if (is_object($state)) {
+                                                    $dimensions = PostHelper::get_image_dimensions($state);
+                                                    if ($dimensions) {
+                                                        $set('featured_image_width', $dimensions['width']);
+                                                        $set('featured_image_height', $dimensions['height']);
                                                     }
 
-                                                    $media = $record->getFirstMedia('featured');
-                                                    $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+                                                    $set('featured_image_focal_x', 50);
+                                                    $set('featured_image_focal_y', 50);
 
-                                                    // Dispatch event to Alpine component with existing image
-                                                    $livewire->dispatch('featuredImageUploaded', [
-                                                        'imageUrl' => $media->getUrl(),
-                                                        'focalX'   => $focalPoint['x'] ?? 50,
-                                                        'focalY'   => $focalPoint['y'] ?? 50,
-                                                    ]);
+                                                    try {
+                                                        if (method_exists($state, 'temporaryUrl')) {
+                                                            $imageUrl = $state->temporaryUrl();
+                                                        } elseif (method_exists($state, 'getTemporaryUrl')) {
+                                                            $imageUrl = $state->getTemporaryUrl();
+                                                        } elseif (method_exists($state, 'getRealPath')) {
+                                                            $imageUrl = 'data:image/' . $state->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($state->getRealPath()));
+                                                        } else {
+                                                            return;
+                                                        }
 
-                                                    return [
-                                                        'modal_featured_image_alt'          => $media->getCustomProperty('alt', ''),
-                                                        'modal_featured_image_title'        => $media->getCustomProperty('title', ''),
-                                                        'modal_featured_image_caption'      => $media->getCustomProperty('caption', ''),
-                                                        'modal_featured_image_attribution'  => $media->getCustomProperty('attribution', ''),
-                                                        'modal_featured_image_css'          => $media->getCustomProperty('css_classes', ''),
-                                                        'modal_featured_image_lazy_loading' => $media->getCustomProperty('lazy_loading', false),
-                                                        'modal_featured_image_width'        => $media->getCustomProperty('width', null),
-                                                        'modal_featured_image_height'       => $media->getCustomProperty('height', null),
-                                                        'modal_featured_image_focal_x'      => $focalPoint['x'] ?? 50,
-                                                        'modal_featured_image_focal_y'      => $focalPoint['y'] ?? 50,
-                                                    ];
-                                                })
-                                                ->action(function (array $data, ?Post $record): void {
-                                                    if (! $record || ! $record->hasMedia('featured')) {
-                                                        return;
+                                                        $livewire->dispatch('featuredImageUploaded', [
+                                                            'imageUrl' => $imageUrl,
+                                                            'focalX'   => 50,
+                                                            'focalY'   => 50,
+                                                        ]);
+                                                    } catch (Exception $e) {
+                                                        // Silent fail
                                                     }
+                                                }
+                                            })
+                                            ->afterStateHydrated(function ($component, $state, ?Post $record, Component $livewire): void {
+                                                if (! $record || ! $record->hasMedia('featured')) {
+                                                    return;
+                                                }
 
-                                                    $media = $record->getFirstMedia('featured');
+                                                $media = $record->getFirstMedia('featured');
+                                                $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
 
-                                                    // Save custom properties directly to the media item
-                                                    $media->setCustomProperty('alt', $data['modal_featured_image_alt'] ?? '');
-                                                    $media->setCustomProperty('title', $data['modal_featured_image_title'] ?? '');
-                                                    $media->setCustomProperty('caption', $data['modal_featured_image_caption'] ?? '');
-                                                    $media->setCustomProperty('attribution', $data['modal_featured_image_attribution'] ?? '');
-                                                    $media->setCustomProperty('css_classes', $data['modal_featured_image_css'] ?? '');
-                                                    $media->setCustomProperty('lazy_loading', $data['modal_featured_image_lazy_loading'] ?? false);
-                                                    $media->setCustomProperty('width', $data['modal_featured_image_width'] ?? null);
-                                                    $media->setCustomProperty('height', $data['modal_featured_image_height'] ?? null);
-                                                    $media->setCustomProperty('focal_point', [
-                                                        'x' => $data['modal_featured_image_focal_x'] ?? 50,
-                                                        'y' => $data['modal_featured_image_focal_y'] ?? 50,
-                                                    ]);
+                                                // Dispatch event to Alpine component with existing image
+                                                $livewire->dispatch('featuredImageUploaded', [
+                                                    'imageUrl' => $media->getUrl(),
+                                                    'focalX'   => $focalPoint['x'] ?? 50,
+                                                    'focalY'   => $focalPoint['y'] ?? 50,
+                                                ]);
+                                            }),
 
-                                                    $media->save();
-                                                })
-                                                ->schema([
+                                        Section::make('Image Details')
+                                            ->description('Essential information for accessibility and SEO')
+                                            ->schema([
+                                                TextInput::make('featured_image_alt')
+                                                    ->label(__('Alt Text'))
+                                                    ->placeholder(__('Describe what the image shows'))
+                                                    ->helperText(__('Important for accessibility and SEO'))
+                                                    ->maxLength(255)
+                                                    ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                        if ($record && $record->hasMedia('featured')) {
+                                                            $media = $record->getFirstMedia('featured');
+                                                            $component->state($media->getCustomProperty('alt', ''));
+                                                        }
+                                                    }),
 
-                                                    SpatieMediaLibraryFileUpload::make('featured_image')
-                                                        ->label(__('Featured Image'))
-                                                        ->collection('featured')
-                                                        ->disk('public')
-                                                        ->image()
-                                                        ->imageEditor()
-                                                        ->previewable()
-                                                        ->maxSize(10240)
-                                                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-                                                        ->visibility('public')
-                                                        ->multiple(false)
-                                                        ->live()
-                                                        ->afterStateUpdated(function ($state, callable $set, Component $livewire) {
-                                                            if (! $state) {
-                                                                return;
-                                                            }
+                                                TextInput::make('featured_image_title')
+                                                    ->label(__('Title'))
+                                                    ->placeholder(__('Optional hover text'))
+                                                    ->helperText(__('Shown when hovering over the image'))
+                                                    ->maxLength(255)
+                                                    ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                        if ($record && $record->hasMedia('featured')) {
+                                                            $media = $record->getFirstMedia('featured');
+                                                            $component->state($media->getCustomProperty('title', ''));
+                                                        }
+                                                    }),
+                                            ])
+                                            ->columns(2),
 
-                                                            if (is_object($state)) {
-                                                                $dimensions = PostHelper::get_image_dimensions($state);
-                                                                if ($dimensions) {
-                                                                    $set('modal_featured_image_width', $dimensions['width']);
-                                                                    $set('modal_featured_image_height', $dimensions['height']);
+                                        Tabs::make('Advanced Settings')
+                                            ->tabs([
+                                                Tab::make('Display Options')
+                                                    ->schema([
+                                                        TextInput::make('featured_image_css')
+                                                            ->label(__('CSS Classes'))
+                                                            ->placeholder(__('e.g., rounded shadow-lg mx-auto'))
+                                                            ->helperText(__('Custom CSS classes for styling'))
+                                                            ->maxLength(255)
+                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                if ($record && $record->hasMedia('featured')) {
+                                                                    $media = $record->getFirstMedia('featured');
+                                                                    $component->state($media->getCustomProperty('css_classes', ''));
                                                                 }
+                                                            }),
 
-                                                                $set('modal_featured_image_focal_x', 50);
-                                                                $set('modal_featured_image_focal_y', 50);
-
-                                                                try {
-                                                                    if (method_exists($state, 'temporaryUrl')) {
-                                                                        $imageUrl = $state->temporaryUrl();
-                                                                    } elseif (method_exists($state, 'getTemporaryUrl')) {
-                                                                        $imageUrl = $state->getTemporaryUrl();
-                                                                    } elseif (method_exists($state, 'getRealPath')) {
-                                                                        $imageUrl = 'data:image/' . $state->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($state->getRealPath()));
-                                                                    } else {
-                                                                        return;
-                                                                    }
-
-                                                                    $livewire->dispatch('featuredImageUploaded', [
-                                                                        'imageUrl' => $imageUrl,
-                                                                        'focalX'   => 50,
-                                                                        'focalY'   => 50,
-                                                                    ]);
-                                                                } catch (Exception $e) {
-                                                                    // Silent fail
+                                                        Toggle::make('featured_image_lazy_loading')
+                                                            ->label(__('Lazy Loading'))
+                                                            ->helperText(__('Delays loading until image is in viewport'))
+                                                            ->default(false)
+                                                            ->inline()
+                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                if ($record && $record->hasMedia('featured')) {
+                                                                    $media = $record->getFirstMedia('featured');
+                                                                    $component->state($media->getCustomProperty('lazy_loading', false));
                                                                 }
-                                                            }
-                                                        }),
+                                                            }),
 
-                                                    Section::make('Image Details')
-                                                        ->description('Essential information for accessibility and SEO')
-                                                        ->schema([
-                                                            TextInput::make('modal_featured_image_alt')
-                                                                ->label(__('Alt Text'))
-                                                                ->placeholder(__('Describe what the image shows'))
-                                                                ->helperText(__('Important for accessibility and SEO'))
-                                                                ->maxLength(255),
-
-                                                            TextInput::make('modal_featured_image_title')
-                                                                ->label(__('Title'))
-                                                                ->placeholder(__('Optional hover text'))
-                                                                ->helperText(__('Shown when hovering over the image'))
-                                                                ->maxLength(255),
-
-                                                        ]),
-
-                                                    Tabs::make('Advanced Settings')
-                                                        ->tabs([
-                                                            Tab::make('Display Options')
-                                                                ->schema([
-                                                                    TextInput::make('modal_featured_image_css')
-                                                                        ->label(__('CSS Classes'))
-                                                                        ->placeholder(__('e.g., rounded shadow-lg mx-auto'))
-                                                                        ->helperText(__('Custom CSS classes for styling'))
-                                                                        ->maxLength(255),
-
-                                                                    Toggle::make('modal_featured_image_lazy_loading')
-                                                                        ->label(__('Lazy Loading'))
-                                                                        ->helperText(__('Delays loading until image is in viewport'))
-                                                                        ->default(false)
-                                                                        ->inline(),
-
-                                                                    Grid::make(2)
-                                                                        ->schema([
-                                                                            TextInput::make('modal_featured_image_width')
-                                                                                ->label(__('Width'))
-                                                                                ->numeric()
-                                                                                ->suffix('px'),
-
-                                                                            TextInput::make('modal_featured_image_height')
-                                                                                ->label(__('Height'))
-                                                                                ->numeric()
-                                                                                ->suffix('px'),
-                                                                        ]),
-                                                                ]),
-
-                                                            Tab::make('Caption & Attribution')
-                                                                ->schema([
-
-                                                                    Textarea::make('modal_featured_image_caption')
-                                                                        ->label(__('Caption'))
-                                                                        ->placeholder(__('Optional caption text'))
-                                                                        ->helperText(__('Displayed below the image'))
-                                                                        ->maxLength(500)
-                                                                        ->rows(2),
-
-                                                                    TextInput::make('modal_featured_image_attribution')
-                                                                        ->label(__('Attribution'))
-                                                                        ->placeholder(__('Photo credit or source'))
-                                                                        ->helperText(__('Credit the photographer or source'))
-                                                                        ->maxLength(255),
-
-                                                                ]),
-
-                                                            Tab::make('Focal Point')
-                                                                ->schema([
-                                                                    Hidden::make('modal_featured_image_focal_x')
-                                                                        ->default(50),
-
-                                                                    Hidden::make('modal_featured_image_focal_y')
-                                                                        ->default(50),
-
-                                                                    View::make('franken-cms::components.featured-image-focal-point-picker')
-                                                                        ->viewData(function (?Post $record): array {
-                                                                            if (! $record || ! $record->hasMedia('featured')) {
-                                                                                return [
-                                                                                    'statePaths' => [
-                                                                                        'focal_x' => 'mountedActions.0.data.modal_featured_image_focal_x',
-                                                                                        'focal_y' => 'mountedActions.0.data.modal_featured_image_focal_y',
-                                                                                    ],
-                                                                                    'existingImageSrc' => null,
-                                                                                    'existingFocalX'   => 50,
-                                                                                    'existingFocalY'   => 50,
-                                                                                ];
-                                                                            }
-
+                                                        Grid::make(2)
+                                                            ->schema([
+                                                                TextInput::make('featured_image_width')
+                                                                    ->label(__('Width'))
+                                                                    ->numeric()
+                                                                    ->suffix('px')
+                                                                    ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                        if ($record && $record->hasMedia('featured')) {
                                                                             $media = $record->getFirstMedia('featured');
-                                                                            $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+                                                                            $component->state($media->getCustomProperty('width', null));
+                                                                        }
+                                                                    }),
 
-                                                                            return [
-                                                                                'statePaths' => [
-                                                                                    'focal_x' => 'mountedActions.0.data.modal_featured_image_focal_x',
-                                                                                    'focal_y' => 'mountedActions.0.data.modal_featured_image_focal_y',
-                                                                                ],
-                                                                                'existingImageSrc' => $media->getUrl(),
-                                                                                'existingFocalX'   => $focalPoint['x'] ?? 50,
-                                                                                'existingFocalY'   => $focalPoint['y'] ?? 50,
-                                                                            ];
-                                                                        }),
-                                                                ]),
-                                                        ]),
+                                                                TextInput::make('featured_image_height')
+                                                                    ->label(__('Height'))
+                                                                    ->numeric()
+                                                                    ->suffix('px')
+                                                                    ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                        if ($record && $record->hasMedia('featured')) {
+                                                                            $media = $record->getFirstMedia('featured');
+                                                                            $component->state($media->getCustomProperty('height', null));
+                                                                        }
+                                                                    }),
+                                                            ]),
+                                                    ]),
 
-                                                ]),
+                                                Tab::make('Caption & Attribution')
+                                                    ->schema([
+                                                        Textarea::make('featured_image_caption')
+                                                            ->label(__('Caption'))
+                                                            ->placeholder(__('Optional caption text'))
+                                                            ->helperText(__('Displayed below the image'))
+                                                            ->maxLength(500)
+                                                            ->rows(2)
+                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                if ($record && $record->hasMedia('featured')) {
+                                                                    $media = $record->getFirstMedia('featured');
+                                                                    $component->state($media->getCustomProperty('caption', ''));
+                                                                }
+                                                            }),
 
-                                        ]),
+                                                        TextInput::make('featured_image_attribution')
+                                                            ->label(__('Attribution'))
+                                                            ->placeholder(__('Photo credit or source'))
+                                                            ->helperText(__('Credit the photographer or source'))
+                                                            ->maxLength(255)
+                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                if ($record && $record->hasMedia('featured')) {
+                                                                    $media = $record->getFirstMedia('featured');
+                                                                    $component->state($media->getCustomProperty('attribution', ''));
+                                                                }
+                                                            }),
+                                                    ]),
+
+                                                Tab::make('Focal Point')
+                                                    ->schema([
+                                                        Hidden::make('featured_image_focal_x')
+                                                            ->default(50)
+                                                            ->live()
+                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                if ($record && $record->hasMedia('featured')) {
+                                                                    $media = $record->getFirstMedia('featured');
+                                                                    $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+                                                                    $component->state($focalPoint['x'] ?? 50);
+                                                                }
+                                                            }),
+
+                                                        Hidden::make('featured_image_focal_y')
+                                                            ->default(50)
+                                                            ->live()
+                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                if ($record && $record->hasMedia('featured')) {
+                                                                    $media = $record->getFirstMedia('featured');
+                                                                    $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+                                                                    $component->state($focalPoint['y'] ?? 50);
+                                                                }
+                                                            }),
+
+                                                        View::make('franken-cms::components.featured-image-focal-point-picker')
+                                                            ->viewData(function (?Post $record): array {
+                                                                if (! $record || ! $record->hasMedia('featured')) {
+                                                                    return [
+                                                                        'statePaths' => [
+                                                                            'focal_x' => 'data.featured_image_focal_x',
+                                                                            'focal_y' => 'data.featured_image_focal_y',
+                                                                        ],
+                                                                        'existingImageSrc' => null,
+                                                                        'existingFocalX'   => 50,
+                                                                        'existingFocalY'   => 50,
+                                                                    ];
+                                                                }
+
+                                                                $media = $record->getFirstMedia('featured');
+                                                                $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+
+                                                                return [
+                                                                    'statePaths' => [
+                                                                        'focal_x' => 'data.featured_image_focal_x',
+                                                                        'focal_y' => 'data.featured_image_focal_y',
+                                                                    ],
+                                                                    'existingImageSrc' => $media->getUrl(),
+                                                                    'existingFocalX'   => $focalPoint['x'] ?? 50,
+                                                                    'existingFocalY'   => $focalPoint['y'] ?? 50,
+                                                                ];
+                                                            }),
+                                                    ]),
+                                            ]),
                                     ]),
                             ]),
 

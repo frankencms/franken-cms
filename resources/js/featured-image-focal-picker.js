@@ -1,5 +1,5 @@
-// Alpine.js Featured Image Focal Point Picker Component for Filament Modal
-export default function featuredImageFocalPicker(existingImageSrc = null, existingFocalX = 50, existingFocalY = 50) {
+// Alpine.js Featured Image Focal Point Picker Component for Filament
+export default function featuredImageFocalPicker(existingImageSrc = null, existingFocalX = 50, existingFocalY = 50, focalXPath = 'data.featured_image_focal_x', focalYPath = 'data.featured_image_focal_y') {
     // Ensure this function is preserved by bundlers
     featuredImageFocalPicker.displayName = 'featuredImageFocalPicker';
 
@@ -8,6 +8,8 @@ export default function featuredImageFocalPicker(existingImageSrc = null, existi
         focalY: existingFocalY || 50,
         imagePreview: existingImageSrc || null,
         componentId: null,
+        focalXPath: focalXPath,
+        focalYPath: focalYPath,
 
         init() {
             // Generate unique component ID for this instance
@@ -23,30 +25,30 @@ export default function featuredImageFocalPicker(existingImageSrc = null, existi
             this.focalY = parseFloat(existingFocalY) || 50;
 
             // Force update Livewire data immediately with our parameter values
-            // This ensures each modal instance gets the correct focal points
+            // This ensures each instance gets the correct focal points
             if (this.$wire && this.$wire.set) {
-                this.$wire.set('data.modal_featured_image_focal_x', this.focalX);
-                this.$wire.set('data.modal_featured_image_focal_y', this.focalY);
+                this.$wire.set(this.focalXPath, this.focalX);
+                this.$wire.set(this.focalYPath, this.focalY);
             }
 
             // Initialize from Livewire data - wait a moment for Livewire to be ready
             this.$nextTick(() => {
                 // Double-check our values are set correctly in Livewire
                 if (this.$wire && this.$wire.set) {
-                    this.$wire.set('data.modal_featured_image_focal_x', this.focalX);
-                    this.$wire.set('data.modal_featured_image_focal_y', this.focalY);
+                    this.$wire.set(this.focalXPath, this.focalX);
+                    this.$wire.set(this.focalYPath, this.focalY);
                 }
             });
 
             // Watch for changes in Livewire data to reinitialize when switching images
             if (this.$wire && this.$wire.data) {
-                this.$watch('$wire.data.modal_featured_image_focal_x', (newValue) => {
+                this.$watch(`$wire.${this.focalXPath}`, (newValue) => {
                     if (newValue !== undefined && newValue !== this.focalX) {
                         this.focalX = parseFloat(newValue) || 50;
                     }
                 });
 
-                this.$watch('$wire.data.modal_featured_image_focal_y', (newValue) => {
+                this.$watch(`$wire.${this.focalYPath}`, (newValue) => {
                     if (newValue !== undefined && newValue !== this.focalY) {
                         this.focalY = parseFloat(newValue) || 50;
                     }
@@ -58,14 +60,22 @@ export default function featuredImageFocalPicker(existingImageSrc = null, existi
 
             // Watch for focal point changes and sync to Livewire
             this.$watch('focalX', (value) => {
+                console.log('[Focal Picker] X changed to:', value, '| Path:', this.focalXPath);
                 if (this.$wire && this.$wire.set) {
-                    this.$wire.set('data.modal_featured_image_focal_x', value);
+                    this.$wire.set(this.focalXPath, value);
+                    console.log('[Focal Picker] Set Livewire state. Current value:', this.$wire.get ? this.$wire.get(this.focalXPath) : 'N/A');
+                } else {
+                    console.warn('[Focal Picker] $wire.set not available');
                 }
             });
 
             this.$watch('focalY', (value) => {
+                console.log('[Focal Picker] Y changed to:', value, '| Path:', this.focalYPath);
                 if (this.$wire && this.$wire.set) {
-                    this.$wire.set('data.modal_featured_image_focal_y', value);
+                    this.$wire.set(this.focalYPath, value);
+                    console.log('[Focal Picker] Set Livewire state. Current value:', this.$wire.get ? this.$wire.get(this.focalYPath) : 'N/A');
+                } else {
+                    console.warn('[Focal Picker] $wire.set not available');
                 }
             });
 
@@ -156,19 +166,7 @@ export default function featuredImageFocalPicker(existingImageSrc = null, existi
             this.focalX = Math.round(Math.max(0, Math.min(100, x)) * 10) / 10;
             this.focalY = Math.round(Math.max(0, Math.min(100, y)) * 10) / 10;
 
-            // Also directly trigger input events to ensure wire:model picks up the change
-            const focalXInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_x"]');
-            const focalYInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_y"]');
-
-            if (focalXInput) {
-                focalXInput.value = this.focalX;
-                focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            if (focalYInput) {
-                focalYInput.value = this.focalY;
-                focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-
+            // Values will be synced to Livewire via $watch
             this.updateFocalPoint();
         },
 
@@ -187,18 +185,7 @@ export default function featuredImageFocalPicker(existingImageSrc = null, existi
         resetFocalPointToCenter() {
             this.focalX = 50;
             this.focalY = 50;
-            // Trigger the manual input updates to sync with Livewire
-            const focalXInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_x"]');
-            const focalYInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_y"]');
-
-            if (focalXInput) {
-                focalXInput.value = 50;
-                focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            if (focalYInput) {
-                focalYInput.value = 50;
-                focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+            // Values will be synced to Livewire via $watch
         },
 
         setupLivewireEventListener() {
@@ -215,18 +202,7 @@ export default function featuredImageFocalPicker(existingImageSrc = null, existi
                     this.focalX = data.focalX || 50;
                     this.focalY = data.focalY || 50;
 
-                    // Update the inputs to sync with Livewire
-                    const focalXInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_x"]');
-                    const focalYInput = document.querySelector('[wire\\:model*="modal_featured_image_focal_y"]');
-
-                    if (focalXInput) {
-                        focalXInput.value = this.focalX;
-                        focalXInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    }
-                    if (focalYInput) {
-                        focalYInput.value = this.focalY;
-                        focalYInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    }
+                    // Values will be synced to Livewire via $watch
                 }
             });
         }
