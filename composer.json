@@ -25,6 +25,7 @@
         "filament/spatie-laravel-settings-plugin": "^4.0",
         "illuminate/contracts": "^12.0",
         "illuminate/support": "^12.0",
+        "league/html-to-markdown": "^5.1",
         "romanzipp/laravel-seo": "^2.9",
         "spatie/laravel-medialibrary": "^11.15",
         "spatie/laravel-package-tools": "^1.16",
