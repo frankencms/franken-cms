@@ -50,7 +50,7 @@ trait HasSeoFields
                                 'x-init'                   => "\$dispatch('seo-title-update', { length: \$el.value.length })",
                                 'x-on:input.debounce.50ms' => "\$dispatch('seo-title-update', { length: \$el.value.length })",
                             ])
-                            ->suffixAction(GenerateSeoTitleAction::make('generate_seo_title'))
+                            ->hintAction(GenerateSeoTitleAction::make('generate_seo_title'))
                             ->columnSpanFull(),
 
                         TextEntry::make('_seo_title_length')

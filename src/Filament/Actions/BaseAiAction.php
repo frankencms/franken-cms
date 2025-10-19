@@ -61,12 +61,10 @@ abstract class BaseAiAction extends Action
 
         $this->label('Ask Igor')
             ->icon('heroicon-o-sparkles')
+//            ->icon('frankencms-igor')
             ->color('primary')
             ->tooltip('Generate content with AI')
             ->visible(fn () => AiFeatureDetector::isAvailable())
-            ->extraAttributes([
-                'class' => 'ai-action-button',
-            ])
             ->action(function (Set $set, Get $get, $livewire) {
                 // Get current field value
                 $currentValue = $get($this->getFieldName());

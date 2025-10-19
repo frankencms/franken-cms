@@ -363,7 +363,7 @@ class PostForm
                                                             $component->state($media->getCustomProperty('alt', ''));
                                                         }
                                                     })
-                                                    ->suffixAction(GenerateAltTextAction::make('generate_alt_text')),
+                                                    ->hintAction(GenerateAltTextAction::make('generate_alt_text')),
 
                                                 TextInput::make('featured_image_title')
                                                     ->label(__('Title'))

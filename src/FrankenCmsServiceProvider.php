@@ -2,6 +2,7 @@
 
 namespace FrankenCms;
 
+use BladeUI\Icons\Factory;
 use Composer\InstalledVersions;
 use Exception;
 use Filament\Support\Assets\AlpineComponent;
@@ -144,6 +145,16 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             $this->app->singleton(PromptManager::class);
             $this->app->singleton(AiService::class);
         }
+
+        // Register SVG Icons
+        $this->callAfterResolving(Factory::class, function (Factory $factory) {
+            $factory->add('frankencms', [
+                'path' => __DIR__ . '/../resources/svg',
+                'prefix' => 'frankencms', // <x-frankencms-camera/>
+            ]);
+        });
+
+
     }
 
     private function registerLivewireComponents(): void
