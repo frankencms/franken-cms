@@ -2,7 +2,6 @@
 
 namespace FrankenCms\Settings;
 
-use FrankenCms\Prompts\DefaultPrompts;
 use FrankenCms\SettingsCasts\EncryptedSettingsCast;
 use Spatie\LaravelSettings\Settings;
 
@@ -20,37 +19,27 @@ class AiSettings extends Settings
     // SEO Title Generator Prompt
     public bool $seo_title_enabled = true;
 
-    public string $seo_title_prompt;
+    public string $seo_title_prompt = '';
 
     // SEO Meta Description Prompt
     public bool $seo_description_enabled = true;
 
-    public string $seo_description_prompt;
+    public string $seo_description_prompt = '';
 
     // Post Teaser/Excerpt Prompt
     public bool $teaser_enabled = true;
 
-    public string $teaser_prompt;
+    public string $teaser_prompt = '';
 
     // Image Alt Text Prompt
     public bool $alt_text_enabled = true;
 
-    public string $alt_text_prompt;
+    public string $alt_text_prompt = '';
 
     // Image Title Prompt
     public bool $image_title_enabled = true;
 
-    public string $image_title_prompt;
-
-    public function __construct()
-    {
-        // Set defaults from DefaultPrompts class
-        $this->seo_title_prompt = DefaultPrompts::seoTitle();
-        $this->seo_description_prompt = DefaultPrompts::seoDescription();
-        $this->teaser_prompt = DefaultPrompts::teaser();
-        $this->alt_text_prompt = DefaultPrompts::altText();
-        $this->image_title_prompt = DefaultPrompts::imageTitle();
-    }
+    public string $image_title_prompt = '';
 
     public static function group(): string
     {

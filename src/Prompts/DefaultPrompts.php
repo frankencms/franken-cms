@@ -9,18 +9,31 @@ class DefaultPrompts
      */
     public static function seoTitle(): string
     {
-        return 'Generate an SEO-optimized title (50-60 characters) for a blog post.
+        return <<<'PROMPT'
+You are writing an SEO title tag for a blog post.
 
-Title: {title}
-Content: {content}
+INPUT
+- Original Title: {title}
+- Post Content: {content}
 
-Requirements:
-- Must be 50-60 characters
-- Include target keywords naturally
-- Compelling and click-worthy
-- Clear and descriptive
+TASK
+Write 1 SEO-optimized title (50–60 characters total) that:
+- Includes 1–2 primary keywords from the title or content naturally
+- Clearly conveys the topic or benefit
+- Is compelling and readable in active voice
+- Balances clarity, curiosity, and keyword relevance
+- Encourages clicks without clickbait or exaggeration
 
-Return only the SEO title, nothing else.';
+STYLE RULES
+- Title Case (Capitalize Major Words)
+- No punctuation at the end (no periods or exclamation marks)
+- No emojis, brackets, or hashtags
+- Avoid all caps or keyword stuffing
+- Must sound professional and trustworthy
+
+OUTPUT FORMAT
+Return only the final SEO title text.
+PROMPT;
     }
 
     /**
@@ -28,18 +41,30 @@ Return only the SEO title, nothing else.';
      */
     public static function seoDescription(): string
     {
-        return 'Generate an SEO meta description (150-160 characters) for:
+        return <<<'PROMPT'
+You are writing a Google SEO meta description.
 
-Title: {title}
-Content: {content}
+INPUT
+- Title: {title}
+- Content: {content}
 
-Requirements:
-- Must be 150-160 characters
-- Summarize main points
-- Include call-to-action
-- Use active voice
+TASK
+Write 1 meta description (150–160 characters total) that:
+- Clearly summarizes the core value or topic of the post
+- Includes 1–2 natural keywords from the title or content
+- Uses active voice and encourages action or curiosity
+- Reads smoothly in a single sentence
+- Ends cleanly without punctuation clutter
 
-Return only the meta description, nothing else.';
+STYLE RULES
+- No hashtags, emojis, or special characters
+- Avoid repetition or keyword stuffing
+- Use plain text only (no quotes or labels)
+- Professional, natural tone focused on clarity and engagement
+
+OUTPUT FORMAT
+Return only the final meta description text.
+PROMPT;
     }
 
     /**
@@ -47,17 +72,31 @@ Return only the meta description, nothing else.';
      */
     public static function teaser(): string
     {
-        return 'Create a compelling teaser/excerpt (2-3 sentences, ~150 characters) for this blog post:
+        return <<<'PROMPT'
+You are generating a short teaser (excerpt) for a blog post.
 
-{content}
+INPUT
+- Post Title: {title}
+- Post Content: {content}
 
-Requirements:
-- Hook the reader
-- Summarize key value
-- Create curiosity
-- 2-3 sentences maximum
+TASK
+Write 1 teaser paragraph (2–3 sentences, ~150 characters total) that:
+- Grabs attention within the first few words
+- Summarizes the main insight or benefit of the post
+- Creates curiosity to read more
+- Uses a natural, conversational tone
+- Includes one relevant keyword or phrase from the post when possible
 
-Return only the teaser.';
+STYLE RULES
+- No salesy language or exaggeration
+- Avoid clickbait phrases (“you won’t believe,” “game-changer,” etc.)
+- Write in sentence case (capitalize only the first letter and proper nouns)
+- No hashtags, emojis, or quotes
+- Plain text only — do not label it “Teaser” or include metadata
+
+OUTPUT FORMAT
+Return only the final teaser text.
+PROMPT;
     }
 
     /**
@@ -65,20 +104,38 @@ Return only the teaser.';
      */
     public static function altText(): string
     {
-        return 'Analyze this image and generate descriptive alt text for accessibility.
+        return <<<'PROMPT'
+You are generating alt text for an image to improve accessibility and SEO.
 
-Additional Context:
-Post Title: {title}
-Post Content: {content}
-Image Filename: {filename}
+INPUT
+- Post Title: {title}
+- Post Content : {content}
+- Image Filename: {filename}
 
-Requirements:
-- Maximum 125 characters
-- Describe what you see in the image
-- Include relevant details for accessibility
-- Be specific and descriptive
+TASK
+Write 1 short, clear sentence describing what appears in the image, using the provided context to infer meaning.
 
-Return only the alt text.';
+RULES
+- Maximum length: 125 characters
+- Describe the visible subject and any important context (e.g., actions, setting, tone)
+- Include one naturally fitting keyword from the post title or content if relevant
+- Use sentence case (capitalize first word only)
+- No punctuation at the end unless required for clarity
+- Avoid “image of,” “picture of,” or redundant phrasing
+- Professional, neutral tone (no speculation or emotion)
+- No clickbait, hashtags, or filler text
+- No double quotes
+
+ACCESSIBILITY FOCUS
+Ensure the alt text conveys the essential visual information a sighted user would get from the image.
+
+DISAMBIGUATION
+- If the filename suggests a product, event, or location, use it only if helpful.
+- If context is unclear, describe the main visible subject neutrally.
+
+OUTPUT FORMAT
+Return only the final alt text string — no labels or quotes.
+PROMPT;
     }
 
     /**
@@ -86,19 +143,36 @@ Return only the alt text.';
      */
     public static function imageTitle(): string
     {
-        return 'Generate a descriptive title for this image (hover text).
+        return <<<'PROMPT'
+You are generating a single HTML image title (hover text).
 
-Additional Context:
-Post Title: {title}
-Post Content: {content}
-Image Filename: {filename}
+INPUT
+- Post Title: {title}
+- Post Content : {content}
+- Image Filename: {filename}
 
-Requirements:
-- Short and descriptive (3-8 words)
-- Provides additional context when hovering
-- Clear and informative
-- Professional tone
+TASK
+Write 1 concise, descriptive title for the image that:
+- Is 3–7 words and ≤ 60 characters
+- Adds context beyond the visible image (ties to the post topic)
+- Sounds professional and specific
+- Naturally includes one relevant term from the Post Title/Content if it fits
+- Uses Title Case (Capitalize Major Words)
 
-Return only the image title.';
+STYLE RULES (MUST)
+- Plain text only (no quotes, punctuation at end, emojis, hashtags, or brackets)
+- No clickbait, no stuffing, no salesy language
+- No private/sensitive info; no speculation
+
+DISAMBIGUATION
+- If the filename reveals a product/model/scene that helps clarity, you may include it
+- If context is insufficient, fall back to a neutral, on-topic descriptor based on the Post Title
+
+OUTPUT FORMAT
+Return only the final title text with nothing else.
+PROMPT;
+
+
+
     }
 }
