@@ -1,0 +1,1 @@
+@livewire('blog-post-wizard')

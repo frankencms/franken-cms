@@ -13,6 +13,7 @@ use Filament\View\PanelsRenderHook;
 use FrankenCms\Commands\GenerateSitemapCommand;
 use FrankenCms\Commands\InstallCommand;
 use FrankenCms\Filament\Components\AiGeneratorModal;
+use FrankenCms\Livewire\BlogPostWizard;
 use FrankenCms\Http\Middleware\AddSeoDefaults;
 use FrankenCms\Http\Middleware\SetCurrentPage;
 use FrankenCms\Listeners\ClearFeedCacheListener;
@@ -164,6 +165,11 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             Livewire::component(
                 'ai-generator-modal',
                 AiGeneratorModal::class
+            );
+
+            Livewire::component(
+                'blog-post-wizard',
+                BlogPostWizard::class
             );
         }
     }
@@ -521,6 +527,12 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         FilamentView::registerRenderHook(
             PanelsRenderHook::BODY_END,
             fn (): string => view('franken-cms::filament.components.ai-generator-modal-wrapper')->render()
+        );
+
+        // Register the blog post wizard modal
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_END,
+            fn (): string => view('franken-cms::filament.components.blog-post-wizard-wrapper')->render()
         );
     }
 }

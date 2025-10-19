@@ -23,6 +23,7 @@ use Filament\Schemas\Schema;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Actions\GenerateAltTextAction;
+use FrankenCms\Filament\Actions\GenerateBlogPostAction;
 use FrankenCms\Filament\Actions\GenerateImageTitleAction;
 use FrankenCms\Filament\Actions\GenerateTeaserAction;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
@@ -98,6 +99,7 @@ class PostForm
                                     ])
                                     ->fileAttachmentsDirectory('posts/images')
                                     ->fileAttachmentsVisibility('public')
+                                    ->hintAction(GenerateBlogPostAction::make('generate_blog_post'))
                                     ->toolbarButtons([
                                         // Text Formatting
                                         ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'small', 'lead', 'highlight', 'textColor'],

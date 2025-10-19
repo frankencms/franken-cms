@@ -16,7 +16,8 @@ class EditPost extends EditRecord
     protected function getListeners(): array
     {
         return [
-            'ai-content-generated' => 'handleAiContentGenerated',
+            'ai-content-generated'     => 'handleAiContentGenerated',
+            'insert-generated-content' => 'handleInsertGeneratedContent',
         ];
     }
 
@@ -24,6 +25,18 @@ class EditPost extends EditRecord
     {
         if (isset($data['fieldName']) && isset($data['value'])) {
             $this->data[$data['fieldName']] = $data['value'];
+        }
+    }
+
+    public function handleInsertGeneratedContent(array $data): void
+    {
+        if (isset($data['content'])) {
+            // Convert markdown to TipTap JSON format
+            // For now, we'll set it as the content and let the RichEditor handle it
+            $this->data['post_content'] = $data['content'];
+
+            // Force a re-render of the form
+            $this->dispatch('$refresh');
         }
     }
 

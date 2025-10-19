@@ -16,36 +16,42 @@ class PromptManager
             'prompt_key'      => 'seo_title_prompt',
             'context'         => 'all',
             'supports_vision' => false,
+            'max_tokens'      => 100,  // ~60 chars for SEO title
         ],
         'generate_seo_description' => [
             'enabled_key'     => 'seo_description_enabled',
             'prompt_key'      => 'seo_description_prompt',
             'context'         => 'all',
             'supports_vision' => false,
+            'max_tokens'      => 250,  // ~160 chars for meta description
         ],
         'generate_teaser' => [
             'enabled_key'     => 'teaser_enabled',
             'prompt_key'      => 'teaser_prompt',
             'context'         => 'post',
             'supports_vision' => false,
+            'max_tokens'      => 300,  // ~100-200 words
         ],
         'generate_alt_text' => [
             'enabled_key'     => 'alt_text_enabled',
             'prompt_key'      => 'alt_text_prompt',
             'context'         => 'media',
             'supports_vision' => true,
+            'max_tokens'      => 150,  // ~100 chars for alt text
         ],
         'generate_image_title' => [
             'enabled_key'     => 'image_title_enabled',
             'prompt_key'      => 'image_title_prompt',
             'context'         => 'media',
             'supports_vision' => true,
+            'max_tokens'      => 100,  // ~60 chars for title
         ],
         'generate_blog_post' => [
             'enabled_key'     => 'blog_post_enabled',
             'prompt_key'      => 'blog_post_prompt',
             'context'         => 'post',
             'supports_vision' => false,
+            'max_tokens'      => 3000,  // ~800-1200 words = ~2000-2400 tokens, plus buffer
         ],
     ];
 
@@ -76,6 +82,7 @@ class PromptManager
             'enabled'         => $settings->$enabledKey,
             'context'         => $config['context'],
             'supports_vision' => $config['supports_vision'] ?? false,
+            'max_tokens'      => $config['max_tokens'] ?? 500,
         ];
     }
 
@@ -99,6 +106,7 @@ class PromptManager
                     'enabled'         => $settings->$enabledKey,
                     'context'         => $config['context'],
                     'supports_vision' => $config['supports_vision'] ?? false,
+                    'max_tokens'      => $config['max_tokens'] ?? 500,
                 ];
             }
         }
