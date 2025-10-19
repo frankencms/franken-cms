@@ -8,32 +8,58 @@ use FrankenCms\Settings\AiSettings;
 class PromptManager
 {
     /**
+     * Map action keys to settings properties
+     */
+    protected const PROMPT_MAP = [
+        'generate_seo_title' => [
+            'enabled_key' => 'seo_title_enabled',
+            'prompt_key'  => 'seo_title_prompt',
+            'context'     => 'all',
+        ],
+        'generate_seo_description' => [
+            'enabled_key' => 'seo_description_enabled',
+            'prompt_key'  => 'seo_description_prompt',
+            'context'     => 'all',
+        ],
+        'generate_teaser' => [
+            'enabled_key' => 'teaser_enabled',
+            'prompt_key'  => 'teaser_prompt',
+            'context'     => 'post',
+        ],
+        'generate_alt_text' => [
+            'enabled_key' => 'alt_text_enabled',
+            'prompt_key'  => 'alt_text_prompt',
+            'context'     => 'media',
+        ],
+    ];
+
+    /**
      * Get prompt configuration by action key
-     *
      *
      * @throws Exception
      */
     public function getPrompt(string $actionKey): array
     {
+        if (! isset(self::PROMPT_MAP[$actionKey])) {
+            throw new Exception("Prompt not found: {$actionKey}");
+        }
+
         $settings = app(AiSettings::class);
+        $config = self::PROMPT_MAP[$actionKey];
 
-        // Check custom prompts first (from settings)
-        $customPrompt = collect($settings->prompts ?? [])
-            ->firstWhere('action_key', $actionKey);
+        $enabledKey = $config['enabled_key'];
+        $promptKey = $config['prompt_key'];
 
-        if ($customPrompt && ($customPrompt['enabled'] ?? false)) {
-            return $customPrompt;
+        if (! $settings->$enabledKey) {
+            throw new Exception("Prompt is disabled: {$actionKey}");
         }
 
-        // Fall back to defaults
-        $defaultPrompt = collect(DefaultPrompts::all())
-            ->firstWhere('action_key', $actionKey);
-
-        if ($defaultPrompt) {
-            return $defaultPrompt;
-        }
-
-        throw new Exception("Prompt not found: {$actionKey}");
+        return [
+            'action_key' => $actionKey,
+            'prompt'     => $settings->$promptKey,
+            'enabled'    => $settings->$enabledKey,
+            'context'    => $config['context'],
+        ];
     }
 
     /**
@@ -42,20 +68,24 @@ class PromptManager
     public function getPromptsForContext(string $context): array
     {
         $settings = app(AiSettings::class);
+        $prompts = [];
 
-        // Merge default and custom prompts
-        $allPrompts = array_merge(
-            DefaultPrompts::all(),
-            $settings->prompts ?? []
-        );
+        foreach (self::PROMPT_MAP as $actionKey => $config) {
+            $enabledKey = $config['enabled_key'];
+            $promptKey = $config['prompt_key'];
 
-        // Filter by context and enabled status
-        return collect($allPrompts)
-            ->filter(fn ($p) => $p['enabled'] ?? false)
-            ->filter(fn ($p) => in_array($p['context'] ?? 'all', [$context, 'all']))
-            ->unique('action_key')
-            ->values()
-            ->toArray();
+            // Check if enabled and matches context
+            if ($settings->$enabledKey && in_array($config['context'], [$context, 'all'])) {
+                $prompts[] = [
+                    'action_key' => $actionKey,
+                    'prompt'     => $settings->$promptKey,
+                    'enabled'    => $settings->$enabledKey,
+                    'context'    => $config['context'],
+                ];
+            }
+        }
+
+        return $prompts;
     }
 
     /**
@@ -69,7 +99,7 @@ class PromptManager
                 $value = json_encode($value);
             } elseif (is_null($value)) {
                 $value = '';
-            } elseif (!is_string($value)) {
+            } elseif (! is_string($value)) {
                 $value = (string) $value;
             }
 
