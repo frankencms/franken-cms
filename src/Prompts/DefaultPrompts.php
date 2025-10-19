@@ -171,8 +171,50 @@ DISAMBIGUATION
 OUTPUT FORMAT
 Return only the final title text with nothing else.
 PROMPT;
+    }
 
+    /**
+     * Get default prompt for Full Blog Post
+     */
+    public static function blogPost(): string
+    {
+        return <<<'PROMPT'
+You are an expert SEO content writer.
 
+INPUT
+- Title: {title}
+- Topic / Focus: {focus}
+- Target Audience: {audience}
+- Key Points or Notes: {content}
 
+TASK
+Write a complete, high-quality blog post that:
+- Is well-structured with clear headings (H2/H3)
+- Uses engaging, natural language in active voice
+- Integrates relevant keywords naturally throughout
+- Educates, informs, or entertains the reader depending on the topic
+- Flows logically from intro to conclusion
+- Ends with a concise, motivating summary or takeaway
+
+SEO RULES
+- Optimize for a single primary keyword and 2–3 secondary keywords
+- Include the primary keyword in the first paragraph and at least one subheading
+- Use short paragraphs (2–4 sentences) and scannable formatting
+- Add transition phrases to improve readability and NLP comprehension
+- Avoid keyword stuffing, repetition, or filler content
+
+STYLE & TONE
+- Professional yet conversational
+- Confident, informative, and trustworthy
+- Match the audience's level of expertise
+- Avoid buzzwords, clichés, and vague statements
+
+OUTPUT FORMAT
+- Markdown structure with headings, subheadings, and bullet points
+- No meta descriptions, no SEO titles, no tags — just the full post content
+
+QUALITY TARGET
+Write between 800–1,200 words of cohesive, original content.
+PROMPT;
     }
 }

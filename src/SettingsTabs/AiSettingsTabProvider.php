@@ -235,6 +235,24 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                             ->collapsible()
                                             ->collapsed(),
 
+                                        // Full Blog Post Generator
+                                        Section::make('Full Blog Post Generator')
+                                            ->description('Generate complete, SEO-optimized blog posts (800-1200 words)')
+                                            ->schema([
+                                                Toggle::make('blog_post_enabled')
+                                                    ->label('Enable Blog Post Generation')
+                                                    ->default(true)
+                                                    ->columnSpanFull(),
+
+                                                CodeEditor::make('blog_post_prompt')
+                                                    ->label('Prompt Template')
+                                                    ->helperText('Available placeholders: {title}, {focus}, {audience}, {content}. Note: {focus} and {audience} require user input.')
+                                                    ->columnSpanFull()
+                                                    ->visible(fn ($get) => $get('blog_post_enabled')),
+                                            ])
+                                            ->collapsible()
+                                            ->collapsed(),
+
                                     ]),
 
                             ]),

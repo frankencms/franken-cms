@@ -41,6 +41,12 @@ class PromptManager
             'context'         => 'media',
             'supports_vision' => true,
         ],
+        'generate_blog_post' => [
+            'enabled_key'     => 'blog_post_enabled',
+            'prompt_key'      => 'blog_post_prompt',
+            'context'         => 'post',
+            'supports_vision' => false,
+        ],
     ];
 
     /**
