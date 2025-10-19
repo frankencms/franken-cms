@@ -217,6 +217,24 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                             ->collapsible()
                                             ->collapsed(),
 
+                                        // Image Title
+                                        Section::make('Image Title')
+                                            ->description('Generate descriptive titles for images (hover text)')
+                                            ->schema([
+                                                Toggle::make('image_title_enabled')
+                                                    ->label('Enable Image Title Generation')
+                                                    ->default(true)
+                                                    ->columnSpanFull(),
+
+                                                CodeEditor::make('image_title_prompt')
+                                                    ->label('Prompt Template')
+                                                    ->helperText('Available placeholders: {title}, {content}, {filename}')
+                                                    ->columnSpanFull()
+                                                    ->visible(fn ($get) => $get('image_title_enabled')),
+                                            ])
+                                            ->collapsible()
+                                            ->collapsed(),
+
                                     ]),
 
                             ]),

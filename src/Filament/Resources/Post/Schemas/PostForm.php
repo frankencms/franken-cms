@@ -23,6 +23,7 @@ use Filament\Schemas\Schema;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Actions\GenerateAltTextAction;
+use FrankenCms\Filament\Actions\GenerateImageTitleAction;
 use FrankenCms\Filament\Actions\GenerateTeaserAction;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
@@ -375,7 +376,8 @@ class PostForm
                                                             $media = $record->getFirstMedia('featured');
                                                             $component->state($media->getCustomProperty('title', ''));
                                                         }
-                                                    }),
+                                                    })
+                                                    ->hintAction(GenerateImageTitleAction::make('generate_image_title')),
                                             ])
                                             ->columns(2),
 

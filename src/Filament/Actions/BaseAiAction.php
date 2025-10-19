@@ -2,7 +2,6 @@
 
 namespace FrankenCms\Filament\Actions;
 
-
 use Filament\Actions\Action;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -43,10 +42,11 @@ abstract class BaseAiAction extends Action
 
         // Map action keys to field names
         $fieldMap = [
-            'generate_seo_title' => 'seo_title',
+            'generate_seo_title'       => 'seo_title',
             'generate_seo_description' => 'seo_description',
-            'generate_teaser' => 'post_teaser',
-            'generate_alt_text' => 'featured_image_alt',
+            'generate_teaser'          => 'post_teaser',
+            'generate_alt_text'        => 'featured_image_alt',
+            'generate_image_title'     => 'featured_image_title',
         ];
 
         return $fieldMap[$actionKey] ?? $actionKey;
@@ -71,14 +71,14 @@ abstract class BaseAiAction extends Action
 
                 // Dispatch event to open modal
                 $livewire->dispatch('open-ai-modal', [
-                    'actionKey'     => $this->getActionKey(),
-                    'promptLabel'   => $this->getPromptLabel(),
-                    'context'       => $this->getPromptContext($get, $livewire),
-                    'currentValue'  => $currentValue,
-                    'targetMin'     => $this->targetMin,
-                    'targetMax'     => $this->targetMax,
-                    'fieldName'     => $this->getFieldName(),
-                    'componentId'   => $livewire->getId(),
+                    'actionKey'    => $this->getActionKey(),
+                    'promptLabel'  => $this->getPromptLabel(),
+                    'context'      => $this->getPromptContext($get, $livewire),
+                    'currentValue' => $currentValue,
+                    'targetMin'    => $this->targetMin,
+                    'targetMax'    => $this->targetMax,
+                    'fieldName'    => $this->getFieldName(),
+                    'componentId'  => $livewire->getId(),
                 ]);
             });
 
@@ -116,7 +116,7 @@ abstract class BaseAiAction extends Action
         }
 
         // If it's already a string, return it
-        if (is_string($content) && !str_starts_with($content, '{')) {
+        if (is_string($content) && ! str_starts_with($content, '{')) {
             return $content;
         }
 

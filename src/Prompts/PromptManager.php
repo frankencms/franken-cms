@@ -31,6 +31,11 @@ class PromptManager
             'prompt_key'  => 'alt_text_prompt',
             'context'     => 'media',
         ],
+        'generate_image_title' => [
+            'enabled_key' => 'image_title_enabled',
+            'prompt_key'  => 'image_title_prompt',
+            'context'     => 'media',
+        ],
     ];
 
     /**
