@@ -12,29 +12,34 @@ class PromptManager
      */
     protected const PROMPT_MAP = [
         'generate_seo_title' => [
-            'enabled_key' => 'seo_title_enabled',
-            'prompt_key'  => 'seo_title_prompt',
-            'context'     => 'all',
+            'enabled_key'     => 'seo_title_enabled',
+            'prompt_key'      => 'seo_title_prompt',
+            'context'         => 'all',
+            'supports_vision' => false,
         ],
         'generate_seo_description' => [
-            'enabled_key' => 'seo_description_enabled',
-            'prompt_key'  => 'seo_description_prompt',
-            'context'     => 'all',
+            'enabled_key'     => 'seo_description_enabled',
+            'prompt_key'      => 'seo_description_prompt',
+            'context'         => 'all',
+            'supports_vision' => false,
         ],
         'generate_teaser' => [
-            'enabled_key' => 'teaser_enabled',
-            'prompt_key'  => 'teaser_prompt',
-            'context'     => 'post',
+            'enabled_key'     => 'teaser_enabled',
+            'prompt_key'      => 'teaser_prompt',
+            'context'         => 'post',
+            'supports_vision' => false,
         ],
         'generate_alt_text' => [
-            'enabled_key' => 'alt_text_enabled',
-            'prompt_key'  => 'alt_text_prompt',
-            'context'     => 'media',
+            'enabled_key'     => 'alt_text_enabled',
+            'prompt_key'      => 'alt_text_prompt',
+            'context'         => 'media',
+            'supports_vision' => true,
         ],
         'generate_image_title' => [
-            'enabled_key' => 'image_title_enabled',
-            'prompt_key'  => 'image_title_prompt',
-            'context'     => 'media',
+            'enabled_key'     => 'image_title_enabled',
+            'prompt_key'      => 'image_title_prompt',
+            'context'         => 'media',
+            'supports_vision' => true,
         ],
     ];
 
@@ -60,10 +65,11 @@ class PromptManager
         }
 
         return [
-            'action_key' => $actionKey,
-            'prompt'     => $settings->$promptKey,
-            'enabled'    => $settings->$enabledKey,
-            'context'    => $config['context'],
+            'action_key'      => $actionKey,
+            'prompt'          => $settings->$promptKey,
+            'enabled'         => $settings->$enabledKey,
+            'context'         => $config['context'],
+            'supports_vision' => $config['supports_vision'] ?? false,
         ];
     }
 
@@ -82,10 +88,11 @@ class PromptManager
             // Check if enabled and matches context
             if ($settings->$enabledKey && in_array($config['context'], [$context, 'all'])) {
                 $prompts[] = [
-                    'action_key' => $actionKey,
-                    'prompt'     => $settings->$promptKey,
-                    'enabled'    => $settings->$enabledKey,
-                    'context'    => $config['context'],
+                    'action_key'      => $actionKey,
+                    'prompt'          => $settings->$promptKey,
+                    'enabled'         => $settings->$enabledKey,
+                    'context'         => $config['context'],
+                    'supports_vision' => $config['supports_vision'] ?? false,
                 ];
             }
         }
