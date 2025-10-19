@@ -5,16 +5,11 @@ namespace FrankenCms\Prompts;
 class DefaultPrompts
 {
     /**
-     * Get all default prompt templates
+     * Get default prompt for SEO Title
      */
-    public static function all(): array
+    public static function seoTitle(): string
     {
-        return [
-            [
-                'label'      => 'SEO Title Generator',
-                'action_key' => 'generate_seo_title',
-                'context'    => 'all',
-                'prompt'     => 'Generate an SEO-optimized title (50-60 characters) for a blog post.
+        return 'Generate an SEO-optimized title (50-60 characters) for a blog post.
 
 Title: {title}
 Content: {content}
@@ -25,16 +20,15 @@ Requirements:
 - Compelling and click-worthy
 - Clear and descriptive
 
-Return only the SEO title, nothing else.',
-                'max_tokens'  => 100,
-                'enabled'     => true,
-            ],
+Return only the SEO title, nothing else.';
+    }
 
-            [
-                'label'      => 'SEO Meta Description',
-                'action_key' => 'generate_seo_description',
-                'context'    => 'all',
-                'prompt'     => 'Generate an SEO meta description (150-160 characters) for:
+    /**
+     * Get default prompt for SEO Description
+     */
+    public static function seoDescription(): string
+    {
+        return 'Generate an SEO meta description (150-160 characters) for:
 
 Title: {title}
 Content: {content}
@@ -45,16 +39,15 @@ Requirements:
 - Include call-to-action
 - Use active voice
 
-Return only the meta description, nothing else.',
-                'max_tokens'  => 150,
-                'enabled'     => true,
-            ],
+Return only the meta description, nothing else.';
+    }
 
-            [
-                'label'      => 'Post Teaser/Excerpt',
-                'action_key' => 'generate_teaser',
-                'context'    => 'post',
-                'prompt'     => 'Create a compelling teaser/excerpt (2-3 sentences, ~150 characters) for this blog post:
+    /**
+     * Get default prompt for Post Teaser/Excerpt
+     */
+    public static function teaser(): string
+    {
+        return 'Create a compelling teaser/excerpt (2-3 sentences, ~150 characters) for this blog post:
 
 {content}
 
@@ -64,17 +57,15 @@ Requirements:
 - Create curiosity
 - 2-3 sentences maximum
 
-Return only the teaser.',
-                'max_tokens'  => 200,
-                'enabled'     => true,
-            ],
+Return only the teaser.';
+    }
 
-            [
-                'label'          => 'Image Alt Text',
-                'action_key'     => 'generate_alt_text',
-                'context'        => 'media',
-                'supports_vision' => true,
-                'prompt'         => 'Analyze this image and generate descriptive alt text for accessibility.
+    /**
+     * Get default prompt for Image Alt Text
+     */
+    public static function altText(): string
+    {
+        return 'Analyze this image and generate descriptive alt text for accessibility.
 
 Additional Context:
 Post Title: {title}
@@ -87,10 +78,27 @@ Requirements:
 - Include relevant details for accessibility
 - Be specific and descriptive
 
-Return only the alt text.',
-                'max_tokens'  => 100,
-                'enabled'     => true,
-            ],
-        ];
+Return only the alt text.';
+    }
+
+    /**
+     * Get default prompt for Image Title
+     */
+    public static function imageTitle(): string
+    {
+        return 'Generate a descriptive title for this image (hover text).
+
+Additional Context:
+Post Title: {title}
+Post Content: {content}
+Image Filename: {filename}
+
+Requirements:
+- Short and descriptive (3-8 words)
+- Provides additional context when hovering
+- Clear and informative
+- Professional tone
+
+Return only the image title.';
     }
 }
