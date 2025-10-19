@@ -46,7 +46,7 @@ abstract class BaseAiAction extends Action
             'generate_seo_title' => 'seo_title',
             'generate_seo_description' => 'seo_description',
             'generate_teaser' => 'post_teaser',
-            'generate_alt_text' => 'alt_text',
+            'generate_alt_text' => 'featured_image_alt',
         ];
 
         return $fieldMap[$actionKey] ?? $actionKey;

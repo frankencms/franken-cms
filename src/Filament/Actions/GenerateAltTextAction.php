@@ -24,14 +24,17 @@ class GenerateAltTextAction extends BaseAiAction
             'filename' => $get('file_name') ?? $get('name') ?? '',
         ];
 
-        // Try to get the image URL from the record's media
+        // Try to get the image from the record's media
         if ($livewire && method_exists($livewire, 'getRecord')) {
             $record = $livewire->getRecord();
 
             if ($record && method_exists($record, 'hasMedia') && $record->hasMedia('featured')) {
                 $media = $record->getFirstMedia('featured');
                 if ($media) {
+                    // Provide both URL (for production) and path (for local development)
+                    // The AiService will use URL if accessible, otherwise local path
                     $context['image_url'] = $media->getUrl();
+                    $context['image_path'] = $media->getPath();
                 }
             }
         }

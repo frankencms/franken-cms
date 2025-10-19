@@ -31,11 +31,12 @@ class AiService
         $promptConfig = $this->promptManager->getPrompt($actionKey);
 
         // Check if this is a vision prompt with an image
-        $isVisionPrompt = ($promptConfig['supports_vision'] ?? false) && ! empty($context['image_url']);
-
-        // Extract image URL if present
         $imageUrl = $context['image_url'] ?? null;
-        unset($context['image_url']); // Remove from context so it doesn't get into the text prompt
+        $imagePath = $context['image_path'] ?? null;
+        $isVisionPrompt = ($promptConfig['supports_vision'] ?? false) && ($imageUrl || $imagePath);
+
+        // Remove image data from context so it doesn't get into the text prompt
+        unset($context['image_url'], $context['image_path']);
 
         // Format prompt with context variables
         $formattedPrompt = $this->promptManager->formatPrompt(
@@ -53,11 +54,27 @@ class AiService
                 ->withMaxTokens($promptConfig['max_tokens'] ?? 500);
 
             // Add prompt with optional image
-            if ($isVisionPrompt && $imageUrl) {
-                $prismRequest->withPrompt(
-                    $formattedPrompt,
-                    [Image::fromUrl(url: $imageUrl)]
-                );
+            if ($isVisionPrompt) {
+                // Production: Use publicly accessible URL
+                if ($imageUrl && ! app()->environment('local')) {
+                    $prismRequest->withPrompt(
+                        $formattedPrompt,
+                        [Image::fromUrl(url: $imageUrl)]
+                    );
+                }
+                // Local development: Use base64 encoding from local file
+                elseif ($imagePath && file_exists($imagePath) && app()->environment('local')) {
+                    $imageData = base64_encode(file_get_contents($imagePath));
+                    $mimeType = mime_content_type($imagePath);
+
+                    $prismRequest->withPrompt(
+                        $formattedPrompt,
+                        [Image::fromBase64(base64: $imageData, mimeType: $mimeType)]
+                    );
+                } else {
+                    // Fallback to text-only if image not accessible
+                    $prismRequest->withPrompt($formattedPrompt);
+                }
             } else {
                 $prismRequest->withPrompt($formattedPrompt);
             }
