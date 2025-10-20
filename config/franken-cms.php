@@ -93,4 +93,37 @@ return [
 
     'prism' => [],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Provider Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure available AI providers and their models. Users can customize
+    | this list to add new providers or modify model options.
+    |
+    */
+
+    'ai_providers' => [
+        'openai' => [
+            'label'  => 'OpenAI (GPT-5)',
+            'models' => [
+                'gpt-5-chat-latest' => 'GPT-5 (Recommended)',
+                'gpt-4o'            => 'GPT-4o',
+                'gpt-4o-mini'       => 'GPT-4o Mini (Faster, Cheaper)',
+                'gpt-4-turbo'       => 'GPT-4 Turbo',
+                'gpt-4'             => 'GPT-4',
+                'gpt-3.5-turbo'     => 'GPT-3.5 Turbo',
+            ],
+        ],
+        'anthropic' => [
+            'label'  => 'Anthropic (Claude)',
+            'models' => [
+                'claude-3-5-sonnet-20241022' => 'Claude 3.5 Sonnet (Recommended)',
+                'claude-3-opus-20240229'     => 'Claude 3 Opus',
+                'claude-3-sonnet-20240229'   => 'Claude 3 Sonnet',
+                'claude-3-haiku-20240307'    => 'Claude 3 Haiku',
+            ],
+        ],
+    ],
+
 ];

@@ -65,11 +65,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                                         Select::make('provider')
                                             ->label('AI Provider')
-                                            ->options([
-                                                'openai'    => 'OpenAI (GPT-5)',
-                                                'anthropic' => 'Anthropic (Claude)',
-                                                'ollama'    => 'Ollama (Local)',
-                                            ])
+                                            ->options(fn () => $this->getProviderOptions())
                                             ->default('openai')
                                             ->required()
                                             ->live()
@@ -82,7 +78,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                             ->revealable()
                                             ->helperText('Your API key will be encrypted and stored securely')
                                             ->required()
-                                            ->visible(fn ($get) => $get('enabled') && $get('provider') !== 'ollama')
+                                            ->visible(fn ($get) => $get('enabled'))
                                             ->columnSpan(1),
 
                                         Select::make('model')
@@ -96,43 +92,6 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                                     ])
                                     ->columns(2),
-
-                                Section::make('Setup Instructions')
-                                    ->description('Get started with your chosen AI provider')
-                                    ->visible(fn ($get) => $get('enabled'))
-                                    ->collapsible()
-                                    ->collapsed()
-                                    ->schema([
-                                        TextEntry::make('openai_instructions')
-                                            ->label('OpenAI Setup')
-                                            ->state('
-                                                1. Visit https://platform.openai.com/api-keys
-                                                2. Create a new API key
-                                                3. Copy and paste it above
-                                                4. Recommended model: **gpt-4o** (balanced) or **gpt-4o-mini** (faster, cheaper)
-                                            ')
-                                            ->visible(fn ($get) => $get('provider') === 'openai'),
-
-                                        TextEntry::make('anthropic_instructions')
-                                            ->label('Anthropic Setup')
-                                            ->state('
-                                                1. Visit https://console.anthropic.com/
-                                                2. Create a new API key
-                                                3. Copy and paste it above
-                                                4. Recommended model: **claude-3-5-sonnet-20241022** (best quality)
-                                            ')
-                                            ->visible(fn ($get) => $get('provider') === 'anthropic'),
-
-                                        TextEntry::make('ollama_instructions')
-                                            ->label('Ollama Setup')
-                                            ->state('
-                                                1. Install Ollama: https://ollama.ai
-                                                2. Download a model: `ollama pull llama2`
-                                                3. Make sure Ollama is running
-                                                4. No API key needed - runs locally on your machine
-                                            ')
-                                            ->visible(fn ($get) => $get('provider') === 'ollama'),
-                                    ]),
 
                             ]),
 
@@ -279,32 +238,33 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
     }
 
     /**
-     * Get available models for a provider
+     * Get provider options from config
+     */
+    protected function getProviderOptions(): array
+    {
+        $providers = config('franken-cms.ai_providers', []);
+
+        return collect($providers)
+            ->mapWithKeys(fn ($config, $key) => [$key => $config['label'] ?? ucfirst($key)])
+            ->toArray();
+    }
+
+    /**
+     * Get available models for a provider from config
      */
     protected function getModelsForProvider(?string $provider): array
     {
-        return match ($provider) {
-            'openai' => [
-                'gpt-5-chat-latest' => 'GPT-5 (Recommended)',
-                'gpt-4o'            => 'GPT-4o',
-                'gpt-4o-mini'       => 'GPT-4o Mini (Faster, Cheaper)',
-                'gpt-4-turbo'       => 'GPT-4 Turbo',
-                'gpt-4'             => 'GPT-4',
-                'gpt-3.5-turbo'     => 'GPT-3.5 Turbo',
-            ],
-            'anthropic' => [
-                'claude-3-5-sonnet-20241022' => 'Claude 3.5 Sonnet (Recommended)',
-                'claude-3-opus-20240229'     => 'Claude 3 Opus',
-                'claude-3-sonnet-20240229'   => 'Claude 3 Sonnet',
-                'claude-3-haiku-20240307'    => 'Claude 3 Haiku',
-            ],
-            'ollama' => [
-                'llama2'    => 'Llama 2',
-                'mistral'   => 'Mistral',
-                'codellama' => 'Code Llama',
-                'phi'       => 'Phi',
-            ],
-            default => ['gpt-5-chat-latest' => 'GPT-5 (Recommended)'],
-        };
+        if (! $provider) {
+            return [];
+        }
+
+        $models = config("franken-cms.ai_providers.{$provider}.models", []);
+
+        // If no models found for this provider, return default
+        if (empty($models)) {
+            return ['gpt-5-chat-latest' => 'GPT-5 (Recommended)'];
+        }
+
+        return $models;
     }
 }
