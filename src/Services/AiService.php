@@ -49,19 +49,6 @@ class AiService
         // Get AI settings
         $settings = app(AiSettings::class);
 
-        // Log what we're sending to the AI
-        Log::info('AI Generation Request', [
-            'action_key' => $actionKey,
-            'provider' => $settings->provider,
-            'model' => $settings->model,
-            'max_tokens' => $promptConfig['max_tokens'] ?? 500,
-            'prompt_length' => strlen($formattedPrompt),
-            'prompt_preview' => substr($formattedPrompt, 0, 500) . '...',
-            'full_prompt' => $formattedPrompt,
-            'context' => $context,
-            'is_vision' => $isVisionPrompt,
-        ]);
-
         try {
             // Call Prism to generate content
             $prismRequest = Prism::text()

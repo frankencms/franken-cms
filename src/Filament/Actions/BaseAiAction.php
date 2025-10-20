@@ -2,10 +2,14 @@
 
 namespace FrankenCms\Filament\Actions;
 
+use Exception;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\ViewField;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use FrankenCms\Services\AiFeatureDetector;
+use FrankenCms\Services\AiService;
 
 abstract class BaseAiAction extends Action
 {
@@ -61,29 +65,93 @@ abstract class BaseAiAction extends Action
 
         $this->label('Ask Igor')
             ->icon('heroicon-o-sparkles')
-//            ->icon('frankencms-igor')
             ->color('primary')
             ->tooltip('Generate content with AI')
             ->visible(fn () => AiFeatureDetector::isAvailable())
-            ->action(function (Set $set, Get $get, $livewire) {
-                // Get current field value
+            ->modalWidth('xl')
+            ->modalIcon('frankencms-igor')
+            ->modalHeading(fn () => 'Ask Igor: ' . $this->getPromptLabel())
+            ->modalDescription('Igor shall craft this content with precision and care.')
+            ->form(function ($livewire, Get $get) {
                 $currentValue = $get($this->getFieldName());
 
-                // Dispatch event to open modal
-                $livewire->dispatch('open-ai-modal', [
-                    'actionKey'    => $this->getActionKey(),
-                    'promptLabel'  => $this->getPromptLabel(),
-                    'context'      => $this->getPromptContext($get, $livewire),
-                    'currentValue' => $currentValue,
-                    'targetMin'    => $this->targetMin,
-                    'targetMax'    => $this->targetMax,
-                    'fieldName'    => $this->getFieldName(),
-                    'componentId'  => $livewire->getId(),
-                ]);
-            });
+                $schema = [
+                    // Igor loading overlay
+                    ViewField::make('igor_loading')
+                        ->view('franken-cms::filament.actions.igor-loading')
+                        ->label(''),
+                ];
 
-        // Listen for the generated content
-        $this->registerListeners();
+                // Show current value if it exists
+                if ($currentValue) {
+                    $schema[] = Placeholder::make('current_value')
+                        ->label('Current Value')
+                        ->content($currentValue);
+                }
+
+                // Show target character count if set
+                if ($this->targetMin && $this->targetMax) {
+                    $schema[] = Placeholder::make('target_info')
+                        ->label('Target Length')
+                        ->content("Igor will aim for {$this->targetMin}-{$this->targetMax} characters");
+                }
+
+                return $schema;
+            })
+            ->modalSubmitActionLabel('Generate')
+            ->action(function (Get $get, $livewire) {
+                try {
+                    $aiService = app(AiService::class);
+
+                    $context = $this->getPromptContext($get, $livewire);
+
+                    // Generate content
+                    $generatedText = $aiService->generate($this->getActionKey(), $context);
+
+                    // Get character count
+                    $characterCount = mb_strlen($generatedText);
+
+                    // Update the field
+                    $fieldName = $this->getFieldName();
+                    $livewire->data[$fieldName] = $generatedText;
+
+                    // Determine if character count is in target range
+                    $inRange = true;
+                    if ($this->targetMin && $this->targetMax) {
+                        $inRange = $characterCount >= $this->targetMin && $characterCount <= $this->targetMax;
+                    }
+
+                    // Success notification
+                    $notification = Notification::make()
+                        ->title('Content generated!')
+                        ->success();
+
+                    if ($this->targetMin && $this->targetMax) {
+                        if ($inRange) {
+                            $notification->body("Igor crafted {$characterCount} characters - perfect! ✨");
+                        } else {
+                            $notification
+                                ->body("Igor crafted {$characterCount} characters (target: {$this->targetMin}-{$this->targetMax})")
+                                ->warning();
+                        }
+                    } else {
+                        $notification->body('Igor has completed your request. 🧟‍♂️');
+                    }
+
+                    $notification->send();
+                } catch (Exception $e) {
+                    // Error notification
+                    Notification::make()
+                        ->title('Igor encountered a problem')
+                        ->body("By thunder! A calamity in the lab: {$e->getMessage()}")
+                        ->danger()
+                        ->persistent()
+                        ->send();
+
+                    // Re-throw to prevent modal from closing
+                    throw $e;
+                }
+            });
     }
 
     /**
@@ -95,15 +163,6 @@ abstract class BaseAiAction extends Action
         $this->targetMax = $max;
 
         return $this;
-    }
-
-    /**
-     * Register event listeners for AI generation
-     */
-    protected function registerListeners(): void
-    {
-        // Note: The actual listener will be in the form component
-        // This is handled by Livewire's event system
     }
 
     /**

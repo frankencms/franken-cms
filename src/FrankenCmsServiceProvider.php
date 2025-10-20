@@ -12,14 +12,13 @@ use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use FrankenCms\Commands\GenerateSitemapCommand;
 use FrankenCms\Commands\InstallCommand;
-use FrankenCms\Filament\Components\AiGeneratorModal;
-use FrankenCms\Livewire\BlogPostWizard;
 use FrankenCms\Http\Middleware\AddSeoDefaults;
 use FrankenCms\Http\Middleware\SetCurrentPage;
 use FrankenCms\Listeners\ClearFeedCacheListener;
 use FrankenCms\Listeners\ClearRobotsCacheListener;
 use FrankenCms\Listeners\ClearSitemapCacheListener;
 use FrankenCms\Listeners\RegeneratePostImagesListener;
+use FrankenCms\Livewire\BlogPostWizard;
 use FrankenCms\Models\Menu;
 use FrankenCms\Models\Post;
 use FrankenCms\Models\Taxonomy;
@@ -47,7 +46,6 @@ use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
 use FrankenCms\View\Composers\CmsFieldComposer;
 use Illuminate\Foundation\Console\AboutCommand;
-use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
@@ -150,23 +148,17 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register SVG Icons
         $this->callAfterResolving(Factory::class, function (Factory $factory) {
             $factory->add('frankencms', [
-                'path' => __DIR__ . '/../resources/svg',
+                'path'   => __DIR__ . '/../resources/svg',
                 'prefix' => 'frankencms', // <x-frankencms-camera/>
             ]);
         });
-
 
     }
 
     private function registerLivewireComponents(): void
     {
-        // Register the AiGeneratorModal Livewire component (only if Prism is installed)
+        // Register the BlogPostWizard Livewire component (only if Prism is installed)
         if (class_exists(Prism::class)) {
-            Livewire::component(
-                'ai-generator-modal',
-                AiGeneratorModal::class
-            );
-
             Livewire::component(
                 'blog-post-wizard',
                 BlogPostWizard::class
@@ -522,12 +514,6 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         if (! class_exists(Prism::class)) {
             return;
         }
-
-        // Register the AI generator modal in the Filament admin panel
-        FilamentView::registerRenderHook(
-            PanelsRenderHook::BODY_END,
-            fn (): string => view('franken-cms::filament.components.ai-generator-modal-wrapper')->render()
-        );
 
         // Register the blog post wizard modal
         FilamentView::registerRenderHook(

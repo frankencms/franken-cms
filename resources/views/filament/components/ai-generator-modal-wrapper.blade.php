@@ -1,1 +1,0 @@
-@livewire('ai-generator-modal')
