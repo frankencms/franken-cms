@@ -217,4 +217,38 @@ QUALITY TARGET
 Write between 800–1,200 words of cohesive, original content.
 PROMPT;
     }
+
+    /**
+     * Get default prompt for Blog Post Title
+     */
+    public static function blogPostTitle(): string
+    {
+        return <<<'PROMPT'
+You are writing an SEO-optimized and catchy blog post title.
+
+INPUT
+- Topic / Post Title: {title}
+- Post Summary or Key Points: {content}
+
+TASK
+Write 1 compelling SEO blog post title (50–60 characters total) that:
+- Includes 1–2 natural keywords from the topic or content
+- Hooks attention with clear, benefit-driven language
+- Reflects search intent (informational, transactional, or inspirational)
+- Sounds natural, credible, and aligned with the brand voice
+- Uses active phrasing and strong nouns/verbs
+- Is readable both by humans and search engines
+
+STYLE RULES
+- Title Case (Capitalize Major Words)
+- No punctuation at the end (no periods, emojis, or hashtags)
+- Avoid clickbait, overpromises, or vague phrasing
+- Keep tone professional and engaging
+
+OUTPUT FORMAT
+Return only the final SEO blog post title text.
+PROMPT;
+    }
+   
+
 }
