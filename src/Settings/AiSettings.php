@@ -46,6 +46,11 @@ class AiSettings extends Settings
 
     public string $blog_post_prompt = '';
 
+    // Blog Post Title Generator Prompt
+    public bool $blog_post_title_enabled = true;
+
+    public string $blog_post_title_prompt = '';
+
     public static function group(): string
     {
         return 'cms_ai';

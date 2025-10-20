@@ -212,6 +212,24 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                             ->collapsible()
                                             ->collapsed(),
 
+                                        // Blog Post Title Generator
+                                        Section::make('Blog Post Title Generator')
+                                            ->description('Generate compelling, SEO-optimized blog post titles (50-60 characters)')
+                                            ->schema([
+                                                Toggle::make('blog_post_title_enabled')
+                                                    ->label('Enable Blog Post Title Generation')
+                                                    ->default(true)
+                                                    ->columnSpanFull(),
+
+                                                CodeEditor::make('blog_post_title_prompt')
+                                                    ->label('Prompt Template')
+                                                    ->helperText('Available placeholders: {title}, {content}')
+                                                    ->columnSpanFull()
+                                                    ->visible(fn ($get) => $get('blog_post_title_enabled')),
+                                            ])
+                                            ->collapsible()
+                                            ->collapsed(),
+
                                     ]),
 
                             ]),

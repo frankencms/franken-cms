@@ -92,6 +92,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '20_add_responsive_images_setting',
                 '21_create_stack_settings',
                 '22_create_ai_settings',
+                '23_migrate_ai_prompts_to_individual_settings',
+                '24_add_image_title_prompt_to_ai_settings',
+                '25_add_blog_post_prompt_to_ai_settings',
+                '26_add_blog_post_title_prompt_to_ai_settings',
             ])
             ->hasTranslations()
             ->hasRoutes('web')

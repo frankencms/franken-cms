@@ -39,6 +39,7 @@ class TitleWithSlugInput
         bool | Closure $titleIsReadonly = false,
         bool | Closure $titleAutofocus = true,
         ?Closure $titleAfterStateUpdated = null,
+        $titleHintAction = null,
 
         // Slug
         ?string $slugLabel = null,
@@ -112,6 +113,10 @@ class TitleWithSlugInput
 
         if ($titleRuleUniqueParameters) {
             $textInput->unique(...$titleRuleUniqueParameters);
+        }
+
+        if ($titleHintAction) {
+            $textInput->hintAction($titleHintAction);
         }
 
         /** Input: "Slug" (+ view) */

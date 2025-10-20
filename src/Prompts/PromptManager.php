@@ -53,6 +53,13 @@ class PromptManager
             'supports_vision' => false,
             'max_tokens'      => 3000,  // ~800-1200 words = ~2000-2400 tokens, plus buffer
         ],
+        'blog_post_title' => [
+            'enabled_key'     => 'blog_post_title_enabled',
+            'prompt_key'      => 'blog_post_title_prompt',
+            'context'         => 'post',
+            'supports_vision' => false,
+            'max_tokens'      => 100,  // ~50-60 chars for blog post title
+        ],
     ];
 
     /**

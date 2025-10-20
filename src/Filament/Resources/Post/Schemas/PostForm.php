@@ -26,6 +26,7 @@ use FrankenCms\Filament\Actions\GenerateAltTextAction;
 use FrankenCms\Filament\Actions\GenerateBlogPostAction;
 use FrankenCms\Filament\Actions\GenerateImageTitleAction;
 use FrankenCms\Filament\Actions\GenerateTeaserAction;
+use FrankenCms\Filament\Actions\GenerateTitleAction;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
 use FrankenCms\Filament\Plugins\RichEditor\SourceCodePlugin;
@@ -71,6 +72,7 @@ class PostForm
                                         'required',
                                         fn (?Post $record) => 'unique:posts,post_slug,' . ($record?->id ?? 'NULL') . ',id',
                                     ],
+                                    titleHintAction: GenerateTitleAction::make('generate_blog_post_title'),
                                 ),
 
                                 Textarea::make('post_teaser')
