@@ -97,6 +97,16 @@ final class TemplateHelper
         $customFields = $currentPage->custom_fields ?? [];
         $fieldValue = data_get($customFields, $fieldName);
 
+        // For media_image fields, pass additional context
+        if ($fieldType === 'media_image') {
+            $fieldValue = array_merge($options, [
+                '_context' => [
+                    'model' => $currentPage,
+                    'field_name' => $fieldName,
+                ],
+            ]);
+        }
+
         // Render the field value
         return $renderer->render($fieldType, $fieldValue);
     }

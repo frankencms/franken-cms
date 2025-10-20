@@ -43,6 +43,9 @@ trait HasMeta
         foreach ($attributes as $key => $value) {
             if ($this->isMetaAttribute($key)) {
                 $metaAttributes[$key] = $value;
+            } elseif ($this->isImageMetadataField($key)) {
+                // Silently ignore image metadata fields - they're handled separately by ImageFieldSchema
+                continue;
             } else {
                 $regularAttributes[$key] = $value;
             }
@@ -131,5 +134,43 @@ trait HasMeta
     protected function isMetaAttribute(string $key): bool
     {
         return in_array($key, $this->metaFillable ?? []);
+    }
+
+    /**
+     * Check if an attribute is an image metadata field
+     * These are temporary fields used by ImageFieldSchema and should be ignored during fill
+     */
+    protected function isImageMetadataField(string $key): bool
+    {
+        // Don't filter out regular database columns
+        $regularColumns = [
+            'post_title', 'post_content', 'post_excerpt', 'post_status',
+            'post_name', 'post_slug', 'post_type', 'post_author_id',
+        ];
+
+        if (in_array($key, $regularColumns)) {
+            return false;
+        }
+
+        $imageMetadataPatterns = [
+            '_alt',
+            '_title',
+            '_caption',
+            '_attribution',
+            '_css',
+            '_lazy_loading',
+            '_width',
+            '_height',
+            '_focal_x',
+            '_focal_y',
+        ];
+
+        foreach ($imageMetadataPatterns as $pattern) {
+            if (str_ends_with($key, $pattern)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

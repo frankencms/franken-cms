@@ -3,6 +3,7 @@
 namespace FrankenCms\Factories;
 
 use Filament\Schemas\Components\Section;
+use FrankenCms\Filament\Schemas\ImageFieldSchema;
 use FrankenCms\Registries\FieldRegistry;
 use FrankenCms\Services\CmsFieldBuilder;
 use FrankenCms\Services\CmsFieldParser;
@@ -42,6 +43,22 @@ class TemplateFieldFactory
             foreach ($sectionFields as $identifier => $field) {
                 $type = $field['type'];
                 $properties = $field['properties'];
+
+                // Special handling for media_image type
+                if ($type === 'media_image') {
+                    $collection = $properties['collection'] ?? $identifier;
+                    $options = $properties;
+
+                    // ImageFieldSchema::make() returns an array of components
+                    $imageComponents = ImageFieldSchema::make($identifier, $collection, $options);
+
+                    // Add all components to the section
+                    foreach ($imageComponents as $component) {
+                        $sectionFieldComponents[] = $component;
+                    }
+
+                    continue;
+                }
 
                 // Check if this field type has a mapped Filament class
                 if (! isset($fieldMapping[$type])) {
