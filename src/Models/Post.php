@@ -296,7 +296,8 @@ class Post extends Model implements HasMedia, HasRichContent
 
         // Thumbnail for admin table view (fixed 80x80)
         $this->addMediaConversion('thumb')
-            ->focalCrop(80, 80, $focalX, $focalY)
+            ->fit(Fit::Crop, 80, 80)
+//            ->focalCrop(80, 80, $focalX, $focalY)
             ->format('jpg')
             ->quality(80)
             ->performOnCollections('featured');
