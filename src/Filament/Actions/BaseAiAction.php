@@ -4,8 +4,6 @@ namespace FrankenCms\Filament\Actions;
 
 use Exception;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\ViewField;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use FrankenCms\Services\AiFeatureDetector;
@@ -68,37 +66,7 @@ abstract class BaseAiAction extends Action
             ->color('primary')
             ->tooltip('Generate content with AI')
             ->visible(fn () => AiFeatureDetector::isAvailable())
-            ->modalWidth('xl')
-            ->modalIcon('frankencms-igor')
-            ->modalHeading(fn () => 'Ask Igor: ' . $this->getPromptLabel())
-            ->modalDescription('Igor shall craft this content with precision and care.')
-            ->form(function ($livewire, Get $get) {
-                $currentValue = $get($this->getFieldName());
-
-                $schema = [
-                    // Igor loading overlay
-                    ViewField::make('igor_loading')
-                        ->view('franken-cms::filament.actions.igor-loading')
-                        ->label(''),
-                ];
-
-                // Show current value if it exists
-                if ($currentValue) {
-                    $schema[] = Placeholder::make('current_value')
-                        ->label('Current Value')
-                        ->content($currentValue);
-                }
-
-                // Show target character count if set
-                if ($this->targetMin && $this->targetMax) {
-                    $schema[] = Placeholder::make('target_info')
-                        ->label('Target Length')
-                        ->content("Igor will aim for {$this->targetMin}-{$this->targetMax} characters");
-                }
-
-                return $schema;
-            })
-            ->modalSubmitActionLabel('Generate')
+            ->requiresConfirmation(false)
             ->action(function (Get $get, $livewire) {
                 try {
                     $aiService = app(AiService::class);
@@ -148,7 +116,6 @@ abstract class BaseAiAction extends Action
                         ->persistent()
                         ->send();
 
-                    // Re-throw to prevent modal from closing
                     throw $e;
                 }
             });
