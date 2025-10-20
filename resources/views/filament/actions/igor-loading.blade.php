@@ -58,12 +58,14 @@
                             class="min-h-[1.5rem] text-base font-medium text-gray-700 dark:text-gray-300"
                             x-data="{
                                 messages: [
-                                    'Gathering lightning bolts... ⚡',
-                                    'Mixing creative potions... 🧪',
-                                    'Consulting ancient texts... 📜',
-                                    'Sparking brilliant ideas... 💡',
-                                    'Crafting your masterpiece... 🎨',
-                                    'Adding a touch of genius... ✨',
+                                    'Gathering power...',
+                                    'Mixing creative potions...',
+                                    'Consulting ancient texts...',
+                                    'Sparking brilliant ideas...',
+                                    'Crafting your masterpiece...',
+                                    'Adding a touch of genius...',
+                                    'Buffing my hump...',
+                                    'Robbing graves, taken names...',
                                 ],
                                 currentMessage: 'Gathering lightning bolts... ⚡',
                                 interval: null,
