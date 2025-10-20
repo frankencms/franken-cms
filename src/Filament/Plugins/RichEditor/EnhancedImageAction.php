@@ -170,8 +170,26 @@ class EnhancedImageAction
                 if ($data['file'] ?? null) {
                     $id = (string) Str::orderedUuid();
 
-                    data_set($livewire, "componentFileAttachments.{$component->getStatePath()}.{$id}", $data['file']);
-                    $src = $component->getUploadedFileAttachmentTemporaryUrl($data['file']);
+                    // Store the file permanently instead of using temporary URL
+                    try {
+                        $file = $data['file'];
+
+                        // Store file in the configured directory using public disk
+                        $directory = $component->getFileAttachmentsDirectory() ?? 'posts/images';
+                        $diskName = 'public'; // Use public disk for images
+
+                        // Store the file
+                        $path = $file->store($directory, $diskName);
+
+                        // Get the public URL for the stored file
+                        $src = \Storage::disk($diskName)->url($path);
+
+                        // Don't track in componentFileAttachments since it's already permanently stored
+                    } catch (\Exception $e) {
+                        // Fallback to temporary URL if permanent storage fails
+                        data_set($livewire, "componentFileAttachments.{$component->getStatePath()}.{$id}", $data['file']);
+                        $src = $component->getUploadedFileAttachmentTemporaryUrl($data['file']);
+                    }
                 }
 
                 if (filled($arguments['src'] ?? null)) {

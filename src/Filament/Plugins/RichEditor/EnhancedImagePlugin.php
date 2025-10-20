@@ -17,7 +17,11 @@ class EnhancedImagePlugin implements RichContentPlugin
         // This method should return an array of PHP TipTap extension objects.
         // See: https://github.com/ueberdosis/tiptap-php
 
-        return [];
+        // Return StarterKit and Image extensions for proper HTML rendering
+        return [
+            new \Tiptap\Extensions\StarterKit,
+            new \Tiptap\Nodes\Image,
+        ];
     }
 
     public function getTipTapJsExtensions(): array

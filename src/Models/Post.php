@@ -246,7 +246,10 @@ class Post extends Model implements HasMedia, HasRichContent
                 SpatieMediaLibraryFileAttachmentProvider::make()
                     ->preserveFilenames()
                     ->mediaName(fn (TemporaryUploadedFile $file): string => Str::random() . '_' . $file->getClientOriginalName())
-            );
+            )
+            ->plugins([
+                \FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin::make(),
+            ]);
     }
 
     /**
@@ -380,20 +383,29 @@ class Post extends Model implements HasMedia, HasRichContent
             ->performOnCollections('seo-twitter');
     }
 
-    //    public function getRichContentAttribute(string $attribute): ?RichContentAttribute
-    //    {
-    //        // TODO: Implement getRichContentAttribute() method.
-    //    }
-    //
-    //    public function renderRichContent(string $attribute): string
-    //    {
-    //        // TODO: Implement renderRichContent() method.
-    //    }
-    //
-    //    public function hasRichContentAttribute(string $attribute): bool
-    //    {
-    //        // TODO: Implement hasRichContentAttribute() method.
-    //    }
+
+    /**
+     * Override renderRichContent to add enhanced image attributes
+     */
+    public function renderRichContent(string $attribute): string
+    {
+        // Get the base HTML from the parent trait (uses TipTap with EnhancedImagePlugin)
+        $richContentAttribute = $this->getRichContentAttribute($attribute);
+
+        if (!$richContentAttribute) {
+            return '';
+        }
+
+        $html = $richContentAttribute->toHtml();
+
+        // Post-process to add enhanced image attributes from JSON
+        if ($attribute === 'post_content' && !empty($this->$attribute)) {
+            $renderer = app(\FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer::class);
+            $html = $renderer->processEnhancedImages($html, $this->$attribute);
+        }
+
+        return $html;
+    }
 
     /**
      * Get the SEO OpenGraph image for this post
