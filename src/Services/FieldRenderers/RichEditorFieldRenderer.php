@@ -100,6 +100,13 @@ class RichEditorFieldRenderer implements FieldRendererInterface
                 $imgTag .= ' class="' . htmlspecialchars($attrs['css']) . '"';
             }
 
+            // Add focal point styling if provided
+            if (isset($attrs['focal_x']) && isset($attrs['focal_y'])) {
+                $focalX = $attrs['focal_x'];
+                $focalY = $attrs['focal_y'];
+                $imgTag .= ' style="object-fit: cover; object-position: ' . htmlspecialchars($focalX) . '% ' . htmlspecialchars($focalY) . '%;"';
+            }
+
             $imgTag .= '>';
 
             return $imgTag;
