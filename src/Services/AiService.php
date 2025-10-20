@@ -17,12 +17,13 @@ class AiService
     ) {}
 
     /**
-     * Generate content using AI
+     * Generate content using AI with optional streaming
      *
+     * @param  callable|null  $streamCallback  Optional callback for streaming (receives string chunks)
      *
      * @throws Exception
      */
-    public function generate(string $actionKey, array $context): string
+    public function generate(string $actionKey, array $context, ?callable $streamCallback = null): string
     {
         if (! AiFeatureDetector::isAvailable()) {
             throw new Exception('AI features are not available. Please install prism-php/prism and configure Igor in settings.');
@@ -98,6 +99,23 @@ class AiService
                 $prismRequest->usingTemperature($promptConfig['temperature']);
             }
 
+            // Handle streaming if callback provided
+            if ($streamCallback !== null) {
+                $fullText = '';
+                $stream = $prismRequest->asStream();
+
+                foreach ($stream as $event) {
+                    // Only process TextDeltaEvent for content chunks
+                    if ($event instanceof \Prism\Prism\Streaming\Events\TextDeltaEvent) {
+                        $fullText .= $event->delta;
+                        $streamCallback($event->delta);
+                    }
+                }
+
+                return trim($fullText);
+            }
+
+            // Non-streaming generation
             $response = $prismRequest->generate();
 
             return trim($response->text);

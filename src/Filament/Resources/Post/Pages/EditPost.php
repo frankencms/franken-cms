@@ -28,15 +28,11 @@ class EditPost extends EditRecord
         }
     }
 
-    public function handleInsertGeneratedContent(array $data): void
+    public function handleInsertGeneratedContent($content = '', $componentId = ''): void
     {
-        if (isset($data['content'])) {
-            // Convert markdown to TipTap JSON format
-            // For now, we'll set it as the content and let the RichEditor handle it
-            $this->data['post_content'] = $data['content'];
-
-            // Force a re-render of the form
-            $this->dispatch('$refresh');
+        if ($content) {
+            // Set the HTML content directly - Filament's RichEditor will handle it
+            $this->data['post_content'] = $content;
         }
     }
 

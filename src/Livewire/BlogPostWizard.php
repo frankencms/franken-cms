@@ -13,12 +13,14 @@ class BlogPostWizard extends Component
 
     public int $step = 1;
 
-    // Step 1: User inputs
+    // Form data
     public string $focus = '';
 
     public string $audience = '';
 
     public string $notes = '';
+
+    public bool $confirmReplace = false;
 
     // Context from parent
     public string $currentTitle = '';
@@ -27,14 +29,14 @@ class BlogPostWizard extends Component
 
     public string $componentId = '';
 
-    // Step 3: Generated content
+    // Generated content
     public ?string $generatedContent = null;
 
     public bool $generating = false;
 
     public ?string $error = null;
 
-    public bool $confirmReplace = false;
+    public bool $isTransitioning = false;
 
     #[On('open-blog-post-wizard')]
     public function open($currentTitle = '', $currentContent = null, $componentId = ''): void
@@ -52,44 +54,63 @@ class BlogPostWizard extends Component
 
     public function nextStep(): void
     {
+        $this->isTransitioning = true;
+
         // Validate current step
         if ($this->step === 1) {
             $this->validate([
-                'focus'    => 'required|min:3|max:500',
+                'focus' => 'required|min:3|max:500',
                 'audience' => 'required|min:3|max:200',
             ]);
 
             // If content exists, go to confirmation step
             if ($this->hasExistingContent()) {
                 $this->step = 2;
+                $this->isTransitioning = false;
             } else {
-                // Skip confirmation, go straight to generating
-                $this->generateBlogPost();
+                // Skip confirmation, move to generating step
+                $this->step = 3;
+                $this->isTransitioning = false;
             }
         } elseif ($this->step === 2) {
             // Validate confirmation
             if (! $this->confirmReplace) {
                 $this->addError('confirmReplace', 'Please confirm you want to replace the existing content.');
+                $this->isTransitioning = false;
 
                 return;
             }
-            $this->generateBlogPost();
+            // Move to generating step
+            $this->step = 3;
+            $this->isTransitioning = false;
         }
     }
 
     public function previousStep(): void
     {
         if ($this->step > 1) {
-            $this->step--;
+            // Skip confirmation step if going back and no content
+            if ($this->step === 3 && ! $this->hasExistingContent()) {
+                $this->step = 1;
+            } else {
+                $this->step--;
+            }
             $this->error = null;
         }
     }
 
     public function generateBlogPost(): void
     {
+        // Prevent duplicate calls while already generating
+        if ($this->generating) {
+            return;
+        }
+
         $this->step = 3;
         $this->generating = true;
+        $this->isTransitioning = false;
         $this->error = null;
+        $this->generatedContent = ''; // Reset content for streaming
 
         try {
             $aiService = app(AiService::class);
@@ -101,7 +122,11 @@ class BlogPostWizard extends Component
                 'content'  => $this->notes,
             ];
 
-            $this->generatedContent = $aiService->generate('generate_blog_post', $context);
+            // Use streaming to show content as it's generated
+            $this->generatedContent = $aiService->generate('generate_blog_post', $context, function ($chunk) {
+                $this->generatedContent .= $chunk;
+                $this->stream(to: 'generatedContent', content: $this->generatedContent);
+            });
 
             $this->generating = false;
             $this->step = 4; // Move to review step
@@ -114,17 +139,25 @@ class BlogPostWizard extends Component
 
     public function regenerate(): void
     {
+        // Reset state before regenerating
+        $this->generatedContent = null;
+        $this->generating = false;
+
         $this->generateBlogPost();
     }
 
     public function insertContent(): void
     {
         if ($this->generatedContent) {
-            // Dispatch event to parent component to update the content
-            $this->dispatch('insert-generated-content', [
-                'content'     => $this->generatedContent,
-                'componentId' => $this->componentId,
-            ]);
+            // Convert markdown to HTML for RichEditor
+            $htmlContent = \Illuminate\Support\Str::markdown($this->generatedContent);
+
+            // Dispatch event globally - the EditPost page will listen for it
+            $this->dispatch(
+                'insert-generated-content',
+                content: $htmlContent,
+                componentId: $this->componentId
+            );
 
             $this->close();
         }
@@ -133,7 +166,11 @@ class BlogPostWizard extends Component
     public function close(): void
     {
         $this->isOpen = false;
-        $this->reset();
+        // Don't reset - preserve generated content in case user wants to insert later
+        // Only reset the form inputs and errors
+        $this->reset(['focus', 'audience', 'notes', 'error', 'confirmReplace', 'isTransitioning']);
+        $this->step = 1;
+        $this->generating = false;
     }
 
     public function hasExistingContent(): bool
@@ -179,12 +216,12 @@ class BlogPostWizard extends Component
 
             if (isset($content['content']) && is_array($content['content'])) {
                 foreach ($content['content'] as $node) {
-                    $text .= $this->extractTextFromContent($node).' ';
+                    $text .= $this->extractTextFromContent($node) . ' ';
                 }
             }
 
             if (isset($content['text'])) {
-                $text .= $content['text'].' ';
+                $text .= $content['text'] . ' ';
             }
 
             return $text;
