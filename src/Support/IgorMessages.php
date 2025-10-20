@@ -11,7 +11,7 @@ class IgorMessages
     {
         return [
             "Fritz called in sick — I’ve got this! 💪",
-            "Gathering power... ⚡",
+            "Gathering power... ⚡️",
             "Charging the batteries... 🔋",
             "Mixing creative potions... 🧪",
             "Consulting ancient texts... 📜",
@@ -19,11 +19,11 @@ class IgorMessages
             "Buffing my hump... 😏",
             "Installing the brain... checking vision... 👁️",
             "Good brains don’t end up in jars, do they? 🧠",
-            "Stitching sentences together... 🧵",
+            "Stitching sentences together... 🪡",
             "Animating the prose... ⚙️",
             "Electrifying the paragraphs... 📖",
             "Raising the prose from its slumber... 🧟‍♂️",
-            "Brewing up brilliance... ☕",
+            "Brewing up brilliance... ☕️",
             "Sparking brilliant ideas... 💡",
             "Adding a touch of genius... ✨",
             "Crafting your masterpiece... 🎨",
