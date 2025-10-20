@@ -18,9 +18,16 @@ class GenerateAltTextAction extends BaseAiAction
 
     protected function getPromptContext(Get $get, $livewire = null): array
     {
+        // Use $livewire->data directly to avoid Schema object issues with nested paths
+        $title = $livewire->data['post_title'] ?? $livewire->data['title'] ?? '';
+        $content = $livewire->data['post_content'] ?? $livewire->data['content'] ?? '';
+
+        // Extract plain text from rich editor content if needed
+        $content = $this->extractPlainText($content);
+
         $context = [
-            'title'    => $get('../../post_title') ?? $get('../../title') ?? '',
-            'content'  => $get('../../post_content') ?? $get('../../content') ?? '',
+            'title'    => $title,
+            'content'  => $content,
             'filename' => $get('file_name') ?? $get('name') ?? '',
         ];
 

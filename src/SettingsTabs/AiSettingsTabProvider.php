@@ -285,7 +285,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
     {
         return match ($provider) {
             'openai' => [
-                'gpt-5'         => 'GPT-5 (Recommended)',
+                'gpt-5-chat-latest'         => 'GPT-5 (Recommended)',
                 'gpt-4o'        => 'GPT-4o',
                 'gpt-4o-mini'   => 'GPT-4o Mini (Faster, Cheaper)',
                 'gpt-4-turbo'   => 'GPT-4 Turbo',
@@ -304,7 +304,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                 'codellama' => 'Code Llama',
                 'phi'       => 'Phi',
             ],
-            default => ['gpt-5' => 'GPT-5'],
+            default => ['gpt-5-chat-latest' => 'GPT-5 (Recommended)'],
         };
     }
 }

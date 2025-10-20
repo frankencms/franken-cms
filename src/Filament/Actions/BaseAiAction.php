@@ -108,7 +108,7 @@ abstract class BaseAiAction extends Action
 
                     $notification->send();
                 } catch (Exception $e) {
-                    // Error notification
+                    // Error notification - don't re-throw, just show notification
                     Notification::make()
                         ->title('Igor encountered a problem')
                         ->body("By thunder! A calamity in the lab: {$e->getMessage()}")
@@ -116,7 +116,8 @@ abstract class BaseAiAction extends Action
                         ->persistent()
                         ->send();
 
-                    throw $e;
+                    // Don't re-throw - let the user continue working
+                    return;
                 }
             });
     }
