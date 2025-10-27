@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Http\Middleware;
 
 use Closure;
+use Diglactic\Breadcrumbs\Breadcrumbs;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\SeoService;
 use FrankenCms\Settings\SeoSettings;
@@ -13,6 +14,7 @@ use romanzipp\Seo\Structs\Link as LinkMeta;
 use romanzipp\Seo\Structs\Meta;
 use romanzipp\Seo\Structs\Meta\OpenGraph;
 use romanzipp\Seo\Structs\Meta\Twitter;
+use romanzipp\Seo\Structs\Script;
 use Symfony\Component\HttpFoundation\Response;
 
 class AddSeoDefaults
@@ -62,6 +64,9 @@ class AddSeoDefaults
 
         // Include Twitter tags
         $this->includeTwitter($post);
+
+        // Include JSON-LD breadcrumbs
+        $this->includeBreadcrumbs($post);
 
         return $next($request);
     }
@@ -263,5 +268,64 @@ class AddSeoDefaults
                 ->name('msapplication-square310x310logo')
                 ->content('/mstile-310x310.png'),
         ]);
+    }
+
+    /**
+     * Add JSON-LD breadcrumb structured data
+     */
+    private function includeBreadcrumbs($post = null): void
+    {
+        // Don't add breadcrumbs if no post/page or if it's the homepage
+        if (! $post) {
+            return;
+        }
+
+        $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+        if ($readingSettings->home_page === $post->post_slug) {
+            return;
+        }
+
+        // Determine the breadcrumb name based on the page type
+        $breadcrumbName = match ($post->post_type) {
+            'page' => 'franken-cms.page',
+            'post' => 'franken-cms.post',
+            default => null,
+        };
+
+        if (! $breadcrumbName) {
+            return;
+        }
+
+        try {
+            // Generate breadcrumbs array
+            $breadcrumbs = Breadcrumbs::generate($breadcrumbName, $post);
+
+            // Build Schema.org BreadcrumbList structure
+            $json = [
+                '@context' => 'https://schema.org',
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => [],
+            ];
+
+            foreach ($breadcrumbs as $i => $breadcrumb) {
+                $json['itemListElement'][] = [
+                    '@type' => 'ListItem',
+                    'position' => $i + 1,
+                    'item' => [
+                        '@id' => $breadcrumb->url ?: request()->fullUrl(),
+                        'name' => $breadcrumb->title,
+                    ],
+                ];
+            }
+
+            // Add as script tag with raw JSON (disable escaping for JSON-LD)
+            seo()->add(
+                Script::make()
+                    ->attr('type', 'application/ld+json')
+                    ->body(json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), false)
+            );
+        } catch (\Exception $e) {
+            // Silently fail if breadcrumbs can't be generated
+        }
     }
 }
