@@ -96,6 +96,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '24_add_image_title_prompt_to_ai_settings',
                 '25_add_blog_post_prompt_to_ai_settings',
                 '26_add_blog_post_title_prompt_to_ai_settings',
+                '27_create_user_bios_table',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
@@ -193,6 +194,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
         Blade::component('breadcrumbs', \FrankenCms\View\Components\Breadcrumbs::class);
+        Blade::component('author-bio', \FrankenCms\View\Components\AuthorBio::class);
 
         // Register breadcrumbs
         $this->registerBreadcrumbs();
