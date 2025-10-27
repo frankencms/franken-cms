@@ -194,7 +194,6 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
         Blade::component('breadcrumbs', \FrankenCms\View\Components\Breadcrumbs::class);
-        Blade::component('author-bio', \FrankenCms\View\Components\AuthorBio::class);
 
         // Register breadcrumbs
         $this->registerBreadcrumbs();
