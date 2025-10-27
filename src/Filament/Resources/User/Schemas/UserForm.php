@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FrankenCms\Filament\Resources\User\Schemas;
 
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -50,10 +50,18 @@ class UserForm
                             ->label('Job Title')
                             ->placeholder('e.g., Senior Developer, Content Writer')
                             ->maxLength(255),
-                        Textarea::make('bio')
+                        RichEditor::make('bio')
                             ->label('Biography')
                             ->placeholder('Tell us about yourself...')
-                            ->rows(4)
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'link',
+                                'bulletList',
+                                'orderedList',
+                                'undo',
+                                'redo',
+                            ])
                             ->maxLength(65535),
                         TextInput::make('website')
                             ->label('Website')
