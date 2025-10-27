@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Filament\Resources\User\Schemas;
 
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -29,22 +30,37 @@ class UserForm
 
                 Section::make('Author Biography')
                     ->description('This information will be displayed on blog posts authored by this user.')
+                    ->relationship('bio')
                     ->schema([
-                        TextInput::make('bio.title')
+                        SpatieMediaLibraryFileUpload::make('bio_image')
+                            ->label('Profile Image')
+                            ->collection('bio-image')
+                            ->disk(config('franken-cms.media_disk_name', 'public'))
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['1:1', null])
+                            ->previewable()
+                            ->maxSize(5120) // 5MB
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->visibility('public')
+                            ->multiple(false)
+                            ->helperText('Square images work best. Recommended size: 400x400px'),
+
+                        TextInput::make('title')
                             ->label('Job Title')
                             ->placeholder('e.g., Senior Developer, Content Writer')
                             ->maxLength(255),
-                        Textarea::make('bio.bio')
+                        Textarea::make('bio')
                             ->label('Biography')
                             ->placeholder('Tell us about yourself...')
                             ->rows(4)
                             ->maxLength(65535),
-                        TextInput::make('bio.website')
+                        TextInput::make('website')
                             ->label('Website')
                             ->url()
                             ->placeholder('https://example.com')
                             ->maxLength(255),
-                        KeyValue::make('bio.social_links')
+                        KeyValue::make('social_links')
                             ->label('Social Media Links')
                             ->keyLabel('Platform')
                             ->valueLabel('URL')

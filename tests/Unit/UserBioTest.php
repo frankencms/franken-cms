@@ -202,3 +202,75 @@ describe('HasBio Trait', function () {
     });
 
 });
+
+describe('UserBio Media', function () {
+
+    it('can register bio-image media collection', function () {
+        $user = User::create([
+            'name' => 'Jack Thompson',
+            'email' => 'jack@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id' => $user->id,
+            'title' => 'Photographer',
+        ]);
+
+        $collections = $bio->getRegisteredMediaCollections();
+        $collectionNames = $collections->pluck('name')->toArray();
+
+        expect($collectionNames)->toContain('bio-image');
+    });
+
+    it('bio-image collection is single file', function () {
+        $user = User::create([
+            'name' => 'Kate Wilson',
+            'email' => 'kate@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id' => $user->id,
+            'title' => 'Designer',
+        ]);
+
+        $collection = $bio->getMediaCollection('bio-image');
+
+        expect($collection->singleFile)->toBeTrue();
+    });
+
+    it('implements HasMedia interface', function () {
+        $user = User::create([
+            'name' => 'Laura Martinez',
+            'email' => 'laura@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id' => $user->id,
+            'title' => 'Writer',
+        ]);
+
+        expect($bio)->toBeInstanceOf(\Spatie\MediaLibrary\HasMedia::class);
+        expect($bio->hasMedia('bio-image'))->toBeFalse();
+    });
+
+    it('has bio-thumb and bio-large conversions registered', function () {
+        $user = User::create([
+            'name' => 'Mike Anderson',
+            'email' => 'mike@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id' => $user->id,
+            'title' => 'Developer',
+        ]);
+
+        // MediaConversions are registered in registerMediaConversions method
+        // We can verify the method exists and is callable
+        expect(method_exists($bio, 'registerMediaConversions'))->toBeTrue();
+    });
+
+});

@@ -31,6 +31,11 @@ class TestCase extends Orchestra
 
         // Configure FrankenCMS user model for tests
         config()->set('franken-cms.models.user', \FrankenCms\Tests\Support\User::class);
+
+        // Configure Spatie Media Library for tests
+        config()->set('media-library.media_model', \Spatie\MediaLibrary\MediaCollections\Models\Media::class);
+        config()->set('media-library.disk_name', 'public');
+        config()->set('media-library.max_file_size', 1024 * 1024 * 10); // 10MB
     }
 
     /**

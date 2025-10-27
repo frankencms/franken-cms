@@ -4,9 +4,25 @@
     <div class="flex flex-col gap-4 md:flex-row md:items-start">
         {{-- Author Avatar --}}
         <div class="shrink-0">
-            <div class="flex size-16 items-center justify-center rounded-full bg-emerald-900/50 text-2xl font-bold text-lime-300">
-                {{ strtoupper(substr($user->name, 0, 1)) }}
-            </div>
+            @if ($user->bio && $user->bio->hasMedia('bio-image'))
+                @php
+                    $bioImage = $user->bio->getFirstMedia('bio-image');
+                    $bioImageUrl = $bioImage->hasGeneratedConversion('bio-thumb')
+                        ? $bioImage->getUrl('bio-thumb')
+                        : $bioImage->getUrl();
+                    $bioImageAlt = $bioImage->getCustomProperty('alt') ?? $user->name;
+                @endphp
+                <img
+                    src="{{ $bioImageUrl }}"
+                    alt="{{ $bioImageAlt }}"
+                    class="size-16 rounded-full object-cover ring-2 ring-emerald-700/30"
+                    loading="lazy"
+                />
+            @else
+                <div class="flex size-16 items-center justify-center rounded-full bg-emerald-900/50 text-2xl font-bold text-lime-300 ring-2 ring-emerald-700/30">
+                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                </div>
+            @endif
         </div>
 
         {{-- Author Info --}}

@@ -6,9 +6,14 @@ namespace FrankenCms\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class UserBio extends Model
+class UserBio extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $fillable = [
         'user_id',
         'title',
@@ -45,5 +50,36 @@ class UserBio extends Model
         $links = $this->social_links ?? [];
         $links[$key] = $value;
         $this->social_links = $links;
+    }
+
+    /**
+     * Register media collections
+     */
+    public function registerMediaCollections(): void
+    {
+        // Bio image - single file only
+        $this->addMediaCollection('bio-image')
+            ->singleFile()
+            ->useDisk('public');
+    }
+
+    /**
+     * Register media conversions
+     */
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        // Square bio image (200x200) for bio display
+        $this->addMediaConversion('bio-thumb')
+            ->fit(Fit::Crop, 200, 200)
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('bio-image');
+
+        // Larger bio image (400x400) for higher resolution displays
+        $this->addMediaConversion('bio-large')
+            ->fit(Fit::Crop, 400, 400)
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('bio-image');
     }
 }
