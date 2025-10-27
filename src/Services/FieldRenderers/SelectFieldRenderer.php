@@ -6,7 +6,7 @@ use FrankenCms\Contracts\FieldRendererInterface;
 
 class SelectFieldRenderer implements FieldRendererInterface
 {
-    public function render(mixed $value): string
+    public function render(mixed $value, ?string $fieldName = null): string
     {
         return e($value ?? '');
     }

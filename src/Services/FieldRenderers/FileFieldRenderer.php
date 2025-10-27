@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FileFieldRenderer implements FieldRendererInterface
 {
-    public function render(mixed $value): string
+    public function render(mixed $value, ?string $fieldName = null): string
     {
         if (empty($value)) {
             return '';

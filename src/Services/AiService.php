@@ -2,11 +2,9 @@
 
 namespace FrankenCms\Services;
 
-
 use Exception;
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Settings\AiSettings;
-use Illuminate\Support\Facades\Log;
 use Prism\Prism\Prism;
 use Prism\Prism\ValueObjects\Media\Image;
 

@@ -5,7 +5,6 @@ namespace FrankenCms\Models;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
-use Filament\Forms\Components\RichEditor\RichContentAttribute;
 use FrankenCms\Casts\PostContentCast;
 use FrankenCms\Database\Factories\PostFactory;
 use FrankenCms\Enums\PostStatus;
@@ -384,7 +383,6 @@ class Post extends Model implements HasMedia, HasRichContent
             ->performOnCollections('seo-twitter');
     }
 
-
     /**
      * Override renderRichContent to add enhanced image attributes
      */
@@ -393,14 +391,14 @@ class Post extends Model implements HasMedia, HasRichContent
         // Get the base HTML from the parent trait (uses TipTap with EnhancedImagePlugin)
         $richContentAttribute = $this->getRichContentAttribute($attribute);
 
-        if (!$richContentAttribute) {
+        if (! $richContentAttribute) {
             return '';
         }
 
         $html = $richContentAttribute->toHtml();
 
         // Post-process to add enhanced image attributes from JSON
-        if ($attribute === 'post_content' && !empty($this->$attribute)) {
+        if ($attribute === 'post_content' && ! empty($this->$attribute)) {
             $renderer = app(\FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer::class);
             $html = $renderer->processEnhancedImages($html, $this->$attribute);
         }

@@ -36,13 +36,13 @@ class CmsFieldRenderer
     /**
      * Render a field value based on its type
      */
-    public function render(string $fieldType, mixed $value): mixed
+    public function render(string $fieldType, mixed $value, ?string $fieldName = null): mixed
     {
         $rendererClass = $this->renderers[$fieldType] ?? TextFieldRenderer::class;
 
         $renderer = app($rendererClass);
 
-        return $renderer->render($value);
+        return $renderer->render($value, $fieldName);
     }
 
     /**

@@ -2,20 +2,21 @@
 
 namespace FrankenCms\Services\FieldRenderers;
 
+use Exception;
 use FrankenCms\Contracts\FieldRendererInterface;
 use Illuminate\Support\HtmlString;
 use Tiptap\Editor;
 
 class RichEditorFieldRenderer implements FieldRendererInterface
 {
-    public function render(mixed $value): HtmlString
+    public function render(mixed $value, ?string $fieldName = null): HtmlString
     {
         if (empty($value)) {
             return new HtmlString('');
         }
 
         // If value is a string and already HTML (not JSON), return it as-is
-        if (is_string($value) && !str_starts_with(trim($value), '{') && !str_starts_with(trim($value), '[')) {
+        if (is_string($value) && ! str_starts_with(trim($value), '{') && ! str_starts_with(trim($value), '[')) {
             return new HtmlString($value);
         }
 
@@ -23,7 +24,7 @@ class RichEditorFieldRenderer implements FieldRendererInterface
             // Convert TipTap JSON to HTML
             // Value might be a JSON string or already decoded array
             $editor = new Editor([
-                'content' => $value,
+                'content'    => $value,
                 'extensions' => [
                     new \Tiptap\Extensions\StarterKit,
                     new \Tiptap\Nodes\Image,
@@ -36,7 +37,7 @@ class RichEditorFieldRenderer implements FieldRendererInterface
             $html = $this->processEnhancedImages($html, $value);
 
             return new HtmlString($html);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // If conversion fails, return the raw value as string
             return new HtmlString(is_string($value) ? $value : '');
         }
@@ -45,11 +46,11 @@ class RichEditorFieldRenderer implements FieldRendererInterface
     /**
      * Process enhanced images to add custom attributes
      */
-    public function processEnhancedImages(string $html, string|array $json): string
+    public function processEnhancedImages(string $html, string | array $json): string
     {
         // Parse the JSON to find image nodes
         $content = is_array($json) ? $json : json_decode($json, true);
-        if (!$content || !isset($content['content'])) {
+        if (! $content || ! isset($content['content'])) {
             return $html;
         }
 
@@ -63,8 +64,8 @@ class RichEditorFieldRenderer implements FieldRendererInterface
         // Replace each <img> tag with enhanced version
         // We need to replace them in order, so use a callback
         $imageIndex = 0;
-        $html = preg_replace_callback('/<img[^>]*>/', function($matches) use ($images, &$imageIndex) {
-            if (!isset($images[$imageIndex])) {
+        $html = preg_replace_callback('/<img[^>]*>/', function ($matches) use ($images, &$imageIndex) {
+            if (! isset($images[$imageIndex])) {
                 return $matches[0];
             }
 
@@ -78,25 +79,25 @@ class RichEditorFieldRenderer implements FieldRendererInterface
             // Build the enhanced img tag
             $imgTag = '<img';
 
-            if (!empty($attrs['src'])) {
+            if (! empty($attrs['src'])) {
                 $imgTag .= ' src="' . htmlspecialchars($attrs['src']) . '"';
             }
-            if (!empty($attrs['alt'])) {
+            if (! empty($attrs['alt'])) {
                 $imgTag .= ' alt="' . htmlspecialchars($attrs['alt']) . '"';
             }
-            if (!empty($attrs['title'])) {
+            if (! empty($attrs['title'])) {
                 $imgTag .= ' title="' . htmlspecialchars($attrs['title']) . '"';
             }
-            if (!empty($attrs['width'])) {
+            if (! empty($attrs['width'])) {
                 $imgTag .= ' width="' . htmlspecialchars($attrs['width']) . '"';
             }
-            if (!empty($attrs['height'])) {
+            if (! empty($attrs['height'])) {
                 $imgTag .= ' height="' . htmlspecialchars($attrs['height']) . '"';
             }
-            if (!empty($attrs['loading'])) {
+            if (! empty($attrs['loading'])) {
                 $imgTag .= ' loading="' . htmlspecialchars($attrs['loading']) . '"';
             }
-            if (!empty($attrs['css'])) {
+            if (! empty($attrs['css'])) {
                 $imgTag .= ' class="' . htmlspecialchars($attrs['css']) . '"';
             }
 

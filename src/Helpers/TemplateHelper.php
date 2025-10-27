@@ -101,13 +101,13 @@ final class TemplateHelper
         if ($fieldType === 'media_image') {
             $fieldValue = array_merge($options, [
                 '_context' => [
-                    'model' => $currentPage,
+                    'model'      => $currentPage,
                     'field_name' => $fieldName,
                 ],
             ]);
         }
 
-        // Render the field value
-        return $renderer->render($fieldType, $fieldValue);
+        // Render the field value (only images show placeholders)
+        return $renderer->render($fieldType, $fieldValue, $fieldName);
     }
 }

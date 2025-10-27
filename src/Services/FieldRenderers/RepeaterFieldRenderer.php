@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 
 class RepeaterFieldRenderer implements FieldRendererInterface
 {
-    public function render(mixed $value): Collection
+    public function render(mixed $value, ?string $fieldName = null): Collection
     {
         return collect($value ?? []);
     }
