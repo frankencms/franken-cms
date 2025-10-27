@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Spatie\Image\Enums\Fit;
@@ -225,6 +227,39 @@ class Post extends Model implements HasMedia, HasRichContent
         }
 
         return $ancestors;
+    }
+
+    /**
+     * Get ancestors optimized for breadcrumbs using recursive CTE
+     * Loads only required columns in a single query
+     *
+     * @return \Illuminate\Support\Collection Collection of objects with id, post_slug, post_title, parent_id
+     */
+    public function getBreadcrumbAncestors(): Collection
+    {
+        if (! $this->parent_id) {
+            return collect();
+        }
+
+        $query = <<<SQL
+            WITH RECURSIVE ancestors AS (
+                SELECT id, post_slug, post_title, parent_id, 1 as level
+                FROM posts
+                WHERE id = ?
+
+                UNION ALL
+
+                SELECT p.id, p.post_slug, p.post_title, p.parent_id, a.level + 1
+                FROM posts p
+                INNER JOIN ancestors a ON p.id = a.parent_id
+            )
+            SELECT id, post_slug, post_title, parent_id
+            FROM ancestors
+            WHERE level > 0
+            ORDER BY level DESC
+        SQL;
+
+        return collect(DB::select($query, [$this->parent_id]));
     }
 
     /**

@@ -192,6 +192,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
+        Blade::component('breadcrumbs', \FrankenCms\View\Components\Breadcrumbs::class);
+
+        // Register breadcrumbs
+        $this->registerBreadcrumbs();
 
         // Register view composer to pre-populate CMS fields
         $this->registerCmsFieldComposer();
@@ -524,5 +528,22 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             PanelsRenderHook::BODY_END,
             fn (): string => view('franken-cms::filament.components.blog-post-wizard-wrapper')->render()
         );
+    }
+
+    private function registerBreadcrumbs(): void
+    {
+        // Check if breadcrumbs are enabled
+        if (! config('franken-cms.breadcrumbs.enabled', true)) {
+            return;
+        }
+
+        // Register automatic CMS breadcrumbs
+        $breadcrumbService = $this->app->make(\FrankenCms\Services\BreadcrumbService::class);
+        $breadcrumbService->registerBreadcrumbs();
+
+        // Note: User-defined breadcrumbs from routes/breadcrumbs.php are automatically
+        // loaded by the diglactic/laravel-breadcrumbs ServiceProvider, so we don't need
+        // to load them here. Users can reference our breadcrumbs using:
+        // $trail->parent('franken-cms.home') in their custom breadcrumb definitions.
     }
 }

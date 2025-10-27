@@ -22,7 +22,8 @@ readonly class ContentResolver
 
         // If a specific homepage is set, use it
         if ($homePage) {
-            $page = Page::where('post_slug', $homePage)->firstOrFail();
+            // Eager load parent for potential breadcrumb support
+            $page = Page::with('parent')->where('post_slug', $homePage)->firstOrFail();
             return TemplateResolver::resolve($page);
         }
 
@@ -67,7 +68,9 @@ readonly class ContentResolver
 
         if (count($segments) === 1) {
             // Simple single-level page
+            // Eager load parent for breadcrumb support (prevents N+1 if ancestors() is called)
             $page = Page::withoutGlobalScopes()
+                ->with('parent')
                 ->where('post_slug', $path)
                 ->where('post_status', 'published')
                 ->firstOrFail();
@@ -133,7 +136,8 @@ readonly class ContentResolver
 
     private function findPostBySlug(string $slug): ?Post
     {
-        return Post::where('post_slug', $slug)->first();
+        // Eager load parent for breadcrumb support
+        return Post::with('parent')->where('post_slug', $slug)->first();
     }
 
     private function findByCustomPermalink(string $slug): ?Post

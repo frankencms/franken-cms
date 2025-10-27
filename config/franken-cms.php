@@ -35,6 +35,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Breadcrumbs Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration options for the breadcrumbs system. Breadcrumbs are
+    | automatically generated for pages, posts, and taxonomy archives based
+    | on the URL structure.
+    |
+    */
+
+    'breadcrumbs' => [
+        'enabled'      => true,   // Enable/disable breadcrumbs globally
+        'home_text'    => 'Home', // Text for the home link
+        'show_current' => true,   // Show current page in breadcrumbs
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | CMS Field Parsing Cache
     |--------------------------------------------------------------------------
     |
