@@ -58,20 +58,26 @@ class InstallCommand extends Command
             return self::FAILURE;
         }
 
-        // Step 5: Check if already installed
-        if (! $this->option('force') && $this->isPluginAlreadyRegistered($selectedPanel)) {
-            if (! $this->handleExistingInstallation()) {
-                return self::SUCCESS;
+        // Step 5: Check if already installed and register if needed
+        $alreadyInstalled = ! $this->option('force') && $this->isPluginAlreadyRegistered($selectedPanel);
+
+        if ($alreadyInstalled) {
+            // Plugin already installed - just acknowledge and continue
+            $this->handleExistingInstallation();
+        } else {
+            // Register plugin
+            if (! $this->registerPlugin($selectedPanel)) {
+                return self::FAILURE;
             }
         }
 
-        // Step 6: Register plugin
-        if (! $this->registerPlugin($selectedPanel)) {
-            return self::FAILURE;
-        }
+        // Step 6: Offer example theme
+        $themeInstalled = $this->offerExampleTheme();
 
-        // Step 7: Offer example theme
-        $this->offerExampleTheme();
+        // Step 7: Offer example content (if theme was installed)
+        if ($themeInstalled) {
+            $this->offerExampleContent();
+        }
 
         // Step 8: Success!
         $this->showSuccess();
@@ -347,31 +353,19 @@ class InstallCommand extends Command
                Str::contains($content, 'FrankenCms\\FrankenCmsPlugin');
     }
 
-    protected function handleExistingInstallation(): bool
+    protected function handleExistingInstallation(): void
     {
         $this->igorSays(IgorMessages::installMessage('already_installed', 'igor'));
         $this->dramaticPause(400);
         $this->doctorSays(IgorMessages::installMessage('already_installed', 'doctor'));
         $this->dramaticPause(500);
 
-        // Ensure output is flushed before prompt
-        $this->output->writeln('');
-
-        $choice = select(
-            label: '⚠️  What would you like to do?',
-            options: [
-                'skip'  => 'Skip - It\'s already working',
-                'force' => 'Force reinstall - Replace the existing registration',
-                'abort' => 'Abort - Stop the installation',
-            ],
-            default: 'skip'
+        note(
+            '✓ FrankenCMS plugin is already registered in this panel. Continuing with theme and content setup...',
+            'Already Installed'
         );
 
-        return match ($choice) {
-            'force' => true,
-            'abort' => false,
-            default => false,
-        };
+        $this->dramaticPause(300);
     }
 
     protected function registerPlugin(string $panelFile): bool
@@ -455,7 +449,7 @@ class InstallCommand extends Command
         }
     }
 
-    protected function offerExampleTheme(): void
+    protected function offerExampleTheme(): bool
     {
         $this->igorSays(IgorMessages::installMessage('theme_install', 'igor'));
         $this->dramaticPause(300);
@@ -471,7 +465,7 @@ class InstallCommand extends Command
             );
             $this->dramaticPause(300);
 
-            return;
+            return false;
         }
 
         // Ensure output is flushed before prompt
@@ -479,22 +473,77 @@ class InstallCommand extends Command
 
         $installTheme = confirm(
             label: '📝 Install example theme templates?',
-            default: false,
+            default: true,
             hint: 'This will copy starter theme files to resources/views/theme/'
         );
 
-        if ($installTheme) {
-            spin(
-                function () use ($stubsPath, $themePath) {
-                    File::ensureDirectoryExists($themePath);
-                    File::copyDirectory($stubsPath, $themePath);
-                },
-                'Installing example theme...'
-            );
-
-            note('✅ Example theme installed to resources/views/theme/', 'Success');
-            $this->dramaticPause(300);
+        if (! $installTheme) {
+            return false;
         }
+
+        spin(
+            function () use ($stubsPath, $themePath) {
+                File::ensureDirectoryExists($themePath);
+                File::copyDirectory($stubsPath, $themePath);
+            },
+            'Installing example theme...'
+        );
+
+        note('✅ Example theme installed to resources/views/theme/', 'Success');
+        $this->dramaticPause(300);
+
+        return true;
+    }
+
+    protected function offerExampleContent(): void
+    {
+        $this->igorSays(IgorMessages::installMessage('content_generation', 'igor'));
+        $this->dramaticPause(300);
+        $this->doctorSays(IgorMessages::installMessage('content_generation', 'doctor'));
+        $this->dramaticPause(400);
+
+        // Ensure output is flushed before prompt
+        $this->output->writeln('');
+
+        $generateContent = confirm(
+            label: '🧟 Generate example content (pages, posts, categories)?',
+            default: true,
+            hint: 'This helps you see how FrankenCMS works with real data'
+        );
+
+        if (! $generateContent) {
+            $this->igorSays('As you wish, Master... The laboratory remains empty...');
+            $this->dramaticPause(300);
+
+            return;
+        }
+
+        $this->igorSays(IgorMessages::installMessage('generating_content', 'igor'));
+        $this->dramaticPause(300);
+        $this->doctorSays(IgorMessages::installMessage('generating_content', 'doctor'));
+        $this->dramaticPause(400);
+
+        spin(
+            fn () => $this->callSilently('db:seed', [
+                '--class' => 'FrankenCms\\Database\\Seeders\\ExampleContentSeeder',
+            ]),
+            'Bringing example content to life...'
+        );
+
+        $this->dramaticPause(300);
+        $this->igorSays(IgorMessages::installMessage('content_complete', 'igor'));
+        $this->dramaticPause(300);
+        $this->doctorSays(IgorMessages::installMessage('content_complete', 'doctor'));
+        $this->dramaticPause(400);
+
+        note(
+            "✅ Example content created:\n" .
+            "   • Pages: Home, About, Blog, Contact\n" .
+            "   • Posts: 3 example blog posts\n" .
+            "   • Categories & Tags\n" .
+            '   • Main Navigation Menu',
+            'Content Generated'
+        );
     }
 
     protected function showSuccess(): void

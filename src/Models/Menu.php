@@ -16,14 +16,11 @@ class Menu extends Model
     protected $fillable = [
         'name',
         'slug',
-        'description',
         'is_active',
-        'additional_data',
     ];
 
     protected $casts = [
-        'is_active'       => 'boolean',
-        'additional_data' => 'array',
+        'is_active' => 'boolean',
     ];
 
     /**

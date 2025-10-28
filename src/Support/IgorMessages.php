@@ -101,6 +101,18 @@ class IgorMessages
                 'igor'   => 'Shall Igor prepare the example templates, Master? 📝',
                 'doctor' => 'A fine idea! Show them what we can create!',
             ],
+            'content_generation' => [
+                'igor'   => 'Master! Shall Igor bring some test subjects... er, example content to life? 🧟',
+                'doctor' => 'YES! We need specimens to demonstrate our creation!',
+            ],
+            'generating_content' => [
+                'igor'   => 'Igor is gathering the parts... pages, posts, categories... 📚',
+                'doctor' => 'Excellent work! Bring them ALL to life!',
+            ],
+            'content_complete' => [
+                'igor'   => 'The specimens are ready, Master! All breathing and functional! ✨',
+                'doctor' => 'Magnificent! Now they can see what we\'ve created!',
+            ],
             'success' => [
                 'igor'   => "It's ALIVE, Master! The creation breathes! 🧟",
                 'doctor' => 'SUCCESS! My masterpiece is COMPLETE! MUHAHAHA! 🎉',
