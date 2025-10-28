@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FrankenCms\Database\Seeders;
 
+use DOMDocument;
+use DOMNode;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Menu;
 use FrankenCms\Models\Post;
@@ -113,10 +115,8 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'home',
             ],
             [
-                'post_title'   => 'Home',
-                'post_content' => [
-                    'content' => '<p>Welcome to FrankenCMS - A WordPress Alternative Built with Laravel!</p>',
-                ],
+                'post_title'        => 'Home',
+                'post_content'      => $this->htmlToTiptap('<p>Welcome to FrankenCMS - A WordPress Alternative Built with Laravel!</p>'),
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
@@ -131,10 +131,8 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'about',
             ],
             [
-                'post_title'   => 'About',
-                'post_content' => [
-                    'content' => '<p>Learn more about FrankenCMS and the mad scientists behind it!</p>',
-                ],
+                'post_title'        => 'About',
+                'post_content'      => $this->htmlToTiptap('<p>Learn more about FrankenCMS and the mad scientists behind it!</p>'),
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
@@ -148,10 +146,8 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'contact',
             ],
             [
-                'post_title'   => 'Contact',
-                'post_content' => [
-                    'content' => '<p>Get in touch with us. We don\'t bite... much.</p>',
-                ],
+                'post_title'        => 'Contact',
+                'post_content'      => $this->htmlToTiptap('<p>Get in touch with us. We don\'t bite... much.</p>'),
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
@@ -165,10 +161,8 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'blog',
             ],
             [
-                'post_title'   => 'Blog',
-                'post_content' => [
-                    'content' => '<p>Tales from the laboratory and beyond.</p>',
-                ],
+                'post_title'        => 'Blog',
+                'post_content'      => $this->htmlToTiptap('<p>Tales from the laboratory and beyond.</p>'),
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
@@ -185,17 +179,17 @@ class ExampleContentSeeder extends Seeder
         $posts = [
             [
                 'title'    => 'Welcome to FrankenCMS!',
-                'content'  => '<h2>It\'s Alive!</h2><p>Welcome to FrankenCMS, a modern WordPress alternative built with the power of Laravel and FilamentPHP. Like Dr. Frankenstein\'s creation, we\'ve assembled the best parts from the Laravel ecosystem to create something truly magnificent.</p><h3>Why FrankenCMS?</h3><p>We believe content management should be powerful, flexible, and fun. FrankenCMS brings together the elegance of Laravel with the user-friendly admin interface of Filament to create a CMS that developers and content creators both love.</p>',
+                'content'  => $this->htmlToTiptap('<h2>It\'s Alive!</h2><p>Welcome to FrankenCMS, a modern WordPress alternative built with the power of Laravel and FilamentPHP. Like Dr. Frankenstein\'s creation, we\'ve assembled the best parts from the Laravel ecosystem to create something truly magnificent.</p><h3>Why FrankenCMS?</h3><p>We believe content management should be powerful, flexible, and fun. FrankenCMS brings together the elegance of Laravel with the user-friendly admin interface of Filament to create a CMS that developers and content creators both love.</p>'),
                 'category' => 'News',
             ],
             [
                 'title'    => 'Getting Started with FrankenCMS',
-                'content'  => '<h2>Your First Steps</h2><p>Getting started with FrankenCMS is frighteningly easy! Simply install the package via Composer and run our theatrical installer.</p><h3>Installation</h3><pre><code>composer require frankencms/franken-cms\nphp artisan franken-cms:install</code></pre><p>Igor will guide you through the installation process with help from Dr. Frankenstein himself!</p>',
+                'content'  => $this->htmlToTiptap('<h2>Your First Steps</h2><p>Getting started with FrankenCMS is frighteningly easy! Simply install the package via Composer and run our theatrical installer.</p><h3>Installation</h3><pre><code>composer require frankencms/franken-cms\nphp artisan franken-cms:install</code></pre><p>Igor will guide you through the installation process with help from Dr. Frankenstein himself!</p>'),
                 'category' => 'Tutorials',
             ],
             [
                 'title'    => 'Behind the Laboratory Doors',
-                'content'  => '<h2>A Peek Inside</h2><p>Ever wondered what happens in our laboratory? The creation of FrankenCMS was no accident. It took careful planning, countless experiments, and more than a few lightning storms to bring this project to life.</p><p>We started with a simple question: What if WordPress was built with modern PHP? The answer became FrankenCMS.</p>',
+                'content'  => $this->htmlToTiptap('<h2>A Peek Inside</h2><p>Ever wondered what happens in our laboratory? The creation of FrankenCMS was no accident. It took careful planning, countless experiments, and more than a few lightning storms to bring this project to life.</p><p>We started with a simple question: What if WordPress was built with modern PHP? The answer became FrankenCMS.</p>'),
                 'category' => 'Behind the Scenes',
             ],
         ];
@@ -207,10 +201,8 @@ class ExampleContentSeeder extends Seeder
                     'post_slug' => Str::slug($postData['title']),
                 ],
                 [
-                    'post_title'   => $postData['title'],
-                    'post_content' => [
-                        'content' => $postData['content'],
-                    ],
+                    'post_title'        => $postData['title'],
+                    'post_content'      => $postData['content'],
                     'post_status'       => PostStatus::PUBLISH->value,
                     'post_published_at' => now()->subDays(count($posts) - $index),
                     'post_author_id'    => $user?->id,
@@ -294,5 +286,139 @@ class ExampleContentSeeder extends Seeder
                 $item
             );
         }
+    }
+
+    /**
+     * Convert simple HTML to Tiptap JSON format
+     */
+    protected function htmlToTiptap(string $html): array
+    {
+        // Use DOMDocument to parse HTML
+        $dom = new DOMDocument;
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+
+        $content = [];
+
+        foreach ($dom->childNodes as $node) {
+            $converted = $this->convertNodeToTiptap($node);
+            if ($converted) {
+                $content[] = $converted;
+            }
+        }
+
+        return [
+            'type'    => 'doc',
+            'content' => $content,
+        ];
+    }
+
+    /**
+     * Convert a DOM node to Tiptap node format
+     */
+    protected function convertNodeToTiptap(DOMNode $node): ?array
+    {
+        if ($node->nodeType === XML_TEXT_NODE) {
+            $text = trim($node->textContent);
+
+            return $text ? ['type' => 'text', 'text' => $text] : null;
+        }
+
+        if ($node->nodeType !== XML_ELEMENT_NODE) {
+            return null;
+        }
+
+        $nodeName = strtolower($node->nodeName);
+
+        // Handle headings
+        if (in_array($nodeName, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])) {
+            return [
+                'type'    => 'heading',
+                'attrs'   => ['level' => (int) substr($nodeName, 1)],
+                'content' => $this->convertChildNodes($node),
+            ];
+        }
+
+        // Handle paragraphs
+        if ($nodeName === 'p') {
+            return [
+                'type'    => 'paragraph',
+                'content' => $this->convertChildNodes($node),
+            ];
+        }
+
+        // Handle code blocks
+        if ($nodeName === 'pre') {
+            $codeNode = $node->firstChild;
+            $text = $codeNode ? $codeNode->textContent : $node->textContent;
+
+            return [
+                'type'    => 'codeBlock',
+                'content' => [
+                    ['type' => 'text', 'text' => $text],
+                ],
+            ];
+        }
+
+        // Handle inline code
+        if ($nodeName === 'code') {
+            return [
+                'type'  => 'text',
+                'text'  => $node->textContent,
+                'marks' => [
+                    ['type' => 'code'],
+                ],
+            ];
+        }
+
+        // Handle strong/bold
+        if (in_array($nodeName, ['strong', 'b'])) {
+            $content = $this->convertChildNodes($node);
+            foreach ($content as &$item) {
+                if ($item['type'] === 'text') {
+                    $item['marks'] = array_merge($item['marks'] ?? [], [['type' => 'bold']]);
+                }
+            }
+
+            return count($content) === 1 ? $content[0] : ['type' => 'paragraph', 'content' => $content];
+        }
+
+        // Handle emphasis/italic
+        if (in_array($nodeName, ['em', 'i'])) {
+            $content = $this->convertChildNodes($node);
+            foreach ($content as &$item) {
+                if ($item['type'] === 'text') {
+                    $item['marks'] = array_merge($item['marks'] ?? [], [['type' => 'italic']]);
+                }
+            }
+
+            return count($content) === 1 ? $content[0] : ['type' => 'paragraph', 'content' => $content];
+        }
+
+        // Default: treat as paragraph with child nodes
+        $children = $this->convertChildNodes($node);
+
+        return $children ? [
+            'type'    => 'paragraph',
+            'content' => $children,
+        ] : null;
+    }
+
+    /**
+     * Convert all child nodes
+     */
+    protected function convertChildNodes(DOMNode $node): array
+    {
+        $content = [];
+
+        foreach ($node->childNodes as $child) {
+            $converted = $this->convertNodeToTiptap($child);
+            if ($converted) {
+                $content[] = $converted;
+            }
+        }
+
+        return $content;
     }
 }
