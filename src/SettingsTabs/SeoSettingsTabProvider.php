@@ -14,7 +14,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
-use FrankenCms\Models\SeoMedia;
+use FrankenCms\Models\SiteSettingsMedia;
 use FrankenCms\Settings\SeoSettings;
 
 class SeoSettingsTabProvider implements SettingsTabProviderInterface
@@ -145,7 +145,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Default Social Media Image')
                             ->helperText('Default image for social sharing (1200×630px recommended). Used for Facebook, LinkedIn, Twitter, and other platforms when individual pages don\'t have their own image.')
                             ->collection('og-default')
-                            ->model(fn () => SeoMedia::getInstance())
+                            ->model(fn () => SiteSettingsMedia::getInstance())
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios([
@@ -193,7 +193,7 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                             ->label('Twitter Summary Card Image')
                             ->helperText('Square image for Twitter summary cards (minimum 240×240px, recommended 600×600px). Only used when summary card is enabled above.')
                             ->collection('twitter-default')
-                            ->model(fn () => SeoMedia::getInstance())
+                            ->model(fn () => SiteSettingsMedia::getInstance())
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios([

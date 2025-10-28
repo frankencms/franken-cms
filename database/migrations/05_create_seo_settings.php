@@ -27,7 +27,7 @@ return new class extends SettingsMigration
         $this->migrator->add('franken-cms-seo.fb_app_id', null);
 
         // Twitter
-        $this->migrator->add('franken-cms-seo.twitter_card_type', 'summary_large_image');
+        $this->migrator->add('franken-cms-seo.use_twitter_summary_card', false);
         $this->migrator->add('franken-cms-seo.twitter_username', null);
 
         // Theme & Appearance

@@ -27,6 +27,18 @@ return new class extends SettingsMigration
         // Image Alt Text Prompt
         $this->migrator->add('cms_ai.alt_text_enabled', true);
         $this->migrator->add('cms_ai.alt_text_prompt', DefaultPrompts::altText());
+
+        // Image Title Prompt
+        $this->migrator->add('cms_ai.image_title_enabled', true);
+        $this->migrator->add('cms_ai.image_title_prompt', DefaultPrompts::imageTitle());
+
+        // Blog Post Generator Prompt
+        $this->migrator->add('cms_ai.blog_post_enabled', true);
+        $this->migrator->add('cms_ai.blog_post_prompt', DefaultPrompts::blogPost());
+
+        // Blog Post Title Generator Prompt
+        $this->migrator->add('cms_ai.blog_post_title_enabled', true);
+        $this->migrator->add('cms_ai.blog_post_title_prompt', DefaultPrompts::blogPostTitle());
     }
 
     public function down(): void
@@ -45,5 +57,11 @@ return new class extends SettingsMigration
         $this->migrator->delete('cms_ai.teaser_prompt');
         $this->migrator->delete('cms_ai.alt_text_enabled');
         $this->migrator->delete('cms_ai.alt_text_prompt');
+        $this->migrator->delete('cms_ai.image_title_enabled');
+        $this->migrator->delete('cms_ai.image_title_prompt');
+        $this->migrator->delete('cms_ai.blog_post_enabled');
+        $this->migrator->delete('cms_ai.blog_post_prompt');
+        $this->migrator->delete('cms_ai.blog_post_title_enabled');
+        $this->migrator->delete('cms_ai.blog_post_title_prompt');
     }
 };

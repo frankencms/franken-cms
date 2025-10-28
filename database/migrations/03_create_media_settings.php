@@ -21,5 +21,8 @@ return new class extends SettingsMigration
         $this->migrator->add('cms_media.listing_custom_width', null);
         $this->migrator->add('cms_media.listing_custom_height', null);
         $this->migrator->add('cms_media.listing_crop', true);
+
+        // Responsive Images
+        $this->migrator->add('cms_media.enable_responsive_images', true);
     }
 };

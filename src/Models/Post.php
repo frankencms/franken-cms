@@ -453,7 +453,7 @@ class Post extends Model implements HasMedia, HasRichContent
         }
 
         // Fallback to default OG image
-        $seoMedia = SeoMedia::getInstance();
+        $seoMedia = SiteSettingsMedia::getInstance();
         if ($seoMedia->hasMedia('og-default')) {
             return $seoMedia->getFirstMedia('og-default');
         }
@@ -481,7 +481,7 @@ class Post extends Model implements HasMedia, HasRichContent
             }
 
             // Fallback to default Twitter summary image
-            $seoMedia = SeoMedia::getInstance();
+            $seoMedia = SiteSettingsMedia::getInstance();
             if ($seoMedia->hasMedia('twitter-default')) {
                 return $seoMedia->getFirstMedia('twitter-default');
             }

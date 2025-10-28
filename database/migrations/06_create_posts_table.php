@@ -14,11 +14,13 @@ return new class extends Migration
             $table->unsignedBigInteger('post_author_id')->nullable();
             $table->string('post_title');
             $table->string('post_slug');
+            $table->string('route_name')->nullable()->unique();
             $table->json('post_content')->nullable();
             $table->string('post_status')->default(PostStatus::DRAFT->value);
             $table->timestamp('post_published_at')->nullable();
             $table->string('post_type');
             $table->unsignedBigInteger('post_parent')->default(0);
+            $table->foreignId('parent_id')->nullable()->constrained('posts')->onDelete('cascade');
             $table->timestamps();
         });
     }

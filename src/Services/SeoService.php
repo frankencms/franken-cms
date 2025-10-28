@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Services;
 
 use FrankenCms\Models\Post;
-use FrankenCms\Models\SeoMedia;
+use FrankenCms\Models\SiteSettingsMedia;
 use FrankenCms\Settings\SeoSettings;
 
 class SeoService
@@ -125,7 +125,7 @@ class SeoService
         }
 
         // No post provided, check for default OG image
-        $seoMedia = SeoMedia::getInstance();
+        $seoMedia = SiteSettingsMedia::getInstance();
         if ($seoMedia->hasMedia('og-default')) {
             return $seoMedia->getFirstMedia('og-default')?->getFullUrl('og');
         }
@@ -177,7 +177,7 @@ class SeoService
         }
 
         // No post provided, check for default images based on settings
-        $seoMedia = SeoMedia::getInstance();
+        $seoMedia = SiteSettingsMedia::getInstance();
 
         if ($seoSettings->use_twitter_summary_card && $seoMedia->hasMedia('twitter-default')) {
             return $seoMedia->getFirstMedia('twitter-default')?->getFullUrl('twitter-summary');

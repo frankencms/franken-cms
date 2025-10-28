@@ -8,16 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
- * Singleton model to hold SEO-related media files
- * This model uses a single record to store all default SEO images
+ * Singleton model to hold site-wide settings media files
+ *
+ * This model uses a single record to store default media assets for site configuration,
+ * such as default SEO images (OpenGraph/Twitter), and potentially logos, favicons, etc.
+ * This is NOT for user-uploaded content like post images.
  */
-class SeoMedia extends Model implements HasMedia
+class SiteSettingsMedia extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    protected $table = 'seo_media';
+    protected $table = 'site_settings_media';
 
     protected $fillable = [];
 
@@ -46,7 +50,7 @@ class SeoMedia extends Model implements HasMedia
     /**
      * Register media conversions
      */
-    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         // OpenGraph default image - exact 1200x630 dimensions (no focal point needed)
         $this->addMediaConversion('og')
@@ -75,6 +79,6 @@ class SeoMedia extends Model implements HasMedia
      */
     public function getMediaModel(): string
     {
-        return config('media-library.media_model', \Spatie\MediaLibrary\MediaCollections\Models\Media::class);
+        return config('media-library.media_model', Media::class);
     }
 }
