@@ -163,27 +163,7 @@ ASCII,
 
     ⚡⚡⚡ IT'S ALIVE! IT'S ALIVE! ⚡⚡⚡
 
-         _____________________
-        |  ___________________  |
-        | |                   | |
-        | |   IT'S ALIVE!!!   | |
-        | |   ⚡ ⚡ ⚡ ⚡ ⚡   | |
-        | |___________________| |
-        |_____________________|
-               \\___\\___\\
-               /   /   /
-              /___/___/
-             |    |    |
-             |    |    |
-            /|    |    |\
-           (_|    |    |_)
-              \   |   /
-               \  |  /
-                \ | /
-                 \|/
-                  V
-
-    🧟 FrankenCMS Installation Complete! 🧟
+🧟 FrankenCMS Installation Complete! 🧟
 
 ASCII,
             'lightning' => <<<'ASCII'

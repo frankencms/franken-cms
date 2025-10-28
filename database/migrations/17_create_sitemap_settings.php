@@ -23,5 +23,7 @@ return new class extends SettingsMigration
 
         // Include images by default
         $this->migrator->add('franken_cms_sitemap.include_images', true);
+
+        $this->migrator->add('franken_cms_sitemap.custom_sitemaps', []);
     }
 };
