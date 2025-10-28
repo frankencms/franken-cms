@@ -15,14 +15,16 @@ class MenusForm
     {
 
         return $schema
+            ->columns(1)
             ->components([
 
                 Section::make('Menu Details')
                     ->columnSpanFull()
-                    ->columns(2)
                     ->schema([
 
                         TextInput::make('name')
+                            ->label('Name')
+                            ->inlineLabel()
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
@@ -33,6 +35,8 @@ class MenusForm
                             }),
 
                         TextInput::make('slug')
+                            ->label('Slug')
+                            ->inlineLabel()
                             ->required()
                             ->maxLength(255)
                             ->unique(Menu::class, 'slug', ignoreRecord: true)
@@ -40,11 +44,13 @@ class MenusForm
 
                         Toggle::make('is_active')
                             ->label('Active')
+                            ->inlineLabel()
                             ->default(true),
                     ]),
 
                 Section::make('Additional Data')
                     ->columnSpanFull()
+                    ->collapsed()
                     ->schema([
                         KeyValue::make('additional_data')
                             ->label('Additional Data')

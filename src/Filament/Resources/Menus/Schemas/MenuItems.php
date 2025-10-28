@@ -8,7 +8,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Form;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use FrankenCms\Enums\LinkTargets;
@@ -26,51 +25,37 @@ class MenuItems
                         ->schema([
                             Repeater::make('menu_items')
                                 ->schema([
-                                    Grid::make(3)
-                                        ->schema([
-                                            TextInput::make('label')
-                                                ->required()
-                                                ->maxLength(255)
-                                                ->columnSpan(1),
+                                    TextInput::make('label')
+                                        ->label('Label')
+                                        ->inlineLabel()
+                                        ->required()
+                                        ->maxLength(255),
 
-                                            Select::make('target')
-                                                ->options(LinkTargets::class)
-                                                ->default(LinkTargets::_SELF->value)
-                                                ->columnSpan(1),
+                                    TextInput::make('url')
+                                        ->label('Custom URL')
+                                        ->inlineLabel()
+                                        ->url()
+                                        ->placeholder('https://example.com')
+                                        ->helperText('Leave empty to use route or linkable model'),
 
-                                            Toggle::make('is_active')
-                                                ->label('Active')
-                                                ->default(true)
-                                                ->columnSpan(1),
-                                        ]),
-
-                                    Grid::make(2)
-                                        ->schema([
-                                            TextInput::make('url')
-                                                ->label('Custom URL')
-                                                ->url()
-                                                ->placeholder('https://example.com')
-                                                ->helperText('Leave empty to use route or linkable model')
-                                                ->columnSpan(1),
-
-                                            TextInput::make('route_name')
-                                                ->label('Route Name')
-                                                ->placeholder('post.show')
-                                                ->helperText('Laravel route name')
-                                                ->columnSpan(1),
-                                        ]),
+                                    TextInput::make('route_name')
+                                        ->label('Route Name')
+                                        ->inlineLabel()
+                                        ->placeholder('post.show')
+                                        ->helperText('Laravel route name'),
 
                                     Select::make('linkable_type')
                                         ->label('Link Type')
+                                        ->inlineLabel()
                                         ->options([
                                             ''          => 'No Link',
                                             Post::class => 'Post',
                                         ])
-                                        ->live()
-                                        ->columnSpan(1),
+                                        ->live(),
 
                                     Select::make('linkable_id')
                                         ->label('Select Content')
+                                        ->inlineLabel()
                                         ->options(function (callable $get) {
                                             $type = $get('linkable_type');
                                             if ($type === Post::class) {
@@ -79,14 +64,24 @@ class MenuItems
                                             return [];
                                         })
                                         ->searchable()
-                                        ->visible(fn (callable $get) => ! empty($get('linkable_type')))
-                                        ->columnSpan(1),
+                                        ->visible(fn (callable $get) => ! empty($get('linkable_type'))),
+
+                                    Select::make('target')
+                                        ->label('Link Target')
+                                        ->inlineLabel()
+                                        ->options(LinkTargets::class)
+                                        ->default(LinkTargets::_SELF->value),
 
                                     TextInput::make('parent_id')
                                         ->label('Parent Item ID')
+                                        ->inlineLabel()
                                         ->numeric()
-                                        ->helperText('Leave empty for top-level items')
-                                        ->columnSpan(1),
+                                        ->helperText('Leave empty for top-level items'),
+
+                                    Toggle::make('is_active')
+                                        ->label('Active')
+                                        ->inlineLabel()
+                                        ->default(true),
 
                                     KeyValue::make('additional_data')
                                         ->label('Additional Data')
