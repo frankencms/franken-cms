@@ -114,6 +114,12 @@ class CmsSettings extends Page implements HasSchemas
             foreach ($providers as $provider) {
                 $settingsClass = $provider->getSettingsClass();
                 $settings = app($settingsClass);
+                $group = $settings::group();
+
+                // Skip if no data for this group
+                if (! isset($data[$group]) || ! is_array($data[$group])) {
+                    continue;
+                }
 
                 // Get all properties defined in the settings class using reflection
                 $reflection = new ReflectionClass($settingsClass);
@@ -125,8 +131,8 @@ class CmsSettings extends Page implements HasSchemas
 
                 foreach ($properties as $property) {
                     $propertyName = $property->getName();
-                    if (array_key_exists($propertyName, $data)) {
-                        $settingsData[$propertyName] = $data[$propertyName];
+                    if (array_key_exists($propertyName, $data[$group])) {
+                        $settingsData[$propertyName] = $data[$group][$propertyName];
                         $hasChanges = true;
                     }
                 }
@@ -170,15 +176,22 @@ class CmsSettings extends Page implements HasSchemas
         foreach ($providers as $provider) {
             $settingsClass = $provider->getSettingsClass();
             $settings = app($settingsClass);
+            $group = $settings::group();
 
             // Get all properties defined in the settings class using reflection
             $reflection = new ReflectionClass($settingsClass);
             $properties = $reflection->getProperties(ReflectionProperty::IS_PUBLIC);
 
+            // Initialize the group array if it doesn't exist
+            if (! isset($this->data[$group])) {
+                $this->data[$group] = [];
+            }
+
             foreach ($properties as $property) {
                 $propertyName = $property->getName();
                 // Use the settings getter method to get the actual persisted value
-                $this->data[$propertyName] = $settings->{$propertyName};
+                // Store under the settings group to avoid conflicts
+                $this->data[$group][$propertyName] = $settings->{$propertyName};
             }
         }
     }

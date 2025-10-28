@@ -23,8 +23,11 @@ class RobotsSettingsTabProvider implements SettingsTabProviderInterface
 
     public function getTab(): Tab
     {
+        $group = RobotsSettings::group();
+
         return Tab::make('Robots.txt')
             ->icon('heroicon-o-bug-ant')
+            ->statePath($group)
             ->schema([
                 Section::make('Robots.txt Configuration')
                     ->description('Configure how search engine crawlers interact with your site.')

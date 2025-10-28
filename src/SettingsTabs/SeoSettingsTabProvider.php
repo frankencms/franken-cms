@@ -21,8 +21,11 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
 {
     public function getTab(): Tab
     {
+        $group = SeoSettings::group();
+
         return Tab::make('SEO')
             ->icon('heroicon-o-magnifying-glass')
+            ->statePath($group)
             ->schema([
                 Section::make('General SEO Settings')
                     ->description('Configure your site\'s basic SEO information')

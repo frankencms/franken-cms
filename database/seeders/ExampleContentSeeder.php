@@ -176,10 +176,8 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'contact',
             ],
             [
-                'post_title'   => 'Contact',
-                'post_content' => [
-                    'custom_fields' => [],
-                ],
+                'post_title'        => 'Contact',
+                'post_content'      => null,
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
@@ -193,10 +191,8 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'blog',
             ],
             [
-                'post_title'   => 'Blog',
-                'post_content' => [
-                    'custom_fields' => [],
-                ],
+                'post_title'        => 'Blog',
+                'post_content'      => null,
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,

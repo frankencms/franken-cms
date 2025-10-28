@@ -21,8 +21,11 @@ class PermalinkSettingsTabProvider implements SettingsTabProviderInterface
 {
     public function getTab(): Tab
     {
+        $group = PermalinkSettings::group();
+
         return Tab::make('Permalinks')
             ->icon('heroicon-o-link')
+            ->statePath($group)
             ->schema([
                 Section::make(__('franken-cms::messages.settings.permalinks.title'))
                     ->description(__('franken-cms::messages.settings.permalinks.description'))

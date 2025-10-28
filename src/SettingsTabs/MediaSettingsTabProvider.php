@@ -15,8 +15,11 @@ class MediaSettingsTabProvider implements SettingsTabProviderInterface
 {
     public function getTab(): Tab
     {
+        $group = MediaSettings::group();
+
         return Tab::make('Media')
             ->icon('heroicon-o-photo')
+            ->statePath($group)
             ->schema([
 
                 Section::make('Post Image Conversions')

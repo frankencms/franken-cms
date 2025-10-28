@@ -22,8 +22,11 @@ class SitemapSettingsTabProvider implements SettingsTabProviderInterface
 
     public function getTab(): Tab
     {
+        $group = SitemapSettings::group();
+
         return Tab::make('Sitemap')
             ->icon('heroicon-o-map')
+            ->statePath($group)
             ->schema([
                 Section::make('XML Sitemap Configuration')
                     ->description('Configure automatic XML sitemap generation for search engines.')

@@ -18,8 +18,11 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 {
     public function getTab(): Tab
     {
+        $group = AiSettings::group();
+
         return Tab::make('Igor')
             ->icon('heroicon-o-sparkles')
+            ->statePath($group)
             ->visible(fn () => AiFeatureDetector::isPrismInstalled())
             ->schema([
 

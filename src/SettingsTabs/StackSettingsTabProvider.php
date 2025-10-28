@@ -16,8 +16,11 @@ class StackSettingsTabProvider implements SettingsTabProviderInterface
 {
     public function getTab(): Tab
     {
+        $group = StackSettings::group();
+
         return Tab::make('Stacks')
             ->icon('heroicon-o-code-bracket')
+            ->statePath($group)
             ->schema([
 
                 Section::make('Custom Code Stacks')

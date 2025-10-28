@@ -25,8 +25,11 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
 {
     public function getTab(): Tab
     {
+        $group = GeneralSettings::group();
+
         return Tab::make(__('franken-cms::messages.settings.general.title'))
             ->icon('heroicon-o-cog-6-tooth')
+            ->statePath($group)
             ->schema([
                 Section::make(__('franken-cms::messages.settings.general.title'))
                     ->description(__('franken-cms::messages.settings.general.description'))
