@@ -54,8 +54,8 @@ class IgorMessages
     {
         return [
             'welcome' => [
-                'igor'   => 'Yes, Master! Igor is ready to assist with the installation! 🔨',
-                'doctor' => 'Excellent! Tonight... we shall create something MAGNIFICENT! ⚡',
+                'igor'   => 'Yes, Master! Igor is ready to assist with the installation!',
+                'doctor' => 'Excellent! Tonight... we shall create something MAGNIFICENT!',
             ],
             'asking_config' => [
                 'igor'   => 'Master, shall Igor fetch the configuration scrolls? 📜',
@@ -70,7 +70,7 @@ class IgorMessages
                 'doctor' => 'Very well, we shall use the package defaults!',
             ],
             'asking_migrations' => [
-                'igor'   => 'Shall Igor bring the parts from the laboratory storage? 🔧',
+                'igor'   => 'Shall Igor bring the parts from the laboratory storage?',
                 'doctor' => 'We need the building blocks for our creation!',
             ],
             'publishing_migrations' => [
@@ -82,27 +82,27 @@ class IgorMessages
                 'doctor' => 'Perhaps they are already in place... interesting.',
             ],
             'running_migrations' => [
-                'igor'   => 'Assembling the parts, Master! This may take a moment... 🔧',
+                'igor'   => 'Assembling the parts, Master! This may take a moment...',
                 'doctor' => 'Patience! Greatness cannot be rushed!',
             ],
             'detecting_panels' => [
-                'igor'   => 'Searching the castle for suitable laboratories... 🔍',
+                'igor'   => 'Searching the castle for suitable laboratories...',
                 'doctor' => 'We must choose the PERFECT environment!',
             ],
             'already_installed' => [
-                'igor'   => 'Master! The creature already lives in this panel! 👀',
+                'igor'   => 'Master! The creature already lives in this panel!',
                 'doctor' => 'Curious... it seems our work here is already complete.',
             ],
             'registering_plugin' => [
-                'igor'   => 'Connecting the life force to the panel... ⚡',
+                'igor'   => 'Connecting the life force to the panel...',
                 'doctor' => 'YES! The moment of truth approaches!',
             ],
             'theme_install' => [
-                'igor'   => 'Shall Igor prepare the example templates, Master? 📝',
+                'igor'   => 'Shall Igor prepare the example templates, Master?',
                 'doctor' => 'A fine idea! Show them what we can create!',
             ],
             'content_generation' => [
-                'igor'   => 'Master! Shall Igor bring some test subjects... er, example content to life? 🧟',
+                'igor'   => 'Master! Shall Igor bring some test subjects... er, example content to life?',
                 'doctor' => 'YES! We need specimens to demonstrate our creation!',
             ],
             'generating_content' => [
@@ -110,19 +110,19 @@ class IgorMessages
                 'doctor' => 'Excellent work! Bring them ALL to life!',
             ],
             'content_complete' => [
-                'igor'   => 'The specimens are ready, Master! All breathing and functional! ✨',
+                'igor'   => 'The specimens are ready, Master! All breathing and functional!',
                 'doctor' => 'Magnificent! Now they can see what we\'ve created!',
             ],
             'success' => [
-                'igor'   => "It's ALIVE, Master! The creation breathes! 🧟",
-                'doctor' => 'SUCCESS! My masterpiece is COMPLETE! MUHAHAHA! 🎉',
+                'igor'   => "It's ALIVE, Master! The creation breathes!",
+                'doctor' => 'SUCCESS! My masterpiece is COMPLETE! MUHAHAHA!',
             ],
             'error' => [
-                'igor'   => 'Master! Something went wrong in the laboratory! 😱',
+                'igor'   => 'Master! Something went wrong in the laboratory!',
                 'doctor' => 'BLAST! We must investigate this failure!',
             ],
             'migration_success' => [
-                'igor'   => 'All parts assembled perfectly, Master! ✨',
+                'igor'   => 'All parts assembled perfectly, Master!',
                 'doctor' => 'Splendid! The framework is ready!',
             ],
             'migration_error' => [
