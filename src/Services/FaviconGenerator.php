@@ -44,13 +44,18 @@ class FaviconGenerator
      */
     public function generate(string $sourcePath): array
     {
-        $publicPath = public_path();
+        $storagePath = storage_path('app/public/favicons');
         $generated = [];
+
+        // Ensure the favicons directory exists
+        if (! is_dir($storagePath)) {
+            mkdir($storagePath, 0755, true);
+        }
 
         // Generate each size
         foreach ($this->sizes as $filename => $dimensions) {
             [$width, $height] = $dimensions;
-            $outputPath = $publicPath . '/' . $filename;
+            $outputPath = $storagePath . '/' . $filename;
 
             try {
                 Image::load($sourcePath)
@@ -67,8 +72,8 @@ class FaviconGenerator
 
         // Generate favicon.ico (multi-size ICO file from 32x32 PNG)
         try {
-            $ico32Path = $publicPath . '/favicon-32x32.png';
-            $icoPath = $publicPath . '/favicon.ico';
+            $ico32Path = $storagePath . '/favicon-32x32.png';
+            $icoPath = $storagePath . '/favicon.ico';
 
             if (file_exists($ico32Path)) {
                 // Copy 32x32 as ICO (browsers handle PNG in ICO format)
@@ -87,17 +92,17 @@ class FaviconGenerator
      */
     public function clear(): void
     {
-        $publicPath = public_path();
+        $storagePath = storage_path('app/public/favicons');
 
         foreach (array_keys($this->sizes) as $filename) {
-            $path = $publicPath . '/' . $filename;
+            $path = $storagePath . '/' . $filename;
             if (file_exists($path)) {
                 unlink($path);
             }
         }
 
         // Remove favicon.ico
-        $icoPath = $publicPath . '/favicon.ico';
+        $icoPath = $storagePath . '/favicon.ico';
         if (file_exists($icoPath)) {
             unlink($icoPath);
         }
