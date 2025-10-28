@@ -82,7 +82,8 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                             ->label(__('franken-cms::messages.settings.general.form.membership.label'))
                             ->helperText(__('franken-cms::messages.settings.general.form.membership.helper'))
                             ->required()
-                            ->columnSpan(2),
+                            ->columnSpan(2)
+                            ->hidden(), // Hidden for now, may use later
 
                         Select::make('new_user_default_role')
                             ->inlineLabel()
@@ -90,7 +91,8 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                             ->label(__('franken-cms::messages.settings.general.form.default_user_role.label'))
                             ->options($this->enumOptions(UserRole::class))
                             ->selectablePlaceholder(false)
-                            ->columnSpan(2),
+                            ->columnSpan(2)
+                            ->hidden(), // Hidden for now, may use later
 
                         Select::make('timezone')
                             ->inlineLabel()
