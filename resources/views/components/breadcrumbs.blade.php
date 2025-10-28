@@ -1,6 +1,6 @@
 @if (! empty($breadcrumbs))
     <nav aria-label="Breadcrumbs" {{ $attributes->merge(['class' => 'breadcrumbs']) }}>
-        <ol class="flex items-center space-x-2">
+        <ol class="flex items-center gap-2">
             @foreach ($breadcrumbs as $breadcrumb)
                 <li class="flex items-center">
                     @if ($breadcrumb->url && ! $loop->last)

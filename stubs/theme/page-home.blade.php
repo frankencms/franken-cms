@@ -7,19 +7,33 @@
             Typography: Extra large headlines with electric glow for that mad scientist feel
             Animation: Electric pulse and glow effects on CTAs
         --}}
+        {{-- <section --}}
+        {{-- class="relative overflow-hidden bg-gradient-to-br from-black via-slate-950 to-emerald-950/20 py-24 text-white md:py-32 lg:py-40" --}}
+        {{-- > --}}
+        {{--  --}}
+        {{-- Electric energy orbs - like lightning in the laboratory --}}
+        {{-- <div class="pointer-events-none absolute inset-0 overflow-hidden"> --}}
+        {{-- <div --}}
+        {{-- class="absolute top-0 -left-1/4 h-96 w-96 rounded-full bg-gradient-to-br from-lime-500/30 to-emerald-500/20 blur-3xl" --}}
+        {{-- ></div> --}}
+        {{-- <div --}}
+        {{-- class="absolute -right-1/4 bottom-0 h-96 w-96 rounded-full bg-gradient-to-br from-cyan-500/30 to-teal-500/20 blur-3xl" --}}
+        {{-- ></div> --}}
+        {{-- <div --}}
+        {{-- class="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-lime-400/20 to-transparent blur-3xl" --}}
+        {{-- ></div> --}}
+        {{-- </div> --}}
+
         <section
-            class="relative overflow-hidden bg-gradient-to-br from-black via-slate-950 to-emerald-950/20 py-24 text-white md:py-32 lg:py-40"
+            class="relative overflow-hidden bg-gradient-to-br from-black via-slate-950 to-slate-900 py-20 text-white"
         >
-            {{-- Electric energy orbs - like lightning in the laboratory --}}
+            {{-- Electric Orbs --}}
             <div class="pointer-events-none absolute inset-0 overflow-hidden">
                 <div
-                    class="absolute top-0 -left-1/4 h-96 w-96 rounded-full bg-gradient-to-br from-lime-500/30 to-emerald-500/20 blur-3xl"
+                    class="absolute top-20 -left-20 h-96 w-96 rounded-full bg-gradient-to-r from-emerald-500/20 to-lime-500/20 blur-3xl"
                 ></div>
                 <div
-                    class="absolute -right-1/4 bottom-0 h-96 w-96 rounded-full bg-gradient-to-br from-cyan-500/30 to-teal-500/20 blur-3xl"
-                ></div>
-                <div
-                    class="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-lime-400/20 to-transparent blur-3xl"
+                    class="absolute -right-20 bottom-20 h-96 w-96 rounded-full bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 blur-3xl"
                 ></div>
             </div>
 
