@@ -115,8 +115,23 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'home',
             ],
             [
-                'post_title'        => 'Home',
-                'post_content'      => $this->htmlToTiptap('<p>Welcome to FrankenCMS - A WordPress Alternative Built with Laravel!</p>'),
+                'post_title'   => 'Home',
+                'post_content' => [
+                    'custom_fields' => [
+                        'hero' => [
+                            'title'              => 'Welcome to FrankenCMS',
+                            'subtitle'           => 'A modern content management system built with Laravel and FilamentPHP',
+                            'primary_cta_url'    => '#features',
+                            'primary_cta_text'   => 'Get Started',
+                            'secondary_cta_url'  => '#about',
+                            'secondary_cta_text' => 'Learn More',
+                        ],
+                        'features' => [
+                            'title'    => 'Features',
+                            'subtitle' => 'Everything you need to build amazing content-driven websites',
+                        ],
+                    ],
+                ],
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
@@ -131,8 +146,23 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'about',
             ],
             [
-                'post_title'        => 'About',
-                'post_content'      => $this->htmlToTiptap('<p>Learn more about FrankenCMS and the mad scientists behind it!</p>'),
+                'post_title'   => 'About',
+                'post_content' => [
+                    'custom_fields' => [
+                        'header' => [
+                            'title'    => 'About FrankenCMS',
+                            'subtitle' => 'Building the future of content management, one feature at a time',
+                        ],
+                        'mission' => [
+                            'title'   => 'Our Mission',
+                            'content' => $this->htmlToTiptap('<p>FrankenCMS is a modern content management system built on Laravel and FilamentPHP. We believe that managing content should be intuitive, powerful, and enjoyable.</p><p>Our mission is to provide developers and content creators with a CMS that combines the flexibility of Laravel with the elegance of FilamentPHP, creating an unmatched content management experience.</p>'),
+                        ],
+                        'story' => [
+                            'title'   => 'Our Story',
+                            'content' => $this->htmlToTiptap('<p>FrankenCMS was born from a simple idea: content management doesn\'t have to be complicated. We saw developers struggling with bloated CMSs that were either too restrictive or too complex.</p><p>By combining Laravel\'s robust framework with FilamentPHP\'s beautiful admin interface, we created a CMS that\'s both powerful and delightful to use.</p>'),
+                        ],
+                    ],
+                ],
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
@@ -146,8 +176,10 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'contact',
             ],
             [
-                'post_title'        => 'Contact',
-                'post_content'      => $this->htmlToTiptap('<p>Get in touch with us. We don\'t bite... much.</p>'),
+                'post_title'   => 'Contact',
+                'post_content' => [
+                    'custom_fields' => [],
+                ],
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
@@ -161,8 +193,10 @@ class ExampleContentSeeder extends Seeder
                 'post_slug' => 'blog',
             ],
             [
-                'post_title'        => 'Blog',
-                'post_content'      => $this->htmlToTiptap('<p>Tales from the laboratory and beyond.</p>'),
+                'post_title'   => 'Blog',
+                'post_content' => [
+                    'custom_fields' => [],
+                ],
                 'post_status'       => PostStatus::PUBLISH->value,
                 'post_published_at' => now(),
                 'post_author_id'    => $user?->id,
