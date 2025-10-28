@@ -99,6 +99,9 @@ class InstallCommand extends Command
         $this->doctorSays(IgorMessages::installMessage('asking_config', 'doctor'));
         $this->dramaticPause(400);
 
+        // Ensure output is flushed before prompt
+        $this->output->writeln('');
+
         $publishConfig = confirm(
             label: '📜 Publish configuration file to config/franken-cms.php?',
             default: true,
@@ -140,6 +143,9 @@ class InstallCommand extends Command
         $this->doctorSays(IgorMessages::installMessage('asking_migrations', 'doctor'));
         $this->dramaticPause(400);
 
+        // Ensure output is flushed before prompt
+        $this->output->writeln('');
+
         $publishMigrations = confirm(
             label: '🔧 Publish migration files to database/migrations/?',
             default: true,
@@ -176,6 +182,9 @@ class InstallCommand extends Command
 
     protected function runMigrations(): void
     {
+        // Ensure output is flushed before prompt
+        $this->output->writeln('');
+
         $runMigrations = confirm(
             label: '⚡ Shall we bring the database to LIFE, Master?',
             default: true,
@@ -277,6 +286,9 @@ class InstallCommand extends Command
         $this->doctorSays(IgorMessages::installMessage('detecting_panels', 'doctor'));
         $this->dramaticPause(500);
 
+        // Ensure output is flushed before prompts
+        $this->output->writeln('');
+
         // If panel specified via option, use that
         if ($panelName = $this->option('panel')) {
             $panel = collect($this->detectedPanels)
@@ -303,7 +315,13 @@ class InstallCommand extends Command
                 default: true
             );
 
-            return $installToPanel ? $panel['file'] : null;
+            if (! $installToPanel) {
+                $this->igorSays('As you wish, Master... Perhaps another time...');
+
+                return null;
+            }
+
+            return $panel['file'];
         }
 
         // Multiple panels, let user choose
@@ -335,6 +353,9 @@ class InstallCommand extends Command
         $this->dramaticPause(400);
         $this->doctorSays(IgorMessages::installMessage('already_installed', 'doctor'));
         $this->dramaticPause(500);
+
+        // Ensure output is flushed before prompt
+        $this->output->writeln('');
 
         $choice = select(
             label: '⚠️  What would you like to do?',
@@ -453,6 +474,9 @@ class InstallCommand extends Command
             return;
         }
 
+        // Ensure output is flushed before prompt
+        $this->output->writeln('');
+
         $installTheme = confirm(
             label: '📝 Install example theme templates?',
             default: false,
@@ -550,6 +574,11 @@ class InstallCommand extends Command
         }
 
         $this->newLine(2);
+
+        // Flush output buffer to ensure everything is displayed before prompts
+        if (method_exists($this->output, 'getStream')) {
+            fflush($this->output->getStream());
+        }
     }
 
     /**
