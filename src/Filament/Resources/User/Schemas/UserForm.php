@@ -16,13 +16,16 @@ class UserForm
     public static function make(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 Section::make('User Information')
                     ->schema([
                         TextInput::make('name')
+                            ->inlineLabel()
                             ->required()
                             ->maxLength(255),
                         TextInput::make('email')
+                            ->inlineLabel()
                             ->email()
                             ->required()
                             ->maxLength(255),
@@ -34,6 +37,7 @@ class UserForm
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('bio_image')
                             ->label('Profile Image')
+                            ->inlineLabel()
                             ->collection('bio-image')
                             ->disk(config('franken-cms.media_disk_name', 'public'))
                             ->image()
@@ -48,10 +52,12 @@ class UserForm
 
                         TextInput::make('title')
                             ->label('Job Title')
+                            ->inlineLabel()
                             ->placeholder('e.g., Senior Developer, Content Writer')
                             ->maxLength(255),
                         RichEditor::make('bio')
                             ->label('Biography')
+                            ->inlineLabel()
                             ->placeholder('Tell us about yourself...')
                             ->toolbarButtons([
                                 'bold',
@@ -65,11 +71,13 @@ class UserForm
                             ->maxLength(65535),
                         TextInput::make('website')
                             ->label('Website')
+                            ->inlineLabel()
                             ->url()
                             ->placeholder('https://example.com')
                             ->maxLength(255),
                         KeyValue::make('social_links')
                             ->label('Social Media Links')
+                            ->inlineLabel()
                             ->keyLabel('Platform')
                             ->valueLabel('URL')
                             ->addActionLabel('Add social link')
