@@ -67,9 +67,50 @@
                                         ></div>
                                     </a>
                                 @else
-                                    <div
-                                        class="h-48 w-full bg-gradient-to-br from-emerald-900/20 to-cyan-900/20 ring-1 ring-emerald-500/20 ring-inset"
-                                    ></div>
+                                    @php
+                                        // Try to use default featured image from settings
+                                        $defaultImage = \FrankenCms\Models\SiteSettingsMedia::getInstance()->getFirstMedia('default-featured');
+                                    @endphp
+
+                                    @if ($defaultImage)
+                                        @php
+                                            $cssClasses = $defaultImage->getCustomProperty('css_classes', '');
+                                            $lazyLoading = $defaultImage->getCustomProperty('lazy_loading', true);
+                                            $title = $defaultImage->getCustomProperty('title');
+                                            $alt = $defaultImage->getCustomProperty('alt', 'Default featured image');
+                                            $focalPoint = $defaultImage->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+
+                                            // Build focal point style
+                                            $focalX = $focalPoint['x'] ?? 50;
+                                            $focalY = $focalPoint['y'] ?? 50;
+                                            $objectPosition = "object-position: $focalX% $focalY%;";
+
+                                            $attributes = [
+                                                'class' => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
+                                                'sizes' => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
+                                                'loading' => $lazyLoading ? 'lazy' : 'eager',
+                                                'alt' => $alt,
+                                                'title' => $title,
+                                                'style' => $objectPosition,
+                                            ];
+                                        @endphp
+
+                                        <a href="{{ $post->url }}" class="relative block overflow-hidden">
+                                            <div
+                                                class="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                                            ></div>
+
+                                            {!! $defaultImage('listing', $attributes) !!}
+
+                                            <div
+                                                class="absolute inset-0 ring-1 ring-emerald-500/20 transition-all duration-300 ring-inset group-hover:ring-emerald-400/40"
+                                            ></div>
+                                        </a>
+                                    @else
+                                        <div
+                                            class="h-48 w-full bg-gradient-to-br from-emerald-900/20 to-cyan-900/20 ring-1 ring-emerald-500/20 ring-inset"
+                                        ></div>
+                                    @endif
                                 @endif
 
                                 <div class="flex flex-1 flex-col p-6">

@@ -4,12 +4,14 @@ namespace FrankenCms\SettingsTabs;
 
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Models\Page;
+use FrankenCms\Models\SiteSettingsMedia;
 use FrankenCms\Settings\ReadingSettings;
 
 class ReadingSettingsTabProvider implements SettingsTabProviderInterface
@@ -88,6 +90,28 @@ class ReadingSettingsTabProvider implements SettingsTabProviderInterface
                             ->default('full_text')
                             ->required()
                             ->columnSpan(2),
+                    ]),
+
+                Section::make('Default Featured Image')
+                    ->description('Set a default image to use when blog posts don\'t have a featured image. This ensures a consistent look on listing pages.')
+                    ->columns(3)
+                    ->columnSpanFull()
+                    ->schema([
+                        SpatieMediaLibraryFileUpload::make('default_featured_image')
+                            ->label('Default Featured Image')
+                            ->helperText('This image will be used as a fallback for blog posts without a featured image. The image will be automatically resized according to your Media Settings.')
+                            ->collection('default-featured')
+                            ->model(fn () => SiteSettingsMedia::getInstance())
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                '16:9', // Widescreen
+                                '3:2',  // Common listing
+                                '4:3',  // Standard
+                                null,   // Free crop
+                            ])
+                            ->maxSize(5120)
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

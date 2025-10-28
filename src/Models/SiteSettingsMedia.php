@@ -45,6 +45,10 @@ class SiteSettingsMedia extends Model implements HasMedia
         $this->addMediaCollection('twitter-default')
             ->singleFile()
             ->useDisk('public');
+
+        $this->addMediaCollection('default-featured')
+            ->singleFile()
+            ->useDisk('public');
     }
 
     /**
@@ -72,6 +76,23 @@ class SiteSettingsMedia extends Model implements HasMedia
             ->format('jpg')
             ->quality(85)
             ->performOnCollections('twitter-default');
+
+        // Get media settings for default featured image dimensions
+        $mediaSettings = app(\FrankenCms\Settings\MediaSettings::class);
+
+        // Default featured image - featured size (for single post view)
+        $this->addMediaConversion('featured')
+            ->fit($mediaSettings->featured_crop ? Fit::Crop : Fit::Max, $mediaSettings->featured_width, $mediaSettings->getFeaturedHeight())
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('default-featured');
+
+        // Default featured image - listing size (for blog index/archive pages)
+        $this->addMediaConversion('listing')
+            ->fit($mediaSettings->listing_crop ? Fit::Crop : Fit::Max, $mediaSettings->listing_width, $mediaSettings->getListingHeight())
+            ->format('jpg')
+            ->quality(85)
+            ->performOnCollections('default-featured');
     }
 
     /**
