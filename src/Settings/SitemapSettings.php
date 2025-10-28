@@ -47,6 +47,6 @@ class SitemapSettings extends Settings
 
     public static function group(): string
     {
-        return 'franken-cms-sitemap';
+        return 'franken_cms_sitemap';
     }
 }

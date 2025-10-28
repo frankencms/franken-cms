@@ -6,14 +6,14 @@ return new class extends SettingsMigration
 {
     public function up(): void
     {
-        // Robots.txt Settings Group (franken-cms-robots)
-        $this->migrator->add('franken-cms-robots.enabled', true);
+        // Robots.txt Settings Group (franken_cms_robots)
+        $this->migrator->add('franken_cms_robots.enabled', true);
 
         // Discourage indexing (blocks all search engines)
-        $this->migrator->add('franken-cms-robots.discourage_indexing', false);
+        $this->migrator->add('franken_cms_robots.discourage_indexing', false);
 
         // Default: Allow all bots to crawl everything
-        $this->migrator->add('franken-cms-robots.user_agents', [
+        $this->migrator->add('franken_cms_robots.user_agents', [
             [
                 'user_agent'  => '*',
                 'rules'       => ['Allow: /'],

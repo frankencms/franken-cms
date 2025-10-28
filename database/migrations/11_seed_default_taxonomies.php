@@ -19,9 +19,4 @@ return new class extends Migration
             ['hierarchical' => false]
         );
     }
-
-    public function down(): void
-    {
-        Taxonomy::whereIn('name', ['category', 'tag'])->delete();
-    }
 };

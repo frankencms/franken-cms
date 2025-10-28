@@ -53,7 +53,7 @@ class AiSettings extends Settings
 
     public static function group(): string
     {
-        return 'cms_ai';
+        return 'franken_cms_ai';
     }
 
     /**

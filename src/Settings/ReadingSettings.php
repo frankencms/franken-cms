@@ -15,6 +15,6 @@ class ReadingSettings extends Settings
 
     public static function group(): string
     {
-        return 'cms_reading';
+        return 'franken_cms_reading';
     }
 }

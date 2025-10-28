@@ -31,6 +31,6 @@ class RobotsSettings extends Settings
 
     public static function group(): string
     {
-        return 'franken-cms-robots';
+        return 'franken_cms_robots';
     }
 }

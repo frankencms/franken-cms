@@ -18,6 +18,6 @@ class PermalinkSettings extends Settings
 
     public static function group(): string
     {
-        return 'cms_permalinks';
+        return 'franken_cms_permalinks';
     }
 }

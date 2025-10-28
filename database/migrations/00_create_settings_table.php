@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
 
-        // If the table already exists consider this migration done.
+        // If the table already exists consider this migration done for filament/spatie-laravel-settings-plugin setup.
         if (Schema::hasTable('settings')) {
             return;
         }

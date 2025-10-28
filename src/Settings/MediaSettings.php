@@ -25,7 +25,7 @@ class MediaSettings extends Settings
 
     public static function group(): string
     {
-        return 'cms_media';
+        return 'franken_cms_media';
     }
 
     /**

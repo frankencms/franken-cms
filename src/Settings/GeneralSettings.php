@@ -22,6 +22,6 @@ class GeneralSettings extends Settings
 
     public static function group(): string
     {
-        return 'cms_general';
+        return 'franken_cms_general';
     }
 }

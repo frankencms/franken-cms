@@ -19,7 +19,7 @@ class StackSettings extends Settings
 
     public static function group(): string
     {
-        return 'cms_stacks';
+        return 'franken_cms_stacks';
     }
 
     /**

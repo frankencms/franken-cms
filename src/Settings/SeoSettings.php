@@ -44,6 +44,6 @@ class SeoSettings extends Settings
 
     public static function group(): string
     {
-        return 'franken-cms-seo';
+        return 'franken_cms_seo';
     }
 }
