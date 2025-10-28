@@ -18,6 +18,7 @@ class PageTable
             ->columns([
                 TextColumn::make('post_title')->sortable()->searchable(),
                 TextColumn::make('post_slug')->sortable()->searchable(),
+                TextColumn::make('route_name')->sortable()->searchable(),
                 TextColumn::make('terms.name')->label('Terms')->badge(),
             ])
             ->filters([

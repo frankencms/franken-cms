@@ -109,6 +109,7 @@ class Menu extends Model
             'id'              => $item->id,
             'label'           => $item->label,
             'url'             => $item->getUrl(),
+            'route_name'      => $item->getUrl(),
             'target'          => $item->target,
             'is_active'       => $item->is_active,
             'additional_data' => $item->additional_data,

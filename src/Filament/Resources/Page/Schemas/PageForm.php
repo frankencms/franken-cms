@@ -8,6 +8,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -19,6 +20,8 @@ use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Resources\Concerns\HasSeoFields;
 use FrankenCms\Helpers\TemplateHelper;
 use FrankenCms\Models\Page;
+use FrankenCms\Models\Post;
+use Illuminate\Support\HtmlString;
 
 class PageForm
 {
@@ -67,7 +70,7 @@ class PageForm
                                             ->label('Parent Page')
                                             ->live()
                                             ->options(function ($livewire) {
-                                                $query = \FrankenCms\Models\Post::withoutGlobalScopes()
+                                                $query = Post::withoutGlobalScopes()
                                                     ->where('post_type', 'page')
                                                     ->where('post_status', 'published');
 
@@ -82,9 +85,9 @@ class PageForm
                                             ->nullable()
                                             ->helperText('Select a parent page to create a hierarchical structure (e.g., /about/team).'),
 
-                                        Placeholder::make('page_url_preview')
+                                        TextEntry::make('page_url_preview')
                                             ->label('Page URL')
-                                            ->content(function (Get $get, $livewire) {
+                                            ->state(function (Get $get, $livewire) {
                                                 $slug = $get('post_slug');
                                                 $parentId = $get('parent_id');
 
@@ -110,7 +113,7 @@ class PageForm
                                                 $path = '/' . implode('/', $segments);
                                                 $fullUrl = url($path);
 
-                                                return new \Illuminate\Support\HtmlString(
+                                                return new HtmlString(
                                                     '<a href="' . $fullUrl . '" target="_blank" class="text-primary-600 hover:underline">' .
                                                     $fullUrl .
                                                     '</a>'
@@ -122,7 +125,10 @@ class PageForm
                                             ->label('Route Name (Optional)')
                                             ->unique('posts', 'route_name', ignoreRecord: true)
                                             ->nullable()
-                                            ->alphaDash()
+                                            ->regex('/^[a-zA-Z0-9.]+$/')
+                                            ->validationMessages([
+                                                'regex' => 'The route name may only contain letters, numbers, dots, and underscores.',
+                                            ])
                                             ->helperText('Optional: Define a named route for this page (e.g., "about.team"). You can then use route("about.team") in templates. Note: Routes are only active for published pages.')
                                             ->placeholder('e.g., about.team'),
                                     ]),
