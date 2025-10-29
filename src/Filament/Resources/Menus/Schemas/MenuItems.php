@@ -126,9 +126,10 @@ class MenuItems
                                         ->label('URL')
                                         ->inlineLabel()
                                         ->placeholder('https://example.com')
-                                        ->disabled(fn (callable $get) => $get('link_to') !== 'custom' && $get('link_to') !== null)
+                                        ->readOnly(fn (callable $get) => $get('link_to') !== 'custom' && $get('link_to') !== null)
                                         ->required(fn (callable $get) => $get('link_to') === 'custom')
                                         ->rules(fn (callable $get) => $get('link_to') === 'custom' ? ['url'] : [])
+                                        ->dehydrated()
                                         ->helperText(fn (callable $get) => $get('link_to') === 'custom'
                                             ? 'Enter the full URL including https://'
                                             : 'This URL is automatically set from the selected page/post'),
