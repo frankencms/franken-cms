@@ -29,3 +29,4 @@ phpunit.xml
 phpstan.neon
 testbench.yaml
 /coverage
+.DS_Store
