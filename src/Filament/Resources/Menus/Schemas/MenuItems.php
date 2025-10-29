@@ -92,32 +92,46 @@ class MenuItems
                                             return null;
                                         })
                                         ->afterStateUpdated(function (callable $set, $state) {
-                                            // Clear URL when switching from custom
-                                            if ($state !== 'custom') {
+                                            if ($state === 'custom') {
+                                                // Clear URL field so user can enter custom URL
                                                 $set('url', null);
-                                            }
-
-                                            // Parse selection and set linkable fields
-                                            if ($state && $state !== 'custom') {
-                                                [$type, $id] = explode(':', $state);
-                                                $set('linkable_type', $type === 'page' ? Page::class : Post::class);
-                                                $set('linkable_id', (int) $id);
-                                            } else {
                                                 $set('linkable_type', null);
                                                 $set('linkable_id', null);
+                                            } elseif ($state && $state !== 'custom') {
+                                                // Parse selection and get the URL
+                                                [$type, $id] = explode(':', $state);
+
+                                                // Fetch the model and get its URL
+                                                if ($type === 'page') {
+                                                    $page = Page::find($id);
+                                                    if ($page) {
+                                                        $set('url', $page->url);
+                                                    }
+                                                    $set('linkable_type', Page::class);
+                                                } else {
+                                                    $post = Post::find($id);
+                                                    if ($post) {
+                                                        $set('url', $post->url);
+                                                    }
+                                                    $set('linkable_type', Post::class);
+                                                }
+
+                                                $set('linkable_id', (int) $id);
                                             }
                                         })
                                         ->dehydrated(false)
                                         ->helperText('Select a page/post or choose Custom URL'),
 
                                     TextInput::make('url')
-                                        ->label('Custom URL')
+                                        ->label('URL')
                                         ->inlineLabel()
-                                        ->url()
                                         ->placeholder('https://example.com')
-                                        ->visible(fn (callable $get) => $get('link_to') === 'custom')
+                                        ->disabled(fn (callable $get) => $get('link_to') !== 'custom' && $get('link_to') !== null)
                                         ->required(fn (callable $get) => $get('link_to') === 'custom')
-                                        ->helperText('Enter the full URL including https://'),
+                                        ->rules(fn (callable $get) => $get('link_to') === 'custom' ? ['url'] : [])
+                                        ->helperText(fn (callable $get) => $get('link_to') === 'custom'
+                                            ? 'Enter the full URL including https://'
+                                            : 'This URL is automatically set from the selected page/post'),
 
                                     // Hidden fields to store the polymorphic relationship
                                     TextInput::make('linkable_type')
