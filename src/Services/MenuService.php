@@ -120,7 +120,7 @@ class MenuService
     /**
      * Check if URLs match (handles wildcards and partial matches)
      */
-    protected function isUrlMatch(string $menuUrl, string $currentUrl): bool
+    public function isUrlMatch(string $menuUrl, string $currentUrl): bool
     {
         // Remove query strings and fragments
         $menuUrl = parse_url($menuUrl, PHP_URL_PATH) ?? $menuUrl;
@@ -133,6 +133,29 @@ class MenuService
 
         // Check if current URL starts with menu URL (for parent menu highlighting)
         return str_starts_with($currentUrl, rtrim($menuUrl, '/') . '/');
+    }
+
+    /**
+     * Add active state properties to menu items
+     */
+    public function addActiveState(array &$menuItems, string $currentUrl): void
+    {
+        foreach ($menuItems as &$item) {
+            // Exact match for current page
+            $menuUrl = parse_url($item['url'], PHP_URL_PATH) ?? $item['url'];
+            $current = parse_url($currentUrl, PHP_URL_PATH) ?? $currentUrl;
+
+            // Normalize URLs by removing trailing slashes for comparison
+            $item['active'] = rtrim($menuUrl, '/') === rtrim($current, '/');
+
+            // Parent/ancestor match (current URL starts with menu URL, but not exact match)
+            $item['active_ancestor'] = $this->isUrlMatch($item['url'], $currentUrl) && ! $item['active'];
+
+            // Recursively process children
+            if (! empty($item['children'])) {
+                $this->addActiveState($item['children'], $currentUrl);
+            }
+        }
     }
 
     /**

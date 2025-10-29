@@ -110,7 +110,7 @@ class Menu extends Model
             'label'           => $item->label,
             'url'             => $item->getUrl(),
             'target'          => $item->target,
-            'is_active'       => $item->is_active,
+            'visible'         => $item->is_active,
             'additional_data' => $item->additional_data,
             'children'        => [],
         ];

@@ -264,12 +264,14 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 \$__menuSlug = {$expression};
                 \$__menuService = app(\FrankenCms\Services\MenuService::class);
                 \$menuItems = \$__menuService->getMenuItems(\$__menuSlug);
+                \$__currentUrl = request()->url();
+                \$__menuService->addActiveState(\$menuItems, \$__currentUrl);
             ?>";
         });
 
         // Register @endmenu directive
         Blade::directive('endmenu', function () {
-            return '<?php unset($menuItems, $__menuSlug, $__menuService); ?>';
+            return '<?php unset($menuItems, $__menuSlug, $__menuService, $__currentUrl); ?>';
         });
 
         // Register @cmsField directive
