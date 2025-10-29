@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FrankenCms\Filament\Resources\Page\Schemas;
 
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -40,7 +39,7 @@ class PageForm
                             ->icon('heroicon-o-cog-6-tooth')
                             ->schema([
                                 Section::make('Page Details')
-                                    ->columns(2)
+                                    ->columns(1)
                                     ->schema([
                                         Hidden::make('post_type')
                                             ->default(PostType::PAGE->value),
@@ -58,6 +57,7 @@ class PageForm
 
                                         Select::make('template')
                                             ->label('Page Template')
+                                            ->inlineLabel()
                                             ->live()
                                             ->options(fn () => self::getTemplates())
                                             ->searchable()
@@ -68,6 +68,7 @@ class PageForm
 
                                         Select::make('parent_id')
                                             ->label('Parent Page')
+                                            ->inlineLabel()
                                             ->live()
                                             ->options(function ($livewire) {
                                                 $query = Post::withoutGlobalScopes()
@@ -87,6 +88,7 @@ class PageForm
 
                                         TextEntry::make('page_url_preview')
                                             ->label('Page URL')
+                                            ->inlineLabel()
                                             ->state(function (Get $get, $livewire) {
                                                 $slug = $get('post_slug');
                                                 $parentId = $get('parent_id');
@@ -122,15 +124,16 @@ class PageForm
                                             ->columnSpanFull(),
 
                                         TextInput::make('route_name')
-                                            ->label('Route Name (Optional)')
+                                            ->label('Route Name')
+                                            ->inlineLabel()
                                             ->unique('posts', 'route_name', ignoreRecord: true)
                                             ->nullable()
-                                            ->regex('/^[a-zA-Z0-9.]+$/')
+                                            ->regex('/^[a-zA-Z0-9._-]+$/')
                                             ->validationMessages([
-                                                'regex' => 'The route name may only contain letters, numbers, dots, and underscores.',
+                                                'regex' => 'The route name may only contain letters, numbers, dots, underscores, and hyphens.',
                                             ])
-                                            ->helperText('Optional: Define a named route for this page (e.g., "about.team"). You can then use route("about.team") in templates. Note: Routes are only active for published pages.')
-                                            ->placeholder('e.g., about.team'),
+                                            ->helperText('Named route for this page. If left empty, will automatically use the page slug. Use route("route.name") in your templates.')
+                                            ->placeholder('Leave empty to use slug'),
                                     ]),
                             ]),
 
