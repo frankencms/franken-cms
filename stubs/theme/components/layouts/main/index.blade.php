@@ -28,13 +28,15 @@
             Skip to content
         </a>
 
-        {{-- Header --}}
-        <x-theme::layouts.main.header />
+        <div>
+            {{-- Header --}}
+            <x-theme::layouts.main.header />
 
-        {{-- Breadcrumbs --}}
-        <div class="bg-slate-950">
-            <div class="container mx-auto">
-                <x-breadcrumbs class="py-4 text-sm text-emerald-200/80" />
+            {{-- Breadcrumbs --}}
+            <div class="bg-slate-950">
+                <div class="container mx-auto">
+                    <x-breadcrumbs class="py-4 text-sm text-emerald-200/80" />
+                </div>
             </div>
         </div>
 

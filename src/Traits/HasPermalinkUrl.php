@@ -27,7 +27,7 @@ trait HasPermalinkUrl
 
                 // Switch to format the URL based on the structure
                 return match ($permalinkStructure) {
-                    PermalinkStructure::POST_NAME->value      => $this->getFormattedUrl('/%postname%/'),
+                    PermalinkStructure::POST_NAME->value      => $this->getFormattedUrl('/%postname%'),
                     PermalinkStructure::DAY_AND_NAME->value   => $this->getFormattedUrl('/%year%/%monthnum%/%day%/%postname%'),
                     PermalinkStructure::MONTH_AND_NAME->value => $this->getFormattedUrl('/%year%/%monthnum%/%postname%'),
                     PermalinkStructure::NUMERIC->value        => $this->getFormattedUrl('/%post_id%'),
@@ -91,7 +91,7 @@ trait HasPermalinkUrl
     {
         $settings = app(PermalinkSettings::class);
 
-        $customStructure = implode('/', $settings->custom_permalink_structure) . '/';
+        $customStructure = implode('/', $settings->custom_permalink_structure);
 
         // Use the same logic as `getFormattedUrl` to replace placeholders
         return $this->getFormattedUrl($customStructure);

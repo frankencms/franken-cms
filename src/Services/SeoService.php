@@ -66,13 +66,46 @@ class SeoService
             return $customCanonical;
         }
 
-        $url = $post?->url ?? url()->current();
+        // Check if this is the home page - always use root URL
+        if ($post) {
+            $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+            if ($readingSettings->home_page && $post->post_slug === $readingSettings->home_page) {
+                return url('/');
+            }
+        }
 
-        return str($url)
+        // Get the relative URL from post or current request
+        $relativeUrl = $post?->url ?? request()->path();
+
+        // Convert to absolute URL using url() helper
+        $absoluteUrl = url($relativeUrl);
+
+        $url = str($absoluteUrl)
             ->remove('index.php/')
-            ->replace('//', '/')
-            ->replace(':/', '://')
             ->toString();
+
+        // Add trailing slash for blog listing page and pages with children
+        if ($post) {
+            $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+            $shouldAddTrailingSlash = false;
+
+            // Check if this is the blog listing page
+            if ($readingSettings->post_page && $post->post_slug === $readingSettings->post_page) {
+                $shouldAddTrailingSlash = true;
+            }
+
+            // Check if this page has children
+            if ($post->post_type === 'page' && $post->children()->exists()) {
+                $shouldAddTrailingSlash = true;
+            }
+
+            // Add trailing slash if needed and not already present
+            if ($shouldAddTrailingSlash && ! str_ends_with($url, '/')) {
+                $url .= '/';
+            }
+        }
+
+        return $url;
     }
 
     /**
