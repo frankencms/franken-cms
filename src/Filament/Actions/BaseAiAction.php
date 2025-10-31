@@ -83,6 +83,26 @@ abstract class BaseAiAction extends Action
                     $fieldName = $this->getFieldName();
                     $livewire->data[$fieldName] = $generatedText;
 
+                    // If there's a record, persist the generated content immediately
+                    if (isset($livewire->record) && $livewire->record) {
+                        $record = $livewire->record;
+
+                        // Check if this is a featured image metadata field
+                        if (str_starts_with($fieldName, 'featured_image_')) {
+                            $metadataField = str_replace('featured_image_', '', $fieldName);
+
+                            if ($record->hasMedia('featured')) {
+                                $media = $record->getFirstMedia('featured');
+                                $media->setCustomProperty($metadataField, $generatedText);
+                                $media->save();
+                            }
+                        }
+                        // Otherwise, save to postmeta if the method exists
+                        elseif (method_exists($record, 'setMeta')) {
+                            $record->setMeta($fieldName, $generatedText);
+                        }
+                    }
+
                     // Determine if character count is in target range
                     $inRange = true;
                     if ($this->targetMin && $this->targetMax) {
