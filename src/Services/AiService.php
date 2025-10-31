@@ -49,7 +49,8 @@ class AiService
 
         try {
             // Call Prism to generate content
-            $prismRequest = Prism::text()
+            $prismRequest = prism()
+                ->text()
                 ->using($settings->provider, $settings->model)
                 ->withMaxTokens($promptConfig['max_tokens'] ?? 500);
 
@@ -125,7 +126,8 @@ class AiService
                 return false;
             }
 
-            $response = Prism::text()
+            $response = prism()
+                ->text()
                 ->using($settings->provider, $settings->model)
                 ->withPrompt('Respond with only the word "OK"')
                 ->withMaxTokens(10)
