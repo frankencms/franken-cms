@@ -100,6 +100,7 @@ return [
         'richEditor'     => \Filament\Forms\Components\RichEditor::class,
         'datePicker'     => \Filament\Forms\Components\DatePicker::class,
         'dateTimePicker' => \Filament\Forms\Components\DateTimePicker::class,
+        'tags'           => \Filament\Forms\Components\TagsInput::class,
     ],
 
     /*
