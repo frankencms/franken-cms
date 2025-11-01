@@ -85,6 +85,7 @@ class Menu extends Model
     protected function buildMenuTree(): array
     {
         $items = $this->allMenuItems()
+            ->where('is_active', true)
             ->with('children')
             ->get()
             ->keyBy('id');
@@ -110,7 +111,6 @@ class Menu extends Model
             'label'           => $item->label,
             'url'             => $item->getUrl(),
             'target'          => $item->target,
-            'visible'         => $item->is_active,
             'additional_data' => $item->additional_data,
             'children'        => [],
         ];
