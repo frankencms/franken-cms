@@ -31,6 +31,7 @@ class CmsFieldRenderer
         'richEditor'  => RichEditorFieldRenderer::class,
         'toggle'      => BooleanFieldRenderer::class,
         'checkbox'    => BooleanFieldRenderer::class,
+        'tags'        => TextFieldRenderer::class,
     ];
 
     /**

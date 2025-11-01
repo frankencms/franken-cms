@@ -7,6 +7,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -31,6 +32,7 @@ class CmsFieldBuilder
         'richEditor' => RichEditor::class,
         'toggle'     => Toggle::class,
         'checkbox'   => Checkbox::class,
+        'tags'       => TagsInput::class,
     ];
 
     /**
