@@ -10,7 +10,7 @@ use Throwable;
 class CmsFieldParser
 {
     /**
-     * Parses a Blade template for @cmsField directives and registers them.
+     * Parses a Blade template for @franken field directives and registers them.
      *
      * @param  string  $templatePath  The full path to the Blade file.
      *
@@ -27,35 +27,47 @@ class CmsFieldParser
             throw new Exception("Unable to read template file: {$templatePath}");
         }
 
-        // Parse @cmsField directives using a more robust method
+        // Parse @franken directives using a more robust method
         $this->parseDirectives($templateContent);
     }
 
     /**
-     * Parse @cmsField directives from template content
+     * Parse @franken field directives from template content
      */
     protected function parseDirectives(string $content): void
     {
-        // Find all @cmsField( occurrences
-        $offset = 0;
-        while (($pos = strpos($content, '@cmsField(', $offset)) !== false) {
-            // Move past '@cmsField('
-            $start = $pos + 10;
+        // List of all typed field directives
+        $directiveTypes = [
+            'Text', 'Textarea', 'Email', 'Url', 'Number', 'Select',
+            'File', 'Image', 'MediaImage', 'RichEditor', 'Toggle',
+            'Checkbox', 'Tags', 'Repeater'
+        ];
 
-            // Extract the directive arguments by finding balanced parentheses
-            $result = $this->extractBalancedParentheses($content, $start);
+        // Find all @franken* directives
+        foreach ($directiveTypes as $type) {
+            $directive = "@franken{$type}(";
+            $directiveLen = strlen($directive);
+            $offset = 0;
 
-            if ($result === null) {
-                $offset = $start;
-                continue;
+            while (($pos = strpos($content, $directive, $offset)) !== false) {
+                // Move past '@franken*('
+                $start = $pos + $directiveLen;
+
+                // Extract the directive arguments by finding balanced parentheses
+                $result = $this->extractBalancedParentheses($content, $start);
+
+                if ($result === null) {
+                    $offset = $start;
+                    continue;
+                }
+
+                [$arguments, $endPos] = $result;
+
+                // Parse the extracted arguments with the directive type
+                $this->parseFieldArguments($arguments, $type);
+
+                $offset = $endPos;
             }
-
-            [$arguments, $endPos] = $result;
-
-            // Parse the extracted arguments
-            $this->parseFieldArguments($arguments);
-
-            $offset = $endPos;
         }
     }
 
@@ -115,33 +127,63 @@ class CmsFieldParser
     }
 
     /**
-     * Parse field arguments (name, type, options)
+     * Parse field arguments (name, options) from typed directive
+     *
+     * @param string $arguments The arguments string from the directive
+     * @param string $directiveType The directive type (e.g., 'Text', 'Repeater')
      */
-    protected function parseFieldArguments(string $arguments): void
+    protected function parseFieldArguments(string $arguments, string $directiveType): void
     {
-        // Match: 'name', 'type', [options]
-        // The pattern now handles the first two quoted strings, then everything else is the options
-        if (preg_match('/^\s*([\'"])(.*?)\1\s*,\s*([\'"])(.*?)\3\s*,\s*(.+)$/s', $arguments, $matches)) {
+        // Convert directive type to field type (Text -> text, MediaImage -> image)
+        $fieldType = $this->getFieldTypeFromDirective($directiveType);
+
+        // Match: 'fieldname', [options]
+        if (preg_match('/^\s*([\'"])(.*?)\1\s*,\s*(.+)$/s', $arguments, $matches)) {
+            // Has options array
             $identifier = $matches[2];
-            $type = $matches[4];
-            $arrayCode = trim($matches[5]);
+            $arrayCode = trim($matches[3]);
 
             try {
                 // Evaluate the array code safely.
                 $properties = eval("return {$arrayCode};");
 
                 if (is_array($properties)) {
-                    FieldRegistry::register($identifier, $type, $properties);
+                    FieldRegistry::register($identifier, $fieldType, $properties);
                 }
             } catch (Throwable $e) {
                 // Log error but continue parsing other fields
-                Log::warning("Failed to parse CMS field options for '{$identifier}': " . $e->getMessage());
+                Log::warning("Failed to parse field options for '{$identifier}': " . $e->getMessage());
             }
-        } elseif (preg_match('/^\s*([\'"])(.*?)\1\s*,\s*([\'"])(.*?)\3\s*$/s', $arguments, $matches)) {
-            // Handle case with no options array
+        } elseif (preg_match('/^\s*([\'"])(.*?)\1\s*$/s', $arguments, $matches)) {
+            // No options array
             $identifier = $matches[2];
-            $type = $matches[4];
-            FieldRegistry::register($identifier, $type, []);
+            FieldRegistry::register($identifier, $fieldType, []);
         }
+    }
+
+    /**
+     * Get the field type from a directive suffix
+     * Maps directive names to field types (same mapping as TemplateFieldParser)
+     */
+    protected function getFieldTypeFromDirective(string $directiveType): string
+    {
+        $mapping = [
+            'Text'       => 'text',
+            'Textarea'   => 'textarea',
+            'Email'      => 'email',
+            'Url'        => 'url',
+            'Number'     => 'number',
+            'Select'     => 'select',
+            'File'       => 'file',
+            'Image'      => 'image',
+            'MediaImage' => 'image',
+            'RichEditor' => 'richEditor',
+            'Toggle'     => 'toggle',
+            'Checkbox'   => 'checkbox',
+            'Tags'       => 'tags',
+            'Repeater'   => 'repeater',
+        ];
+
+        return $mapping[$directiveType] ?? lcfirst($directiveType);
     }
 }

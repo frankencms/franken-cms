@@ -5,10 +5,10 @@ namespace FrankenCms\Services;
 use FrankenCms\Contracts\FieldRendererInterface;
 use FrankenCms\Services\FieldRenderers\BooleanFieldRenderer;
 use FrankenCms\Services\FieldRenderers\FileFieldRenderer;
-use FrankenCms\Services\FieldRenderers\MediaImageFieldRenderer;
 use FrankenCms\Services\FieldRenderers\RepeaterFieldRenderer;
 use FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer;
 use FrankenCms\Services\FieldRenderers\SelectFieldRenderer;
+use FrankenCms\Services\FieldRenderers\SpatieImageFieldRenderer;
 use FrankenCms\Services\FieldRenderers\TextFieldRenderer;
 use InvalidArgumentException;
 
@@ -18,20 +18,19 @@ class CmsFieldRenderer
      * Map of field types to their renderer classes
      */
     protected array $renderers = [
-        'text'        => TextFieldRenderer::class,
-        'textarea'    => TextFieldRenderer::class,
-        'email'       => TextFieldRenderer::class,
-        'url'         => TextFieldRenderer::class,
-        'number'      => TextFieldRenderer::class,
-        'select'      => SelectFieldRenderer::class,
-        'file'        => FileFieldRenderer::class,
-        'image'       => FileFieldRenderer::class,
-        'media_image' => MediaImageFieldRenderer::class,
-        'repeater'    => RepeaterFieldRenderer::class,
-        'richEditor'  => RichEditorFieldRenderer::class,
-        'toggle'      => BooleanFieldRenderer::class,
-        'checkbox'    => BooleanFieldRenderer::class,
-        'tags'        => TextFieldRenderer::class,
+        'text'       => TextFieldRenderer::class,
+        'textarea'   => TextFieldRenderer::class,
+        'email'      => TextFieldRenderer::class,
+        'url'        => TextFieldRenderer::class,
+        'number'     => TextFieldRenderer::class,
+        'select'     => SelectFieldRenderer::class,
+        'file'       => FileFieldRenderer::class,
+        'image'      => SpatieImageFieldRenderer::class,
+        'repeater'   => RepeaterFieldRenderer::class,
+        'richEditor' => RichEditorFieldRenderer::class,
+        'toggle'     => BooleanFieldRenderer::class,
+        'checkbox'   => BooleanFieldRenderer::class,
+        'tags'       => TextFieldRenderer::class,
     ];
 
     /**

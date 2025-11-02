@@ -205,3 +205,61 @@ if (! function_exists('aspect_ratio')) {
         return $decimal . ':1';
     }
 }
+
+if (! function_exists('frankenField')) {
+    /**
+     * Get raw field data from current page's custom fields
+     *
+     * Returns unrendered/processed data:
+     * - Simple fields: raw string/number/boolean
+     * - Tags: array of tag strings
+     * - Repeaters: Collection of items (cleaned structure)
+     * - Media: media object or URL
+     *
+     * @param  string  $fieldName  Field name (supports dot notation)
+     * @return mixed Raw field value
+     */
+    function frankenField(string $fieldName): mixed
+    {
+        $currentPage = app(\FrankenCms\Services\CurrentPageService::class)->getPage();
+
+        if (! $currentPage) {
+            return null;
+        }
+
+        $value = data_get($currentPage->custom_fields, $fieldName);
+
+        // For repeaters, apply cleaning (remove custom_fields nesting)
+        if (is_array($value) && ! empty($value)) {
+            $first = reset($value);
+            if (is_array($first) && isset($first['custom_fields'])) {
+                // It's a repeater - clean the structure
+                return collect($value)->map(function ($item) {
+                    if (is_array($item) && isset($item['custom_fields'])) {
+                        return (object) array_merge($item, $item['custom_fields']);
+                    }
+
+                    return (object) $item;
+                });
+            }
+        }
+
+        return $value;
+    }
+}
+
+if (! function_exists('_parseFieldExpression')) {
+    /**
+     * Parse field directive expression into name and options
+     *
+     * @internal Used by Blade directives
+     *
+     * @param  string  $fieldName  Field name
+     * @param  array  $options  Field options
+     * @return array{name: string, options: array}
+     */
+    function _parseFieldExpression(string $fieldName, array $options = []): array
+    {
+        return ['name' => $fieldName, 'options' => $options];
+    }
+}

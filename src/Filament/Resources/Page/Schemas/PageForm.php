@@ -140,15 +140,12 @@ class PageForm
                         // Content Tab (Template Fields)
                         Tab::make('Content')
                             ->icon('heroicon-o-document-text')
-                            ->schema([
-                                Section::make('Custom Template Fields')
-                                    ->schema(
-                                        function (Get $get) {
-                                            $templateName = $get('template');
-                                            return self::getTemplateFields($templateName);
-                                        }
-                                    ),
-                            ]),
+                            ->schema(
+                                function (Get $get) {
+                                    $templateName = $get('template');
+                                    return self::getTemplateFields($templateName);
+                                },
+                            ),
 
                         // SEO Tab
                         self::getSeoTab(),

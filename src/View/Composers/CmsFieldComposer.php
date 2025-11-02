@@ -54,8 +54,8 @@ class CmsFieldComposer
             return;
         }
 
-        // Get existing $cmsFields collection or create a new one
-        $cmsFields = ViewFacade::shared('cmsFields') ?? collect();
+        // Get existing $frankenFields collection or create a new one
+        $frankenFields = ViewFacade::shared('frankenFields') ?? collect();
 
         // Pre-populate all fields
         foreach ($fields as $field) {
@@ -67,18 +67,18 @@ class CmsFieldComposer
             $varName = cmsFieldVariableName($fieldName);
 
             // Only populate if not already set
-            if (! $cmsFields->has($varName)) {
+            if (! $frankenFields->has($varName)) {
                 // Render the field value
                 $value = _renderCmsField($fieldName, $fieldType, $options);
-                $cmsFields[$varName] = $value;
+                $frankenFields[$varName] = $value;
             }
         }
 
         // Share the collection with all views
-        ViewFacade::share('cmsFields', $cmsFields);
+        ViewFacade::share('frankenFields', $frankenFields);
 
         // Also pass it to this specific view
-        $view->with('cmsFields', $cmsFields);
+        $view->with('frankenFields', $frankenFields);
     }
 
     /**

@@ -39,9 +39,9 @@
 
             <div class="relative z-10 container mx-auto px-4">
                 <div class="mx-auto max-w-5xl text-center">
-                    @cmsField(
+                    @frakenImage(
                         'hero.image',
-                        'media_image',
+
                         [
                             'class' => 'mx-auto max-h-64 rounded-lg shadow-xl',
                         ]
@@ -51,9 +51,8 @@
                     <h1
                         class="mb-8 bg-gradient-to-r from-lime-400 via-emerald-300 to-cyan-400 bg-clip-text text-5xl leading-tight font-extrabold tracking-tight text-transparent drop-shadow-[0_0_30px_rgba(163,230,53,0.5)] md:text-6xl lg:text-7xl xl:text-8xl"
                     >
-                        @cmsField(
+                        @frankenText(
                             'hero.title',
-                            'text',
                             [
                                 'label' => 'Hero Title',
                                 'required' => true,
@@ -67,9 +66,8 @@
                     <p
                         class="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-emerald-100/90 md:text-2xl lg:text-3xl"
                     >
-                        @cmsField(
+                        @frankenTextarea(
                             'hero.subtitle',
-                            'textarea',
                             [
                                 'label' => 'Hero Subtitle',
                                 'default' => 'A modern content management system built with Laravel and FilamentPHP',
@@ -80,13 +78,15 @@
                     </p>
 
                     {{-- Electric CTA buttons with lightning bolt energy --}}
+                    @frankenUrl('hero.primary_cta_url', ['label' => 'Primary Button URL', 'default' => '#features'])
+                    @frankenUrl('hero.secondary_cta_url', ['label' => 'Secondary Button URL', 'default' => '#about'])
                     <div class="flex flex-wrap justify-center gap-4 md:gap-6">
                         <a
-                            href="@cmsField('hero.primary_cta_url', 'url', ['label' => 'Primary Button URL', 'default' => '#features'])"
+                            href="{{ $frankenFields['heroPrimaryCtaUrl'] ?? '#features' }}"
                             class="group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-lime-500 to-emerald-500 px-10 py-4 text-base font-bold text-black shadow-2xl shadow-lime-500/50 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(163,230,53,0.8)] hover:shadow-lime-400/80 md:text-lg"
                         >
                             <span class="relative z-10">
-                                @cmsField('hero.primary_cta_text', 'text', ['label' => 'Primary Button Text', 'default' => 'Get Started'])
+                                @frankenText('hero.primary_cta_text', ['label' => 'Primary Button Text', 'default' => 'Get Started'])
                             </span>
                             {{-- Electric bolt shine effect --}}
                             <div
@@ -95,11 +95,11 @@
                         </a>
 
                         <a
-                            href="@cmsField('hero.secondary_cta_url', 'url', ['label' => 'Secondary Button URL', 'default' => '#about'])"
+                            href="{{ $frankenFields['heroSecondaryCtaUrl'] ?? '#about' }}"
                             class="group relative inline-flex items-center justify-center overflow-hidden rounded-xl border-2 border-cyan-400/50 bg-cyan-500/10 px-10 py-4 text-base font-bold text-cyan-300 shadow-xl shadow-cyan-500/30 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:border-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-200 hover:shadow-2xl hover:shadow-cyan-400/50 md:text-lg"
                         >
                             <span class="relative z-10">
-                                @cmsField('hero.secondary_cta_text', 'text', ['label' => 'Secondary Button Text', 'default' => 'Learn More'])
+                                @frankenText('hero.secondary_cta_text', ['label' => 'Secondary Button Text', 'default' => 'Learn More'])
                             </span>
                         </a>
                     </div>
@@ -125,9 +125,8 @@
                     <h2
                         class="mb-6 bg-gradient-to-r from-lime-400 via-emerald-400 to-lime-400 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent drop-shadow-[0_0_20px_rgba(163,230,53,0.3)] md:text-5xl lg:text-6xl"
                     >
-                        @cmsField(
+                        @frankenText(
                             'features.title',
-                            'text',
                             [
                                 'label' => 'Features Section Title',
                                 'default' => 'Features',
@@ -139,9 +138,8 @@
                     <p
                         class="mx-auto mb-12 max-w-3xl text-lg leading-relaxed text-emerald-200/80 md:text-xl lg:text-2xl"
                     >
-                        @cmsField(
+                        @frankenTextarea(
                             'features.subtitle',
-                            'textarea',
                             [
                                 'label' => 'Features Section Subtitle',
                                 'default' => 'Everything you need to build amazing websites',
@@ -150,9 +148,8 @@
                         )
                     </p>
 
-                    @cmsField(
+                    @frankenMediaImage(
                         'features.image',
-                        'media_image',
                         [
                             'class' => 'mx-auto rounded-lg shadow-xl',
                         ]
@@ -161,10 +158,9 @@
 
                 {{-- Feature cards grid with electric hover effects --}}
                 <div class="grid gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3 lg:gap-10">
-                    {{-- Directive adds to $cmsFields collection --}}
-                    @cmsField(
+                    {{-- Use @frankenRepeater block directive --}}
+                    @frankenRepeater(
                         'features.items',
-                        'repeater',
                         [
                             'label' => 'Feature Items',
                             'schema' => [
@@ -182,9 +178,6 @@
                             'itemLabel' => fn ($state) => $state['title'] ?? 'Feature',
                         ]
                     )
-
-                    {{-- Access via collection - laboratory specimen cards with electric glow --}}
-                    @foreach ($cmsFields['featuresItems'] ?? [] as $feature)
                         <div
                             class="group relative rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-slate-900 to-slate-800 p-8 shadow-lg shadow-emerald-500/10 transition-all duration-300 hover:-translate-y-2 hover:border-lime-400/50 hover:shadow-2xl hover:shadow-lime-500/30"
                         >
@@ -198,17 +191,17 @@
                                 <div
                                     class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-lime-500/20 to-emerald-500/20 text-4xl shadow-md ring-1 shadow-lime-500/20 ring-lime-400/30 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-lime-400/40 group-hover:ring-lime-400/60"
                                 >
-                                    {{ $feature['custom_fields']['icon'] ?? '🚀' }}
+                                    {{ $franken->icon ?? '🚀' }}
                                 </div>
 
                                 {{-- Feature title with laboratory aesthetic --}}
                                 <h3 class="mb-4 text-2xl leading-tight font-bold text-lime-100">
-                                    {{ $feature['custom_fields']['title'] }}
+                                    {{ $franken->title }}
                                 </h3>
 
                                 {{-- Feature description with eerie text --}}
                                 <p class="text-base leading-relaxed text-emerald-200/70">
-                                    {{ $feature['custom_fields']['description'] }}
+                                    {{ $franken->description }}
                                 </p>
                             </div>
 
@@ -217,7 +210,7 @@
                                 class="absolute inset-x-0 bottom-0 h-1 rounded-b-2xl bg-gradient-to-r from-lime-400 via-cyan-400 to-lime-400 opacity-0 shadow-[0_0_15px_rgba(163,230,53,0.6)] transition-opacity duration-300 group-hover:opacity-100"
                             ></div>
                         </div>
-                    @endforeach
+                    @endFrankenRepeater
                 </div>
             </div>
         </section>
@@ -251,9 +244,8 @@
                     <h2
                         class="mb-6 bg-gradient-to-r from-lime-300 via-emerald-200 to-cyan-300 bg-clip-text text-4xl leading-tight font-extrabold tracking-tight text-transparent drop-shadow-[0_0_25px_rgba(163,230,53,0.4)] md:text-5xl lg:text-6xl"
                     >
-                        @cmsField(
+                        @frankenText(
                             'cta.title',
-                            'text',
                             [
                                 'label' => 'CTA Title',
                                 'default' => 'Ready to get started?',
@@ -266,9 +258,8 @@
                     <p
                         class="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-emerald-100/90 md:text-xl lg:text-2xl"
                     >
-                        @cmsField(
+                        @frankenTextarea(
                             'cta.description',
-                            'textarea',
                             [
                                 'label' => 'CTA Description',
                                 'default' => 'Join thousands of developers building amazing websites with FrankenCMS',
@@ -278,12 +269,13 @@
                     </p>
 
                     {{-- High-voltage CTA button with electric pulse --}}
+                    @frankenUrl('cta.button_url', ['label' => 'CTA Button URL', 'default' => '/contact'])
                     <a
-                        href="@cmsField('cta.button_url', 'url', ['label' => 'CTA Button URL', 'default' => '/contact'])"
+                        href="{{ $frankenFields['ctaButtonUrl'] ?? '/contact' }}"
                         class="group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 px-12 py-5 text-lg font-bold text-black shadow-2xl shadow-lime-500/40 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_50px_rgba(163,230,53,0.9)] hover:shadow-lime-400/70 md:text-xl"
                     >
                         <span class="relative z-10">
-                            @cmsField('cta.button_text', 'text', ['label' => 'CTA Button Text', 'default' => 'Contact Us'])
+                            @frankenText('cta.button_text', ['label' => 'CTA Button Text', 'default' => 'Contact Us'])
                         </span>
                         {{-- Electric bolt shine effect --}}
                         <div

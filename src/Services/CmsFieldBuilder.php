@@ -7,11 +7,13 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
+use FrankenCms\Filament\Schemas\ImageFieldSchema;
 use InvalidArgumentException;
 
 class CmsFieldBuilder
@@ -27,7 +29,7 @@ class CmsFieldBuilder
         'number'     => TextInput::class,
         'select'     => Select::class,
         'file'       => FileUpload::class,
-        'image'      => FileUpload::class,
+        'image'      => SpatieMediaLibraryFileUpload::class,
         'repeater'   => Repeater::class,
         'richEditor' => RichEditor::class,
         'toggle'     => Toggle::class,
@@ -37,6 +39,8 @@ class CmsFieldBuilder
 
     /**
      * Build a Filament form component from field definition
+     *
+     * Note: For image fields, this returns an array of components (schema), not a single component
      */
     public function buildField(array $fieldDefinition): mixed
     {
@@ -44,10 +48,20 @@ class CmsFieldBuilder
         $type = $fieldDefinition['type'];
         $options = $fieldDefinition['options'] ?? [];
 
-        // Get the component class
+        // Image fields use the comprehensive ImageFieldSchema
+        if ($type === 'image') {
+            // Use the field name as the collection name
+            return ImageFieldSchema::make(
+                fieldName: $name,
+                collection: $name,
+                options: $options
+            );
+        }
+
+        // Get the component class for non-image fields
         $componentClass = $this->fieldTypeMap[$type] ?? TextInput::class;
 
-        // Create the component with the field name prefixed for storage in custom_fields
+        // All fields (except images) are stored in custom_fields JSON
         $field = $componentClass::make("custom_fields.{$name}");
 
         // Apply options as method calls
@@ -63,7 +77,7 @@ class CmsFieldBuilder
         }
 
         // Apply type-specific defaults
-        $field = $this->applyTypeSpecificDefaults($field, $type, $options);
+        $field = $this->applyTypeSpecificDefaults($field, $type, $name, $options);
 
         return $field;
     }
@@ -78,7 +92,16 @@ class CmsFieldBuilder
         $fields = [];
 
         foreach ($fieldDefinitions as $fieldDefinition) {
-            $fields[] = $this->buildField($fieldDefinition);
+            $result = $this->buildField($fieldDefinition);
+
+            // Image fields return an array of components, flatten them
+            if (is_array($result) && ! $result instanceof Component) {
+                foreach ($result as $component) {
+                    $fields[] = $component;
+                }
+            } else {
+                $fields[] = $result;
+            }
         }
 
         return $fields;
@@ -163,13 +186,12 @@ class CmsFieldBuilder
     /**
      * Apply type-specific default configurations
      */
-    protected function applyTypeSpecificDefaults(mixed $field, string $type, array $options): mixed
+    protected function applyTypeSpecificDefaults(mixed $field, string $type, string $name, array $options): mixed
     {
         match ($type) {
             'email'  => $field instanceof TextInput ? $field->email() : null,
             'url'    => $field instanceof TextInput ? $field->url() : null,
             'number' => $field instanceof TextInput ? $field->numeric() : null,
-            'image'  => $field instanceof FileUpload ? $field->image()->imageEditor() : null,
             default  => null,
         };
 

@@ -9,7 +9,9 @@ use Throwable;
 class TemplateFieldParser
 {
     /**
-     * Parse a template file and extract all @cmsField directives
+     * Parse a template file and extract all field directives
+     *
+     * Supports typed directives: @frankenText, @frankenTextarea, @frankenRepeater, etc.
      *
      * @return array Array of field definitions
      */
@@ -25,37 +27,114 @@ class TemplateFieldParser
     }
 
     /**
-     * Parse template content and extract @cmsField directives
+     * Parse template content and extract field directives
+     *
+     * Supports typed directives: @frankenText, @frankenTextarea, @frankenRepeater, etc.
      *
      * @return array Array of field definitions
      */
     public function parseContent(string $content): array
     {
         $fields = [];
-        $pattern = '/@cmsField\s*\(\s*([\'"])([^\'"]+)\1\s*,\s*([\'"])([^\'"]+)\3(?:\s*,\s*(\[.*?\]))?\s*\)/s';
 
-        preg_match_all($pattern, $content, $matches, PREG_SET_ORDER);
+        // Pattern for new typed directives - match directive name and opening paren
+        $directiveTypes = 'Text|Textarea|Email|Url|Number|Select|File|Image|MediaImage|RichEditor|Toggle|Checkbox|Tags|Repeater';
+        $directivePattern = '/@franken(' . $directiveTypes . ')\s*\(/';
 
-        foreach ($matches as $match) {
-            $fieldName = $match[2];
-            $fieldType = $match[4];
-            $options = isset($match[5]) ? $this->parseOptions($match[5]) : [];
+        // Find all directive positions
+        if (preg_match_all($directivePattern, $content, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[0] as $index => $match) {
+                $directiveType = $matches[1][$index][0];
+                $startPos = $match[1] + strlen($match[0]); // Position after opening (
 
-            // Check for duplicate field names
-            if (isset($fields[$fieldName])) {
-                throw new RuntimeException(
-                    "Duplicate field name '{$fieldName}' found in template. Each field name must be unique."
-                );
+                // Find the matching closing parenthesis
+                $params = $this->extractBalancedParentheses($content, $startPos);
+
+                if ($params !== null) {
+                    // Parse the parameters
+                    $parsed = $this->parseDirectiveParams($params);
+
+                    if ($parsed && isset($parsed['fieldName'])) {
+                        $fieldName = $parsed['fieldName'];
+                        $options = $parsed['options'] ?? [];
+
+                        // Convert directive type to field type
+                        $fieldType = $this->getFieldTypeFromDirective($directiveType);
+
+                        // Check for duplicate field names
+                        if (isset($fields[$fieldName])) {
+                            throw new RuntimeException(
+                                "Duplicate field name '{$fieldName}' found in template. Each field name must be unique."
+                            );
+                        }
+
+                        $fields[$fieldName] = [
+                            'name'    => $fieldName,
+                            'type'    => $fieldType,
+                            'options' => $options,
+                        ];
+                    }
+                }
             }
-
-            $fields[$fieldName] = [
-                'name'    => $fieldName,
-                'type'    => $fieldType,
-                'options' => $options,
-            ];
         }
 
         return $fields;
+    }
+
+    /**
+     * Extract content between balanced parentheses
+     */
+    protected function extractBalancedParentheses(string $content, int $startPos): ?string
+    {
+        $depth = 1;
+        $length = strlen($content);
+        $result = '';
+
+        for ($i = $startPos; $i < $length; $i++) {
+            $char = $content[$i];
+
+            if ($char === '(') {
+                $depth++;
+                $result .= $char;
+            } elseif ($char === ')') {
+                $depth--;
+                if ($depth === 0) {
+                    return $result;
+                }
+                $result .= $char;
+            } else {
+                $result .= $char;
+            }
+        }
+
+        return null; // Unbalanced parentheses
+    }
+
+    /**
+     * Parse parameters from typed directive: 'field.name', [options]
+     */
+    protected function parseDirectiveParams(string $params): ?array
+    {
+        // Match the field name (first quoted string)
+        if (!preg_match('/^\s*([\'"])([^\'"]+)\1/', $params, $nameMatch)) {
+            return null;
+        }
+
+        $fieldName = $nameMatch[2];
+        $afterName = substr($params, strlen($nameMatch[0]));
+
+        // Check if there are options (look for comma followed by opening bracket)
+        if (preg_match('/^\s*,\s*(\[.*)$/s', $afterName, $optionsMatch)) {
+            $optionsString = trim($optionsMatch[1]);
+            $options = $this->parseOptions($optionsString);
+        } else {
+            $options = [];
+        }
+
+        return [
+            'fieldName' => $fieldName,
+            'options' => $options,
+        ];
     }
 
     /**
@@ -94,6 +173,33 @@ class TemplateFieldParser
         }
 
         return true;
+    }
+
+    /**
+     * Get the field type from a directive suffix
+     * Maps directive names to field types (same mapping as service provider)
+     */
+    protected function getFieldTypeFromDirective(string $directiveType): string
+    {
+        // This mapping must match the one in FrankenCmsServiceProvider::registerTypedFieldDirectives()
+        $mapping = [
+            'Text'       => 'text',
+            'Textarea'   => 'textarea',
+            'Email'      => 'email',
+            'Url'        => 'url',
+            'Number'     => 'number',
+            'Select'     => 'select',
+            'File'       => 'file',
+            'Image'      => 'image',
+            'MediaImage' => 'image',  // Both Image and MediaImage map to 'image'
+            'RichEditor' => 'richEditor',
+            'Toggle'     => 'toggle',
+            'Checkbox'   => 'checkbox',
+            'Tags'       => 'tags',
+            'Repeater'   => 'repeater',
+        ];
+
+        return $mapping[$directiveType] ?? lcfirst($directiveType);
     }
 
     /**

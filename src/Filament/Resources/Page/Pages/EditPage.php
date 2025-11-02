@@ -66,9 +66,9 @@ class EditPage extends EditRecord
 
         $fields = FieldRegistry::getFields();
 
-        // Load metadata for each media_image field
+        // Load metadata for each image field (media_image is legacy alias)
         foreach ($fields as $identifier => $field) {
-            if ($field['type'] !== 'media_image') {
+            if (! in_array($field['type'], ['image', 'media_image'])) {
                 continue;
             }
 
@@ -84,20 +84,23 @@ class EditPage extends EditRecord
                 continue;
             }
 
+            // Normalize field name (replace dots with underscores) - ImageFieldSchema does this
+            $normalizedFieldName = str_replace('.', '_', $identifier);
+
             // Load metadata from media custom properties
-            $metadata = $media->getCustomProperty("{$identifier}_data", []);
+            $metadata = $media->getCustomProperty("{$normalizedFieldName}_data", []);
 
             if (! empty($metadata)) {
-                $data["{$identifier}_alt"] = $metadata['alt'] ?? '';
-                $data["{$identifier}_title"] = $metadata['title'] ?? '';
-                $data["{$identifier}_caption"] = $metadata['caption'] ?? '';
-                $data["{$identifier}_attribution"] = $metadata['attribution'] ?? '';
-                $data["{$identifier}_css"] = $metadata['css'] ?? '';
-                $data["{$identifier}_lazy_loading"] = ($metadata['loading'] ?? 'lazy') === 'lazy';
-                $data["{$identifier}_width"] = $metadata['width'] ?? null;
-                $data["{$identifier}_height"] = $metadata['height'] ?? null;
-                $data["{$identifier}_focal_x"] = $metadata['focal_x'] ?? 50;
-                $data["{$identifier}_focal_y"] = $metadata['focal_y'] ?? 50;
+                $data["{$normalizedFieldName}_alt"] = $metadata['alt'] ?? '';
+                $data["{$normalizedFieldName}_title"] = $metadata['title'] ?? '';
+                $data["{$normalizedFieldName}_caption"] = $metadata['caption'] ?? '';
+                $data["{$normalizedFieldName}_attribution"] = $metadata['attribution'] ?? '';
+                $data["{$normalizedFieldName}_css"] = $metadata['css'] ?? '';
+                $data["{$normalizedFieldName}_lazy_loading"] = ($metadata['loading'] ?? 'lazy') === 'lazy';
+                $data["{$normalizedFieldName}_width"] = $metadata['width'] ?? null;
+                $data["{$normalizedFieldName}_height"] = $metadata['height'] ?? null;
+                $data["{$normalizedFieldName}_focal_x"] = $metadata['focal_x'] ?? 50;
+                $data["{$normalizedFieldName}_focal_y"] = $metadata['focal_y'] ?? 50;
             }
         }
 
@@ -134,39 +137,42 @@ class EditPage extends EditRecord
 
         $fields = FieldRegistry::getFields();
 
-        // Extract metadata for each media_image field
+        // Extract metadata for each image field (media_image is legacy alias)
         foreach ($fields as $identifier => $field) {
-            if ($field['type'] !== 'media_image') {
+            if (! in_array($field['type'], ['image', 'media_image'])) {
                 continue;
             }
 
+            // Normalize field name (replace dots with underscores) - ImageFieldSchema does this
+            $normalizedFieldName = str_replace('.', '_', $identifier);
+
             // Extract metadata for this field
-            $this->customImageFieldsMetadata[$identifier] = [
-                'alt'          => $data["{$identifier}_alt"] ?? '',
-                'title'        => $data["{$identifier}_title"] ?? '',
-                'caption'      => $data["{$identifier}_caption"] ?? '',
-                'attribution'  => $data["{$identifier}_attribution"] ?? '',
-                'css'          => $data["{$identifier}_css"] ?? '',
-                'lazy_loading' => $data["{$identifier}_lazy_loading"] ?? true,
-                'width'        => $data["{$identifier}_width"] ?? null,
-                'height'       => $data["{$identifier}_height"] ?? null,
-                'focal_x'      => $data["{$identifier}_focal_x"] ?? 50,
-                'focal_y'      => $data["{$identifier}_focal_y"] ?? 50,
+            $this->customImageFieldsMetadata[$normalizedFieldName] = [
+                'alt'          => $data["{$normalizedFieldName}_alt"] ?? '',
+                'title'        => $data["{$normalizedFieldName}_title"] ?? '',
+                'caption'      => $data["{$normalizedFieldName}_caption"] ?? '',
+                'attribution'  => $data["{$normalizedFieldName}_attribution"] ?? '',
+                'css'          => $data["{$normalizedFieldName}_css"] ?? '',
+                'lazy_loading' => $data["{$normalizedFieldName}_lazy_loading"] ?? true,
+                'width'        => $data["{$normalizedFieldName}_width"] ?? null,
+                'height'       => $data["{$normalizedFieldName}_height"] ?? null,
+                'focal_x'      => $data["{$normalizedFieldName}_focal_x"] ?? 50,
+                'focal_y'      => $data["{$normalizedFieldName}_focal_y"] ?? 50,
                 'collection'   => $field['properties']['collection'] ?? $identifier,
             ];
 
             // Remove from data array to prevent mass assignment errors
             unset(
-                $data["{$identifier}_alt"],
-                $data["{$identifier}_title"],
-                $data["{$identifier}_caption"],
-                $data["{$identifier}_attribution"],
-                $data["{$identifier}_css"],
-                $data["{$identifier}_lazy_loading"],
-                $data["{$identifier}_width"],
-                $data["{$identifier}_height"],
-                $data["{$identifier}_focal_x"],
-                $data["{$identifier}_focal_y"]
+                $data["{$normalizedFieldName}_alt"],
+                $data["{$normalizedFieldName}_title"],
+                $data["{$normalizedFieldName}_caption"],
+                $data["{$normalizedFieldName}_attribution"],
+                $data["{$normalizedFieldName}_css"],
+                $data["{$normalizedFieldName}_lazy_loading"],
+                $data["{$normalizedFieldName}_width"],
+                $data["{$normalizedFieldName}_height"],
+                $data["{$normalizedFieldName}_focal_x"],
+                $data["{$normalizedFieldName}_focal_y"]
             );
         }
 

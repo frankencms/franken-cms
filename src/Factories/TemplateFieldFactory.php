@@ -34,7 +34,8 @@ class TemplateFieldFactory
         // Group fields by section (based on dot notation prefix)
         $sections = static::groupFieldsBySection($fields);
 
-        $fieldMapping = config('franken-cms.cms_fields');
+        $fieldBuilder = app(CmsFieldBuilder::class);
+        $fieldMapping = $fieldBuilder->getFieldTypeMap();
         $formComponents = [];
 
         foreach ($sections as $sectionName => $sectionFields) {
@@ -44,8 +45,8 @@ class TemplateFieldFactory
                 $type = $field['type'];
                 $properties = $field['properties'];
 
-                // Special handling for media_image type
-                if ($type === 'media_image') {
+                // Special handling for image type (media_image is legacy alias)
+                if (in_array($type, ['image', 'media_image'])) {
                     $collection = $properties['collection'] ?? $identifier;
                     $options = $properties;
 
@@ -98,7 +99,7 @@ class TemplateFieldFactory
             } else {
                 $formComponents[] = Section::make(Str::title(str_replace(['-', '_'], ' ', $sectionName)))
                     ->schema($sectionFieldComponents)
-                    ->columns(2)
+                    ->columns(1)
                     ->collapsible();
             }
         }

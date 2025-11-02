@@ -74,37 +74,6 @@ return [
 
     /*
 |--------------------------------------------------------------------------
-| CMS Field Mappings
-|--------------------------------------------------------------------------
-|
-| Map your CMS field types to the corresponding FilamentPHP Form Field
-| classes. This way, when you define a field in your Blade template, you
-| can simply refer to the field type (like "text") and this mapping will
-| resolve it to the proper form field class.
-|
-*/
-
-    'cms_fields' => [
-        'text'           => \Filament\Forms\Components\TextInput::class,
-        'textarea'       => \Filament\Forms\Components\Textarea::class,
-        'email'          => \Filament\Forms\Components\TextInput::class,
-        'url'            => \Filament\Forms\Components\TextInput::class,
-        'number'         => \Filament\Forms\Components\TextInput::class,
-        'select'         => \Filament\Forms\Components\Select::class,
-        'checkbox'       => \Filament\Forms\Components\Checkbox::class,
-        'toggle'         => \Filament\Forms\Components\Toggle::class,
-        'radio'          => \Filament\Forms\Components\Radio::class,
-        'file'           => \Filament\Forms\Components\FileUpload::class,
-        'image'          => \Filament\Forms\Components\FileUpload::class,
-        'repeater'       => \Filament\Forms\Components\Repeater::class,
-        'richEditor'     => \Filament\Forms\Components\RichEditor::class,
-        'datePicker'     => \Filament\Forms\Components\DatePicker::class,
-        'dateTimePicker' => \Filament\Forms\Components\DateTimePicker::class,
-        'tags'           => \Filament\Forms\Components\TagsInput::class,
-    ],
-
-    /*
-|--------------------------------------------------------------------------
 | Prism Enable Prompts
 |--------------------------------------------------------------------------
 */

@@ -5,7 +5,6 @@ namespace FrankenCms\Filament\Resources\Post\Pages;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use FrankenCms\Filament\Resources\Post\PostResource;
-use FrankenCms\Filament\Schemas\ImageFieldSchema;
 use FrankenCms\Models\Post;
 use FrankenCms\Registries\FieldRegistry;
 use FrankenCms\Services\CmsFieldParser;
@@ -78,9 +77,9 @@ class EditPost extends EditRecord
 
         $fields = FieldRegistry::getFields();
 
-        // Load metadata for each media_image field
+        // Load metadata for each image field (media_image is legacy alias)
         foreach ($fields as $identifier => $field) {
-            if ($field['type'] !== 'media_image') {
+            if (! in_array($field['type'], ['image', 'media_image'])) {
                 continue;
             }
 
@@ -176,9 +175,9 @@ class EditPost extends EditRecord
 
         $fields = FieldRegistry::getFields();
 
-        // Extract metadata for each media_image field
+        // Extract metadata for each image field (media_image is legacy alias)
         foreach ($fields as $identifier => $field) {
-            if ($field['type'] !== 'media_image') {
+            if (! in_array($field['type'], ['image', 'media_image'])) {
                 continue;
             }
 
@@ -295,16 +294,16 @@ class EditPost extends EditRecord
 
             // Save all metadata to the media item
             $media->setCustomProperty("{$fieldName}_data", [
-                'alt'          => $metadata['alt'],
-                'title'        => $metadata['title'],
-                'caption'      => $metadata['caption'],
-                'attribution'  => $metadata['attribution'],
-                'css'          => $metadata['css'],
-                'loading'      => $metadata['lazy_loading'] ? 'lazy' : 'eager',
-                'width'        => $metadata['width'],
-                'height'       => $metadata['height'],
-                'focal_x'      => $metadata['focal_x'],
-                'focal_y'      => $metadata['focal_y'],
+                'alt'         => $metadata['alt'],
+                'title'       => $metadata['title'],
+                'caption'     => $metadata['caption'],
+                'attribution' => $metadata['attribution'],
+                'css'         => $metadata['css'],
+                'loading'     => $metadata['lazy_loading'] ? 'lazy' : 'eager',
+                'width'       => $metadata['width'],
+                'height'      => $metadata['height'],
+                'focal_x'     => $metadata['focal_x'],
+                'focal_y'     => $metadata['focal_y'],
             ]);
 
             $media->save();

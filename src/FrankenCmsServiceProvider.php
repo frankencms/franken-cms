@@ -153,17 +153,6 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
     }
 
-    private function registerLivewireComponents(): void
-    {
-        // Register the BlogPostWizard Livewire component (only if Prism is installed)
-        if (class_exists(Prism::class)) {
-            Livewire::component(
-                'blog-post-wizard',
-                BlogPostWizard::class
-            );
-        }
-    }
-
     public function packageBooted(): void
     {
         $this->app->singleton(CurrentPageService::class);
@@ -203,6 +192,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         // Register custom blade directives
         $this->registerBladeDirectives();
+        $this->registerTypedFieldDirectives();
 
         // Initialize the blade form directive registry
         $this->app->make(BladeFormDirectiveRegistry::class);
@@ -242,6 +232,17 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
     }
 
+    private function registerLivewireComponents(): void
+    {
+        // Register the BlogPostWizard Livewire component (only if Prism is installed)
+        if (class_exists(Prism::class)) {
+            Livewire::component(
+                'blog-post-wizard',
+                BlogPostWizard::class
+            );
+        }
+    }
+
     private function registerThemeComponents(): void
     {
         $themeFolder = config('franken-cms.theme_folder', 'theme');
@@ -273,47 +274,84 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Blade::directive('endmenu', function () {
             return '<?php unset($menuItems, $__menuSlug, $__menuService, $__currentUrl); ?>';
         });
+    }
 
-        // Register @cmsField directive
-        // Adds all fields to $cmsFields collection and echoes non-repeater fields
-        Blade::directive('cmsField', function ($expression) {
-            // Extract field name from expression
-            if (preg_match("/^['\"]([^'\"]+)['\"]/", $expression, $matches)) {
-                $fieldName = $matches[1];
-                $varName = cmsFieldVariableName($fieldName);
+    private function registerTypedFieldDirectives(): void
+    {
+        $fieldTypes = [
+            'Text'       => 'text',
+            'Textarea'   => 'textarea',
+            'Email'      => 'email',
+            'Url'        => 'url',
+            'Number'     => 'number',
+            'Select'     => 'select',
+            'File'       => 'file',
+            'Image'      => 'image',
+            'MediaImage' => 'image',
+            'RichEditor' => 'richEditor',
+            'Toggle'     => 'toggle',
+            'Checkbox'   => 'checkbox',
+            'Tags'       => 'tags',
+        ];
 
-                // Check if it's a repeater
-                $isRepeater = preg_match("/^[^,]+,\s*['\"]repeater['\"]/", $expression);
+        foreach ($fieldTypes as $directiveSuffix => $fieldType) {
+            Blade::directive("franken{$directiveSuffix}", function ($expression) use ($fieldType) {
+                return "<?php
+                \$__fParams = _parseFieldExpression({$expression});
+                \$__fName = \$__fParams['name'];
+                \$__fOpts = \$__fParams['options'];
+                \$__fVar = cmsFieldVariableName(\$__fName);
 
-                if ($isRepeater) {
-                    // Repeater: add to collection but don't echo
-                    return "<?php
-                        if (!isset(\$cmsFields)) { \$cmsFields = collect(); view()->share('cmsFields', \$cmsFields); }
-                        // Only render if not already populated by view composer
-                        if (!\$cmsFields->has('{$varName}')) {
-                            \$cmsFields['{$varName}'] = _renderCmsField({$expression});
-                            view()->share('cmsFields', \$cmsFields);
-                        }
-                    ?>";
-                } else {
-                    // Non-repeater: add to collection AND echo
-                    return "<?php
-                        if (!isset(\$cmsFields)) { \$cmsFields = collect(); view()->share('cmsFields', \$cmsFields); }
-                        // Only render if not already populated by view composer
-                        if (!\$cmsFields->has('{$varName}')) {
-                            \$_fieldValue = _renderCmsField({$expression});
-                            \$cmsFields['{$varName}'] = \$_fieldValue;
-                            view()->share('cmsFields', \$cmsFields);
-                        } else {
-                            \$_fieldValue = \$cmsFields->get('{$varName}');
-                        }
-                        echo \$_fieldValue;
-                    ?>";
+                if (!isset(\$frankenFields)) {
+                    \$frankenFields = collect();
+                    view()->share('frankenFields', \$frankenFields);
                 }
-            }
 
-            // Fallback - just echo
-            return "<?php echo _renderCmsField({$expression}); ?>";
+                if (!\$frankenFields->has(\$__fVar)) {
+                    \$__fValue = _renderCmsField(\$__fName, '{$fieldType}', \$__fOpts);
+                    \$frankenFields[\$__fVar] = \$__fValue;
+                    view()->share('frankenFields', \$frankenFields);
+                } else {
+                    \$__fValue = \$frankenFields->get(\$__fVar);
+                }
+
+                echo \$__fValue;
+                unset(\$__fParams, \$__fName, \$__fOpts, \$__fVar, \$__fValue);
+            ?>";
+            });
+        }
+
+        // Register repeater block directive
+        Blade::directive('frankenRepeater', function ($expression) {
+            return "<?php
+                \$__rptParams = _parseFieldExpression({$expression});
+                \$__rptName = \$__rptParams['name'];
+                \$__rptOpts = \$__rptParams['options'];
+                \$__rptVar = cmsFieldVariableName(\$__rptName);
+
+                if (!isset(\$frankenFields)) {
+                    \$frankenFields = collect();
+                    view()->share('frankenFields', \$frankenFields);
+                }
+
+                if (!\$frankenFields->has(\$__rptVar)) {
+                    \$__rptCollection = _renderCmsField(\$__rptName, 'repeater', \$__rptOpts);
+                    \$frankenFields[\$__rptVar] = \$__rptCollection;
+                    view()->share('frankenFields', \$frankenFields);
+                } else {
+                    \$__rptCollection = \$frankenFields[\$__rptVar];
+                }
+
+                foreach (\$__rptCollection as \$__rptItem):
+                    \$franken = \$__rptItem;
+            ?>";
+        });
+
+        Blade::directive('endFrankenRepeater', function () {
+            return '<?php
+                endforeach;
+                unset($franken, $__rptItem, $__rptCollection, $__rptVar, $__rptName, $__rptOpts, $__rptParams);
+            ?>';
         });
     }
 
@@ -458,7 +496,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                             return '<fg=gray>N/A</>';
                         }
                     },
-                    'Custom Blade Directives' => '<fg=green;options=bold>@menu</>, <fg=green;options=bold>@endmenu</>, <fg=green;options=bold>@cmsField</>',
+                    'Custom Blade Directives' => '<fg=green;options=bold>@menu</>, <fg=green;options=bold>@frankenText</>, <fg=green;options=bold>@frankenRepeater</>',
                     'Filament Components'     => function (): string {
                         $components = [
                             'Enhanced Image Editor',

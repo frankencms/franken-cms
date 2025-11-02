@@ -92,19 +92,22 @@ final class TemplateHelper
         $renderer = app(CmsFieldRenderer::class);
         $currentPage = app(CurrentPageService::class)->getPage();
 
-        // Get the field value from the page's custom_fields
-        // Convert dot notation to nested array access (e.g., 'hero.title' -> custom_fields['hero']['title'])
-        $customFields = $currentPage->custom_fields ?? [];
-        $fieldValue = data_get($customFields, $fieldName);
+        // For image fields using Spatie Media Library, get from media collection
+        if ($fieldType === 'image') {
+            // Use the field name as the collection name
+            $media = $currentPage->getFirstMedia($fieldName);
 
-        // For media_image fields, pass additional context
-        if ($fieldType === 'media_image') {
-            $fieldValue = array_merge($options, [
-                '_context' => [
-                    'model'      => $currentPage,
-                    'field_name' => $fieldName,
-                ],
-            ]);
+            // Wrap media with options from template
+            $fieldValue = [
+                'media'   => $media,
+                'options' => $options,
+            ];
+        }
+        // For all other fields, get from custom_fields JSON
+        else {
+            // Convert dot notation to nested array access (e.g., 'hero.title' -> custom_fields['hero']['title'])
+            $customFields = $currentPage->custom_fields ?? [];
+            $fieldValue = data_get($customFields, $fieldName);
         }
 
         // Render the field value (only images show placeholders)
