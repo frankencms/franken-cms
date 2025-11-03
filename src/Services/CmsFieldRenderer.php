@@ -9,6 +9,7 @@ use FrankenCms\Services\FieldRenderers\RepeaterFieldRenderer;
 use FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer;
 use FrankenCms\Services\FieldRenderers\SelectFieldRenderer;
 use FrankenCms\Services\FieldRenderers\SpatieImageFieldRenderer;
+use FrankenCms\Services\FieldRenderers\TagsFieldRenderer;
 use FrankenCms\Services\FieldRenderers\TextFieldRenderer;
 use InvalidArgumentException;
 
@@ -30,7 +31,7 @@ class CmsFieldRenderer
         'richEditor' => RichEditorFieldRenderer::class,
         'toggle'     => BooleanFieldRenderer::class,
         'checkbox'   => BooleanFieldRenderer::class,
-        'tags'       => TextFieldRenderer::class,
+        'tags'       => TagsFieldRenderer::class,
     ];
 
     /**

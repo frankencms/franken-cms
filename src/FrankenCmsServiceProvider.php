@@ -291,7 +291,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             'RichEditor' => 'richEditor',
             'Toggle'     => 'toggle',
             'Checkbox'   => 'checkbox',
-            'Tags'       => 'tags',
+            // Note: Tags is registered separately as a block directive below
         ];
 
         foreach ($fieldTypes as $directiveSuffix => $fieldType) {
@@ -351,6 +351,43 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             return '<?php
                 endforeach;
                 unset($franken, $__rptItem, $__rptCollection, $__rptVar, $__rptName, $__rptOpts, $__rptParams);
+            ?>';
+        });
+
+        // Register tags directive - works both as loop and inline
+        // Loop mode: @frankenTags('field') ... {{ $tag }} ... @endFrankenTags
+        // Inline mode: @frankenTags('field') @endFrankenTags ... {{ franken_field('field') }} ...
+        Blade::directive('frankenTags', function ($expression) {
+            return "<?php
+                \$__tagParams = _parseFieldExpression({$expression});
+                \$__tagName = \$__tagParams['name'];
+                \$__tagOpts = \$__tagParams['options'];
+                \$__tagVar = cmsFieldVariableName(\$__tagName);
+
+                if (!isset(\$frankenFields)) {
+                    \$frankenFields = collect();
+                    view()->share('frankenFields', \$frankenFields);
+                }
+
+                if (!\$frankenFields->has(\$__tagVar)) {
+                    \$__tagCollection = _renderCmsField(\$__tagName, 'tags', \$__tagOpts);
+                    \$frankenFields[\$__tagVar] = \$__tagCollection;
+                    view()->share('frankenFields', \$frankenFields);
+                } else {
+                    \$__tagCollection = \$frankenFields[\$__tagVar];
+                }
+
+                // Start the foreach loop
+                \$__tagsArray = is_array(\$__tagCollection) ? \$__tagCollection : (\$__tagCollection ?? []);
+                foreach (\$__tagsArray as \$__tagItem):
+                    \$tag = \$__tagItem;
+            ?>";
+        });
+
+        Blade::directive('endFrankenTags', function () {
+            return '<?php
+                endforeach;
+                unset($tag, $__tagItem, $__tagsArray, $__tagCollection, $__tagVar, $__tagName, $__tagOpts, $__tagParams);
             ?>';
         });
     }

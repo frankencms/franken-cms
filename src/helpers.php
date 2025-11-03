@@ -216,11 +216,31 @@ if (! function_exists('frankenField')) {
      * - Repeaters: Collection of items (cleaned structure)
      * - Media: media object or URL
      *
-     * @param  string  $fieldName  Field name (supports dot notation)
+     * Accepts both dot notation ('hero.tags') and camelCase ('heroTags')
+     *
+     * @param  string  $fieldName  Field name (supports dot notation or camelCase)
      * @return mixed Raw field value
      */
     function frankenField(string $fieldName): mixed
     {
+        // First, check if the field exists in the $frankenFields collection
+        // (this is where rendered fields are cached)
+        $frankenFields = View::shared('frankenFields');
+
+        if ($frankenFields && $frankenFields instanceof \Illuminate\Support\Collection) {
+            // Try camelCase version first (e.g., 'hero.tags' -> 'heroTags')
+            $camelCaseName = cmsFieldVariableName($fieldName);
+            if ($frankenFields->has($camelCaseName)) {
+                return $frankenFields->get($camelCaseName);
+            }
+
+            // Try original name as-is
+            if ($frankenFields->has($fieldName)) {
+                return $frankenFields->get($fieldName);
+            }
+        }
+
+        // If not in collection, fall back to fetching from custom_fields
         $currentPage = app(\FrankenCms\Services\CurrentPageService::class)->getPage();
 
         if (! $currentPage) {
@@ -245,6 +265,19 @@ if (! function_exists('frankenField')) {
         }
 
         return $value;
+    }
+}
+
+if (! function_exists('franken_field')) {
+    /**
+     * Get a raw CMS field value (snake_case alias for frankenField)
+     *
+     * @param  string  $fieldName  The field name in dot notation
+     * @return mixed Raw field value
+     */
+    function franken_field(string $fieldName): mixed
+    {
+        return frankenField($fieldName);
     }
 }
 
