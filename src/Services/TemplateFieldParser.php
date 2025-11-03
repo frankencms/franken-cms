@@ -111,12 +111,12 @@ class TemplateFieldParser
     }
 
     /**
-     * Parse parameters from typed directive: 'field.name', [options]
+     * Parse parameters from typed directive: 'field.name', [options], placeholder (optional)
      */
     protected function parseDirectiveParams(string $params): ?array
     {
         // Match the field name (first quoted string)
-        if (!preg_match('/^\s*([\'"])([^\'"]+)\1/', $params, $nameMatch)) {
+        if (! preg_match('/^\s*([\'"])([^\'"]+)\1/', $params, $nameMatch)) {
             return null;
         }
 
@@ -124,17 +124,85 @@ class TemplateFieldParser
         $afterName = substr($params, strlen($nameMatch[0]));
 
         // Check if there are options (look for comma followed by opening bracket)
-        if (preg_match('/^\s*,\s*(\[.*)$/s', $afterName, $optionsMatch)) {
-            $optionsString = trim($optionsMatch[1]);
-            $options = $this->parseOptions($optionsString);
+        if (preg_match('/^\s*,\s*(\[)/s', $afterName, $startMatch)) {
+            // Find the position where the array starts
+            $arrayStart = strpos($afterName, '[');
+
+            // Extract balanced array using bracket counting
+            $optionsString = $this->extractBalancedBrackets(substr($afterName, $arrayStart));
+
+            if ($optionsString) {
+                $options = $this->parseOptions($optionsString);
+            } else {
+                $options = [];
+            }
         } else {
             $options = [];
         }
 
+        // Note: We ignore any third parameter (placeholder boolean) as it's only used at runtime
+
         return [
             'fieldName' => $fieldName,
-            'options' => $options,
+            'options'   => $options,
         ];
+    }
+
+    /**
+     * Extract a balanced bracket expression from a string
+     */
+    protected function extractBalancedBrackets(string $content): ?string
+    {
+        if (! str_starts_with($content, '[')) {
+            return null;
+        }
+
+        $depth = 0;
+        $inString = false;
+        $stringChar = null;
+        $escaped = false;
+
+        for ($i = 0; $i < strlen($content); $i++) {
+            $char = $content[$i];
+
+            if ($escaped) {
+                $escaped = false;
+                continue;
+            }
+
+            if ($char === '\\') {
+                $escaped = true;
+                continue;
+            }
+
+            // Handle string boundaries
+            if (($char === '"' || $char === "'") && ! $inString) {
+                $inString = true;
+                $stringChar = $char;
+                continue;
+            }
+
+            if ($inString && $char === $stringChar) {
+                $inString = false;
+                $stringChar = null;
+                continue;
+            }
+
+            // Only count brackets outside of strings
+            if (! $inString) {
+                if ($char === '[') {
+                    $depth++;
+                } elseif ($char === ']') {
+                    $depth--;
+                    if ($depth === 0) {
+                        // Found the closing bracket
+                        return substr($content, 0, $i + 1);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

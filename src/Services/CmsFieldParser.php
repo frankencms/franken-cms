@@ -40,7 +40,7 @@ class CmsFieldParser
         $directiveTypes = [
             'Text', 'Textarea', 'Email', 'Url', 'Number', 'Select',
             'File', 'Image', 'MediaImage', 'RichEditor', 'Toggle',
-            'Checkbox', 'Tags', 'Repeater'
+            'Checkbox', 'Tags', 'Repeater',
         ];
 
         // Find all @franken* directives
@@ -127,38 +127,86 @@ class CmsFieldParser
     }
 
     /**
-     * Parse field arguments (name, options) from typed directive
+     * Parse field arguments (name, options, placeholder) from typed directive
      *
-     * @param string $arguments The arguments string from the directive
-     * @param string $directiveType The directive type (e.g., 'Text', 'Repeater')
+     * @param  string  $arguments  The arguments string from the directive
+     * @param  string  $directiveType  The directive type (e.g., 'Text', 'Repeater')
      */
     protected function parseFieldArguments(string $arguments, string $directiveType): void
     {
         // Convert directive type to field type (Text -> text, MediaImage -> image)
         $fieldType = $this->getFieldTypeFromDirective($directiveType);
 
-        // Match: 'fieldname', [options]
-        if (preg_match('/^\s*([\'"])(.*?)\1\s*,\s*(.+)$/s', $arguments, $matches)) {
-            // Has options array
-            $identifier = $matches[2];
-            $arrayCode = trim($matches[3]);
+        // Extract field name first
+        if (! preg_match('/^\s*([\'"])(.*?)\1/', $arguments, $nameMatch)) {
+            return;
+        }
 
-            try {
-                // Evaluate the array code safely.
-                $properties = eval("return {$arrayCode};");
+        $identifier = $nameMatch[2];
+        $afterName = substr($arguments, strlen($nameMatch[0]));
 
-                if (is_array($properties)) {
-                    FieldRegistry::register($identifier, $fieldType, $properties);
+        // Check if there are options (array after field name)
+        if (preg_match('/^\s*,\s*\[/', $afterName)) {
+            $arrayStart = strpos($afterName, '[');
+            $arrayCode = $this->extractBalancedArray(substr($afterName, $arrayStart));
+
+            if ($arrayCode) {
+                try {
+                    // Evaluate the array code safely (ignoring any third parameter)
+                    $properties = eval("return {$arrayCode};");
+
+                    if (is_array($properties)) {
+                        FieldRegistry::register($identifier, $fieldType, $properties);
+                    }
+                } catch (Throwable $e) {
+                    // Log error but continue parsing other fields
+                    Log::warning("Failed to parse field options for '{$identifier}': " . $e->getMessage());
                 }
-            } catch (Throwable $e) {
-                // Log error but continue parsing other fields
-                Log::warning("Failed to parse field options for '{$identifier}': " . $e->getMessage());
+            } else {
+                FieldRegistry::register($identifier, $fieldType, []);
             }
-        } elseif (preg_match('/^\s*([\'"])(.*?)\1\s*$/s', $arguments, $matches)) {
+        } else {
             // No options array
-            $identifier = $matches[2];
             FieldRegistry::register($identifier, $fieldType, []);
         }
+    }
+
+    /**
+     * Extract balanced array from string (handles nested arrays)
+     */
+    protected function extractBalancedArray(string $content): ?string
+    {
+        if (! str_starts_with($content, '[')) {
+            return null;
+        }
+
+        $depth = 0;
+        $inString = false;
+        $stringChar = null;
+
+        for ($i = 0; $i < strlen($content); $i++) {
+            $char = $content[$i];
+
+            // Handle string boundaries
+            if (! $inString && ($char === '"' || $char === "'")) {
+                $inString = true;
+                $stringChar = $char;
+            } elseif ($inString && $char === $stringChar && ($i === 0 || $content[$i - 1] !== '\\')) {
+                $inString = false;
+                $stringChar = null;
+            } elseif (! $inString) {
+                if ($char === '[') {
+                    $depth++;
+                } elseif ($char === ']') {
+                    $depth--;
+                    if ($depth === 0) {
+                        return substr($content, 0, $i + 1);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
