@@ -33,6 +33,7 @@ class CmsFieldParser
 
     /**
      * Parse @franken field directives from template content
+     * Fields are registered in the order they appear in the template
      */
     protected function parseDirectives(string $content): void
     {
@@ -43,7 +44,9 @@ class CmsFieldParser
             'Checkbox', 'Tags', 'Repeater',
         ];
 
-        // Find all @franken* directives
+        // Find ALL directives with their positions
+        $allDirectives = [];
+
         foreach ($directiveTypes as $type) {
             $directive = "@franken{$type}(";
             $directiveLen = strlen($directive);
@@ -63,11 +66,23 @@ class CmsFieldParser
 
                 [$arguments, $endPos] = $result;
 
-                // Parse the extracted arguments with the directive type
-                $this->parseFieldArguments($arguments, $type);
+                // Store directive with its position in the template
+                $allDirectives[] = [
+                    'position'  => $pos,
+                    'type'      => $type,
+                    'arguments' => $arguments,
+                ];
 
                 $offset = $endPos;
             }
+        }
+
+        // Sort by position to maintain template order
+        usort($allDirectives, fn ($a, $b) => $a['position'] <=> $b['position']);
+
+        // Parse in order of appearance
+        foreach ($allDirectives as $directive) {
+            $this->parseFieldArguments($directive['arguments'], $directive['type']);
         }
     }
 
