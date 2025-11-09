@@ -82,7 +82,6 @@ class ImageFieldSchema
                             "modal_{$normalizedFieldName}_width"        => $get("{$normalizedFieldName}_width"),
                             "modal_{$normalizedFieldName}_height"       => $get("{$normalizedFieldName}_height"),
                             "modal_{$normalizedFieldName}_focal_point"  => $get("{$normalizedFieldName}_focal_point") ?? '50% 50%',
-
                         ])
                         ->schema([
                             SpatieMediaLibraryFileUpload::make($normalizedFieldName)
@@ -99,6 +98,8 @@ class ImageFieldSchema
                                 ->live()
                                 ->afterStateUpdated(function ($state, callable $set) use ($normalizedFieldName) {
                                     if ($state) {
+                                        // Reset focal point to center for new uploads
+                                        $set("modal_{$normalizedFieldName}_focal_point", '50% 50%');
 
                                         // Auto-populate width and height from uploaded file
                                         $dimensions = static::getImageDimensions($state);
@@ -112,6 +113,8 @@ class ImageFieldSchema
                             FocalPointPicker::make("modal_{$normalizedFieldName}_focal_point")
                                 ->label(__('Focal Point'))
                                 ->imageField($normalizedFieldName)
+                                ->collection($collection)
+                                ->live()
                                 ->columnSpanFull(),
 
                             Section::make('Image Details')
@@ -176,13 +179,6 @@ class ImageFieldSchema
                                                 ->maxLength(255),
                                         ]),
                                 ]),
-
-                            // Hidden fields for focal point (used by FocalPointPicker)
-                            Hidden::make("modal_{$normalizedFieldName}_focal_x")
-                                ->default(50),
-
-                            Hidden::make("modal_{$normalizedFieldName}_focal_y")
-                                ->default(50),
                         ])
                         ->action(function (array $data, callable $set) use ($normalizedFieldName): void {
                             // Update the main form fields with modal data
@@ -194,8 +190,7 @@ class ImageFieldSchema
                             $set("{$normalizedFieldName}_lazy_loading", $data["modal_{$normalizedFieldName}_lazy_loading"] ?? true);
                             $set("{$normalizedFieldName}_width", $data["modal_{$normalizedFieldName}_width"] ?? null);
                             $set("{$normalizedFieldName}_height", $data["modal_{$normalizedFieldName}_height"] ?? null);
-                            $set("{$normalizedFieldName}_focal_x", $data["modal_{$normalizedFieldName}_focal_x"] ?? 50);
-                            $set("{$normalizedFieldName}_focal_y", $data["modal_{$normalizedFieldName}_focal_y"] ?? 50);
+                            $set("{$normalizedFieldName}_focal_point", $data["modal_{$normalizedFieldName}_focal_point"] ?? '50% 50%');
                         }),
                 ]),
             ])
@@ -210,8 +205,7 @@ class ImageFieldSchema
             Hidden::make("{$normalizedFieldName}_lazy_loading")->default(true),
             Hidden::make("{$normalizedFieldName}_width"),
             Hidden::make("{$normalizedFieldName}_height"),
-            Hidden::make("{$normalizedFieldName}_focal_x")->default(50),
-            Hidden::make("{$normalizedFieldName}_focal_y")->default(50),
+            Hidden::make("{$normalizedFieldName}_focal_point")->default('50% 50%'),
         ];
     }
 
@@ -232,8 +226,7 @@ class ImageFieldSchema
                 'title'       => $data["{$fieldName}_title"] ?? '',
                 'caption'     => $data["{$fieldName}_caption"] ?? '',
                 'attribution' => $data["{$fieldName}_attribution"] ?? '',
-                'focal_x'     => $data["{$fieldName}_focal_x"] ?? 50,
-                'focal_y'     => $data["{$fieldName}_focal_y"] ?? 50,
+                'focal_point' => $data["{$fieldName}_focal_point"] ?? '50% 50%',
                 'width'       => $data["{$fieldName}_width"] ?? null,
                 'height'      => $data["{$fieldName}_height"] ?? null,
                 'css'         => $data["{$fieldName}_css"] ?? '',
@@ -266,8 +259,7 @@ class ImageFieldSchema
             "{$fieldName}_title"        => $data['title'] ?? '',
             "{$fieldName}_caption"      => $data['caption'] ?? '',
             "{$fieldName}_attribution"  => $data['attribution'] ?? '',
-            "{$fieldName}_focal_x"      => $data['focal_x'] ?? 50,
-            "{$fieldName}_focal_y"      => $data['focal_y'] ?? 50,
+            "{$fieldName}_focal_point"  => $data['focal_point'] ?? '50% 50%',
             "{$fieldName}_width"        => $data['width'] ?? null,
             "{$fieldName}_height"       => $data['height'] ?? null,
             "{$fieldName}_css"          => $data['css'] ?? '',
@@ -297,8 +289,7 @@ class ImageFieldSchema
             'title'       => $customProperties['title'] ?? '',
             'caption'     => $customProperties['caption'] ?? '',
             'attribution' => $customProperties['attribution'] ?? '',
-            'focal_x'     => $customProperties['focal_x'] ?? 50,
-            'focal_y'     => $customProperties['focal_y'] ?? 50,
+            'focal_point' => $customProperties['focal_point'] ?? '50% 50%',
             'width'       => $customProperties['width'] ?? null,
             'height'      => $customProperties['height'] ?? null,
             'css'         => $customProperties['css'] ?? '',
