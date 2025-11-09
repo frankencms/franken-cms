@@ -32,7 +32,7 @@ use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
 use FrankenCms\Filament\Plugins\RichEditor\SourceCodePlugin;
 use FrankenCms\Filament\Resources\Concerns\HasSeoFields;
 use FrankenCms\Helpers\PostHelper;
-use FrankenCms\Helpers\TemplateHelper;
+use FrankenCms\Helpers\TemplateHelpers;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;
@@ -543,6 +543,6 @@ class PostForm
 
     private static function getTemplates(): array
     {
-        return TemplateHelper::getPostTemplates();
+        return TemplateHelpers::getPostTemplates();
     }
 }

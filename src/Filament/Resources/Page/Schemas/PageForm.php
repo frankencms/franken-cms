@@ -17,7 +17,7 @@ use FrankenCms\Enums\PostType;
 use FrankenCms\Factories\TemplateFieldFactory;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Resources\Concerns\HasSeoFields;
-use FrankenCms\Helpers\TemplateHelper;
+use FrankenCms\Helpers\TemplateHelpers;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 use Illuminate\Support\HtmlString;
@@ -160,6 +160,6 @@ class PageForm
 
     private static function getTemplates(): array
     {
-        return TemplateHelper::getPageTemplates();
+        return TemplateHelpers::getPageTemplates();
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-use FrankenCms\Helpers\TemplateHelper;
+use FrankenCms\Helpers\TemplateHelpers;
 use FrankenCms\Services\FaviconGenerator;
 use Illuminate\Support\Facades\View;
 
@@ -15,7 +15,7 @@ if (! function_exists('_renderCmsField')) {
      */
     function _renderCmsField(string $fieldName, string $fieldType = 'text', array $options = []): mixed
     {
-        return TemplateHelper::cmsField($fieldName, $fieldType, $options);
+        return TemplateHelpers::cmsField($fieldName, $fieldType, $options);
     }
 }
 
