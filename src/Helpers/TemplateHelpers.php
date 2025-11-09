@@ -8,8 +8,19 @@ use FrankenCms\Services\CurrentPageService;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
-final class TemplateHelper
+final class TemplateHelpers
 {
+    /**
+     * Wraps a string with text placeholder format.
+     *
+     * @param  string  $string  The input string to be wrapped.
+     * @return string The wrapped string in the format '[% input_string %]'.
+     */
+    public static function wrap_text_placeholder(string $string): string
+    {
+        return sprintf('[%% %s %%]', $string);
+    }
+
     /**
      * Get all templates, optionally filtered by prefix
      *
