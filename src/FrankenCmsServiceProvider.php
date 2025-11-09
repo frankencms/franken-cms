@@ -5,6 +5,7 @@ namespace FrankenCms;
 use BladeUI\Icons\Factory;
 use Composer\InstalledVersions;
 use Exception;
+use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentView;
@@ -224,6 +225,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 path: __DIR__ . '/../resources/dist/filament/rich-content-plugins/enhanced-image.js'
             )
                 ->loadedOnRequest(),
+
+            Css::make('filament-focal-point-picker', __DIR__ . '/../resources/dist/filament-focal-point-picker.css'),
 
         ], 'frankencms/franken-cms');
 

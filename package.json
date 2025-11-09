@@ -8,11 +8,12 @@
         "build-css": "postcss resources/css/franken-cms.css -o resources/dist/franken-cms.css"
     },
     "devDependencies": {
+        "@awcodes/filament-plugin-purge": "^1.1.2",
         "@tiptap/core": "^3.5.1",
         "cssnano": "^6.0.1",
+        "esbuild": "^0.25.10",
         "postcss": "^8.4.27",
         "postcss-cli": "^10.1.0",
-        "postcss-nesting": "^13.0.0",
-        "esbuild": "^0.25.10"
+        "postcss-nesting": "^13.0.0"
     }
 }

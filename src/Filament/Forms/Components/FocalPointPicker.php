@@ -1,0 +1,50 @@
+<?php
+
+namespace FrankenCms\Filament\Forms\Components;
+
+use Closure;
+use Filament\Forms\Components\Field;
+use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+
+class FocalPointPicker extends Field
+{
+    public ?Closure $image = null;
+
+    protected string $view = 'franken-cms::filament.fields.focal-point-picker';
+
+    protected bool $hasDefaultState = true;
+
+    public function imageField(string $field): static
+    {
+        return $this->image(function (Get $get) use ($field) {
+            $imageState = collect($get($field))?->first();
+
+            if ($imageState instanceof TemporaryUploadedFile) {
+                return $imageState->temporaryUrl();
+            }
+
+            return is_string($imageState) ? Storage::url($imageState) : null;
+        });
+    }
+
+    public function image(string | Closure | null $image): static
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->evaluate($this->image);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->default('50% 50%');
+    }
+}

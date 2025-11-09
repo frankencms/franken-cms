@@ -1,8 +1,9 @@
-module.exports = {
+import postcssNesting from 'postcss-nesting'
+import cssnano from 'cssnano'
+
+export default {
     plugins: [
-        require('postcss-nesting')(),
-        require('cssnano')({
-            preset: 'default',
-        }),
+        postcssNesting,
+        cssnano,
     ],
-};
+}
