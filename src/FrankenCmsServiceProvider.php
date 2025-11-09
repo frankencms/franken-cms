@@ -226,7 +226,11 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             )
                 ->loadedOnRequest(),
 
-            Css::make('filament-focal-point-picker', __DIR__ . '/../resources/dist/filament-focal-point-picker.css'),
+            Css::make(
+                id: 'filament-focal-point-picker',
+                path: __DIR__ . '/../resources/dist/filament-focal-point-picker.css'
+            )
+                ->loadedOnRequest(),
 
         ], 'frankencms/franken-cms');
 

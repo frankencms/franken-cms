@@ -14,8 +14,8 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
+use FrankenCms\Filament\Forms\Components\FocalPointPicker;
 use Spatie\MediaLibrary\HasMedia;
 
 class ImageFieldSchema
@@ -81,8 +81,8 @@ class ImageFieldSchema
                             "modal_{$normalizedFieldName}_lazy_loading" => $get("{$normalizedFieldName}_lazy_loading") ?? true,
                             "modal_{$normalizedFieldName}_width"        => $get("{$normalizedFieldName}_width"),
                             "modal_{$normalizedFieldName}_height"       => $get("{$normalizedFieldName}_height"),
-                            "modal_{$normalizedFieldName}_focal_x"      => $get("{$normalizedFieldName}_focal_x") ?? 50,
-                            "modal_{$normalizedFieldName}_focal_y"      => $get("{$normalizedFieldName}_focal_y") ?? 50,
+                            "modal_{$normalizedFieldName}_focal_point"  => $get("{$normalizedFieldName}_focal_point") ?? '50% 50%',
+
                         ])
                         ->schema([
                             SpatieMediaLibraryFileUpload::make($normalizedFieldName)
@@ -99,18 +99,20 @@ class ImageFieldSchema
                                 ->live()
                                 ->afterStateUpdated(function ($state, callable $set) use ($normalizedFieldName) {
                                     if ($state) {
-                                        // Reset focal point to center for new uploads
-                                        $set("{$normalizedFieldName}_focal_x", 50);
-                                        $set("{$normalizedFieldName}_focal_y", 50);
 
                                         // Auto-populate width and height from uploaded file
                                         $dimensions = static::getImageDimensions($state);
                                         if ($dimensions) {
-                                            $set("{$normalizedFieldName}_width", $dimensions['width']);
-                                            $set("{$normalizedFieldName}_height", $dimensions['height']);
+                                            $set("modal_{$normalizedFieldName}_width", $dimensions['width']);
+                                            $set("modal_{$normalizedFieldName}_height", $dimensions['height']);
                                         }
                                     }
                                 }),
+
+                            FocalPointPicker::make("modal_{$normalizedFieldName}_focal_point")
+                                ->label(__('Focal Point'))
+                                ->imageField($normalizedFieldName)
+                                ->columnSpanFull(),
 
                             Section::make('Image Details')
                                 ->description('Essential information for accessibility and SEO')
@@ -173,18 +175,14 @@ class ImageFieldSchema
                                                 ->helperText(__('Credit the photographer or source'))
                                                 ->maxLength(255),
                                         ]),
-
-                                    Tabs\Tab::make('Focal Point')
-                                        ->schema([
-                                            Hidden::make("modal_{$normalizedFieldName}_focal_x")
-                                                ->default(50),
-
-                                            Hidden::make("modal_{$normalizedFieldName}_focal_y")
-                                                ->default(50),
-
-                                            static::makeFocalPointComponent($collection, $normalizedFieldName, 'modal_'),
-                                        ]),
                                 ]),
+
+                            // Hidden fields for focal point (used by FocalPointPicker)
+                            Hidden::make("modal_{$normalizedFieldName}_focal_x")
+                                ->default(50),
+
+                            Hidden::make("modal_{$normalizedFieldName}_focal_y")
+                                ->default(50),
                         ])
                         ->action(function (array $data, callable $set) use ($normalizedFieldName): void {
                             // Update the main form fields with modal data
@@ -307,30 +305,6 @@ class ImageFieldSchema
             'loading'     => $customProperties['loading'] ?? 'lazy',
             'media'       => $media,
         ];
-    }
-
-    protected static function makeFocalPointComponent(
-        string $collection,
-        string $fieldName,
-        string $prefix = ''
-    ): View {
-        $focalXField = $prefix . $fieldName . '_focal_x';
-        $focalYField = $prefix . $fieldName . '_focal_y';
-
-        return View::make('franken-cms::components.focal-point-picker')
-            ->viewData([
-                'statePaths' => [
-                    'focal_x' => "data.{$focalXField}",
-                    'focal_y' => "data.{$focalYField}",
-                ],
-                'existingImageSrc' => null, // Will be populated by JS from uploaded file
-                'existingFocalX'   => 50,
-                'existingFocalY'   => 50,
-                'collection'       => $collection,
-                'fieldPrefix'      => $prefix,
-                'isFeaturedImage'  => false, // This is a custom field, not featured image
-                'fieldName'        => $fieldName,
-            ]);
     }
 
     /**
