@@ -10,13 +10,13 @@ class RepeaterFieldRenderer implements FieldRendererInterface
     /**
      * Render repeater field data
      *
-     * Flattens items that have 'custom_fields' wrapper so templates can access fields directly
+     * Flattens items that have 'custom_fields' wrapper and wraps each item in a collection
      */
     public function render(mixed $value, ?string $fieldName = null): Collection
     {
         $items = collect($value ?? []);
 
-        // Flatten items that have 'custom_fields' wrapper
+        // Flatten items that have 'custom_fields' wrapper and wrap in collections
         return $items->map(function ($item) {
             if (is_array($item) && isset($item['custom_fields']) && is_array($item['custom_fields'])) {
                 // Flatten: merge custom_fields into the root level
@@ -29,10 +29,12 @@ class RepeaterFieldRenderer implements FieldRendererInterface
                     }
                 }
 
-                return $flattened;
+                // Return as a collection
+                return collect($flattened);
             }
 
-            return $item;
+            // Return as a collection
+            return collect($item);
         });
     }
 }

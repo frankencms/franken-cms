@@ -45,7 +45,8 @@ it('renders repeater fields as Collection', function () {
 
     expect($result)->toBeInstanceOf(Collection::class)
         ->and($result->count())->toBe(2)
-        ->and($result->first())->toBe(['title' => 'Item 1']);
+        ->and($result->first())->toBeInstanceOf(Collection::class)
+        ->and($result->first()->get('title'))->toBe('Item 1');
 });
 
 it('renders boolean fields correctly', function () {
