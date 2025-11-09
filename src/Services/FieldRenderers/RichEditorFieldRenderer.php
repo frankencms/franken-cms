@@ -112,10 +112,10 @@ class RichEditorFieldRenderer implements FieldRendererInterface
             }
 
             // Add focal point styling if provided
-            if (isset($attrs['focal_x']) && isset($attrs['focal_y'])) {
-                $focalX = $attrs['focal_x'];
-                $focalY = $attrs['focal_y'];
-                $imgTag .= ' style="object-fit: cover; object-position: ' . htmlspecialchars($focalX) . '% ' . htmlspecialchars($focalY) . '%;"';
+            if (isset($attrs['focal_point']) && ! empty($attrs['focal_point'])) {
+                // Parse focal_point string (e.g., "30% 45%") into x and y values
+                $focalPoint = trim($attrs['focal_point']);
+                $imgTag .= ' style="object-fit: cover; object-position: ' . htmlspecialchars($focalPoint) . ';"';
             }
 
             $imgTag .= '>';

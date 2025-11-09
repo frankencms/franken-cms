@@ -161,8 +161,7 @@ trait HasMeta
             '_lazy_loading',
             '_width',
             '_height',
-            '_focal_x',
-            '_focal_y',
+            '_focal_point',
         ];
 
         foreach ($imageMetadataPatterns as $pattern) {

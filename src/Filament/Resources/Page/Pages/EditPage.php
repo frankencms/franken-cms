@@ -98,8 +98,7 @@ class EditPage extends EditRecord
                 $data["{$normalizedFieldName}_lazy_loading"] = ($metadata['loading'] ?? 'lazy') === 'lazy';
                 $data["{$normalizedFieldName}_width"] = $metadata['width'] ?? null;
                 $data["{$normalizedFieldName}_height"] = $metadata['height'] ?? null;
-                $data["{$normalizedFieldName}_focal_x"] = $metadata['focal_x'] ?? 50;
-                $data["{$normalizedFieldName}_focal_y"] = $metadata['focal_y'] ?? 50;
+                $data["{$normalizedFieldName}_focal_point"] = $metadata['focal_point'] ?? '50% 50%';
             }
         }
 
@@ -153,8 +152,7 @@ class EditPage extends EditRecord
                 'lazy_loading' => $data["{$normalizedFieldName}_lazy_loading"] ?? true,
                 'width'        => $data["{$normalizedFieldName}_width"] ?? null,
                 'height'       => $data["{$normalizedFieldName}_height"] ?? null,
-                'focal_x'      => $data["{$normalizedFieldName}_focal_x"] ?? 50,
-                'focal_y'      => $data["{$normalizedFieldName}_focal_y"] ?? 50,
+                'focal_point'  => $data["{$normalizedFieldName}_focal_point"] ?? '50% 50%',
                 'collection'   => $field['properties']['collection'] ?? $identifier,
             ];
 
@@ -168,8 +166,7 @@ class EditPage extends EditRecord
                 $data["{$normalizedFieldName}_lazy_loading"],
                 $data["{$normalizedFieldName}_width"],
                 $data["{$normalizedFieldName}_height"],
-                $data["{$normalizedFieldName}_focal_x"],
-                $data["{$normalizedFieldName}_focal_y"]
+                $data["{$normalizedFieldName}_focal_point"]
             );
         }
 
@@ -214,8 +211,7 @@ class EditPage extends EditRecord
                 'loading'     => $metadata['lazy_loading'] ? 'lazy' : 'eager',
                 'width'       => $metadata['width'],
                 'height'      => $metadata['height'],
-                'focal_x'     => $metadata['focal_x'],
-                'focal_y'     => $metadata['focal_y'],
+                'focal_point' => $metadata['focal_point'],
             ]);
 
             $media->save();

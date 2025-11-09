@@ -84,8 +84,7 @@ class CreatePage extends CreateRecord
                 'lazy_loading' => $data["{$normalizedFieldName}_lazy_loading"] ?? true,
                 'width'        => $data["{$normalizedFieldName}_width"] ?? null,
                 'height'       => $data["{$normalizedFieldName}_height"] ?? null,
-                'focal_x'      => $data["{$normalizedFieldName}_focal_x"] ?? 50,
-                'focal_y'      => $data["{$normalizedFieldName}_focal_y"] ?? 50,
+                'focal_point'  => $data["{$normalizedFieldName}_focal_point"] ?? '50% 50%',
                 'collection'   => $field['properties']['collection'] ?? $identifier,
             ];
 
@@ -99,8 +98,7 @@ class CreatePage extends CreateRecord
                 $data["{$normalizedFieldName}_lazy_loading"],
                 $data["{$normalizedFieldName}_width"],
                 $data["{$normalizedFieldName}_height"],
-                $data["{$normalizedFieldName}_focal_x"],
-                $data["{$normalizedFieldName}_focal_y"]
+                $data["{$normalizedFieldName}_focal_point"]
             );
         }
 
@@ -145,8 +143,7 @@ class CreatePage extends CreateRecord
                 'loading'     => $metadata['lazy_loading'] ? 'lazy' : 'eager',
                 'width'       => $metadata['width'],
                 'height'      => $metadata['height'],
-                'focal_x'     => $metadata['focal_x'],
-                'focal_y'     => $metadata['focal_y'],
+                'focal_point' => $metadata['focal_point'],
             ]);
 
             $media->save();

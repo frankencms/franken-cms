@@ -38,10 +38,7 @@ class CreatePost extends CreateRecord
             'lazy_loading' => $data['featured_image_lazy_loading'] ?? false,
             'width'        => $data['featured_image_width'] ?? null,
             'height'       => $data['featured_image_height'] ?? null,
-            'focal_point'  => [
-                'x' => $data['featured_image_focal_x'] ?? 50,
-                'y' => $data['featured_image_focal_y'] ?? 50,
-            ],
+            'focal_point'  => $data['featured_image_focal_point'] ?? '50% 50%',
         ];
 
         // Remove featured image metadata from data array to prevent mass assignment errors
@@ -54,8 +51,7 @@ class CreatePost extends CreateRecord
             $data['featured_image_lazy_loading'],
             $data['featured_image_width'],
             $data['featured_image_height'],
-            $data['featured_image_focal_x'],
-            $data['featured_image_focal_y']
+            $data['featured_image_focal_point']
         );
 
         return $data;
@@ -92,7 +88,7 @@ class CreatePost extends CreateRecord
         $media = $record->getFirstMedia('featured');
 
         // Get the existing focal point to check if it's different from default
-        $existingFocalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+        $existingFocalPoint = $media->getCustomProperty('focal_point', '50% 50%');
         $newFocalPoint = $this->featuredImageMetadata['focal_point'];
 
         // Save custom properties directly to the media item
@@ -108,10 +104,10 @@ class CreatePost extends CreateRecord
 
         $media->save();
 
-        // Regenerate featured image conversions if focal point is not default (50, 50)
+        // Regenerate featured image conversions if focal point is not default "50% 50%"
         // The conversions are generated before this method runs, so if user set a custom focal point, regenerate
         // Only regenerate thumb, featured, and listing - NOT og/twitter (SEO images don't use focal points)
-        if ($newFocalPoint['x'] != 50 || $newFocalPoint['y'] != 50) {
+        if ($newFocalPoint !== '50% 50%') {
             app(\Spatie\MediaLibrary\Conversions\FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
         }
     }

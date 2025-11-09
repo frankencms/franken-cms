@@ -17,6 +17,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
+use FrankenCms\Filament\Forms\Components\FocalPointPicker;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -34,8 +35,7 @@ class EnhancedImageAction
                 'caption'     => $arguments['caption'] ?? null,
                 'attribution' => $arguments['attribution'] ?? null,
                 'loading'     => ($arguments['loading'] ?? 'lazy') === 'lazy',
-                'focal_x'     => $arguments['focal_x'] ?? 50,
-                'focal_y'     => $arguments['focal_y'] ?? 50,
+                'focal_point' => $arguments['focal_point'] ?? '50% 50%',
                 'width'       => $arguments['width'] ?? null,
                 'height'      => $arguments['height'] ?? null,
                 'css'         => $arguments['css'] ?? null,
@@ -62,8 +62,7 @@ class EnhancedImageAction
                             }
 
                             // Reset focal point to center for new uploads
-                            $set('focal_x', 50);
-                            $set('focal_y', 50);
+                            $set('focal_point', '50% 50%');
 
                             // Get the temporary URL for the uploaded file
                             $temporaryUrl = null;
@@ -139,13 +138,14 @@ class EnhancedImageAction
 
                         Tabs\Tab::make('Focal Point')
                             ->schema([
-                                Hidden::make('focal_x')
-                                    ->default($arguments['focal_x'] ?? 50),
+                                FocalPointPicker::make('focal_point')
+                                    ->label(__('Focal Point'))
+                                    ->image(fn (): ?string => $arguments['src'] ?? null)
+                                    ->live()
+                                    ->columnSpanFull(),
 
-                                Hidden::make('focal_y')
-                                    ->default($arguments['focal_y'] ?? 50),
-
-                                static::makeFocalPointComponent($arguments),
+                                Hidden::make('focal_point')
+                                    ->default($arguments['focal_point'] ?? '50% 50%'),
                             ]),
 
                         Tabs\Tab::make('Caption & Attribution')
@@ -235,20 +235,6 @@ class EnhancedImageAction
 
     }
 
-    protected static function makeFocalPointComponent(array $arguments = []): View
-    {
-        return View::make('franken-cms::components.focal-point-picker')
-            ->viewData([
-                'statePaths' => [
-                    'focal_x' => 'data.focal_x',
-                    'focal_y' => 'data.focal_y',
-                ],
-                'existingImageSrc' => $arguments['src'] ?? null,
-                'existingFocalX'   => $arguments['focal_x'] ?? 50,
-                'existingFocalY'   => $arguments['focal_y'] ?? 50,
-            ]);
-    }
-
     protected static function prepareImageAttributes(array $data, ?string $id, ?string $src): array
     {
         return [
@@ -259,8 +245,7 @@ class EnhancedImageAction
             'caption'     => $data['caption'] ?? null,
             'attribution' => $data['attribution'] ?? null,
             'loading'     => $data['loading'] ? 'lazy' : 'eager',
-            'focal_x'     => $data['focal_x'] ?? 50,
-            'focal_y'     => $data['focal_y'] ?? 50,
+            'focal_point' => $data['focal_point'] ?? '50% 50%',
             'width'       => $data['width'] ?? null,
             'height'      => $data['height'] ?? null,
             'css'         => $data['css'] ?? null,

@@ -18,7 +18,6 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
@@ -27,6 +26,7 @@ use FrankenCms\Filament\Actions\GenerateBlogPostAction;
 use FrankenCms\Filament\Actions\GenerateImageTitleAction;
 use FrankenCms\Filament\Actions\GenerateTeaserAction;
 use FrankenCms\Filament\Actions\GenerateTitleAction;
+use FrankenCms\Filament\Forms\Components\FocalPointPicker;
 use FrankenCms\Filament\Forms\Components\TitleWithSlugInput;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
 use FrankenCms\Filament\Plugins\RichEditor\SourceCodePlugin;
@@ -314,8 +314,7 @@ class PostForm
                                                         $set('featured_image_height', $dimensions['height']);
                                                     }
 
-                                                    $set('featured_image_focal_x', 50);
-                                                    $set('featured_image_focal_y', 50);
+                                                    $set('featured_image_focal_point', '50% 50%');
 
                                                     try {
                                                         if (method_exists($state, 'temporaryUrl')) {
@@ -352,6 +351,20 @@ class PostForm
                                                     'focalX'   => $focalPoint['x'] ?? 50,
                                                     'focalY'   => $focalPoint['y'] ?? 50,
                                                 ]);
+                                            }),
+
+                                        FocalPointPicker::make('featured_image_focal_point')
+                                            ->label(__('Focal Point'))
+                                            ->imageField('featured_image')
+                                            ->collection('featured')
+                                            ->live()
+                                            ->columnSpanFull()
+                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                if ($record && $record->hasMedia('featured')) {
+                                                    $media = $record->getFirstMedia('featured');
+                                                    $focalPoint = $media->getCustomProperty('focal_point', '50% 50%');
+                                                    $component->state($focalPoint);
+                                                }
                                             }),
 
                                         Section::make('Image Details')
@@ -467,58 +480,6 @@ class PostForm
                                                             }),
                                                     ]),
 
-                                                Tab::make('Focal Point')
-                                                    ->schema([
-                                                        Hidden::make('featured_image_focal_x')
-                                                            ->default(50)
-                                                            ->live()
-                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
-                                                                if ($record && $record->hasMedia('featured')) {
-                                                                    $media = $record->getFirstMedia('featured');
-                                                                    $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
-                                                                    $component->state($focalPoint['x'] ?? 50);
-                                                                }
-                                                            }),
-
-                                                        Hidden::make('featured_image_focal_y')
-                                                            ->default(50)
-                                                            ->live()
-                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
-                                                                if ($record && $record->hasMedia('featured')) {
-                                                                    $media = $record->getFirstMedia('featured');
-                                                                    $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
-                                                                    $component->state($focalPoint['y'] ?? 50);
-                                                                }
-                                                            }),
-
-                                                        View::make('franken-cms::components.featured-image-focal-point-picker')
-                                                            ->viewData(function (?Post $record): array {
-                                                                if (! $record || ! $record->hasMedia('featured')) {
-                                                                    return [
-                                                                        'statePaths' => [
-                                                                            'focal_x' => 'data.featured_image_focal_x',
-                                                                            'focal_y' => 'data.featured_image_focal_y',
-                                                                        ],
-                                                                        'existingImageSrc' => null,
-                                                                        'existingFocalX'   => 50,
-                                                                        'existingFocalY'   => 50,
-                                                                    ];
-                                                                }
-
-                                                                $media = $record->getFirstMedia('featured');
-                                                                $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
-
-                                                                return [
-                                                                    'statePaths' => [
-                                                                        'focal_x' => 'data.featured_image_focal_x',
-                                                                        'focal_y' => 'data.featured_image_focal_y',
-                                                                    ],
-                                                                    'existingImageSrc' => $media->getUrl(),
-                                                                    'existingFocalX'   => $focalPoint['x'] ?? 50,
-                                                                    'existingFocalY'   => $focalPoint['y'] ?? 50,
-                                                                ];
-                                                            }),
-                                                    ]),
                                             ]),
                                     ]),
                             ]),

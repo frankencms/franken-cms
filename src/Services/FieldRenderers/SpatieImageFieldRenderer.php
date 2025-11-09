@@ -104,13 +104,12 @@ class SpatieImageFieldRenderer implements FieldRendererInterface
         // Build inline styles
         $styles = [];
 
-        // Focal point (skip if centered at 50%, 50%)
-        $focalX = (float) ($metadata['focal_x'] ?? 50);
-        $focalY = (float) ($metadata['focal_y'] ?? 50);
+        // Focal point (skip if centered at 50% 50%)
+        $focalPoint = $metadata['focal_point'] ?? '50% 50%';
 
-        if ($focalX !== 50.0 || $focalY !== 50.0) {
+        if ($focalPoint !== '50% 50%') {
             $styles[] = 'object-fit: cover';
-            $styles[] = 'object-position: ' . htmlspecialchars($focalX) . '% ' . htmlspecialchars($focalY) . '%';
+            $styles[] = 'object-position: ' . htmlspecialchars($focalPoint);
         }
 
         // Add any custom style from template

@@ -104,8 +104,7 @@ class EditPost extends EditRecord
                 $data["{$identifier}_lazy_loading"] = ($metadata['loading'] ?? 'lazy') === 'lazy';
                 $data["{$identifier}_width"] = $metadata['width'] ?? null;
                 $data["{$identifier}_height"] = $metadata['height'] ?? null;
-                $data["{$identifier}_focal_x"] = $metadata['focal_x'] ?? 50;
-                $data["{$identifier}_focal_y"] = $metadata['focal_y'] ?? 50;
+                $data["{$identifier}_focal_point"] = $metadata['focal_point'] ?? '50% 50%';
             }
         }
 
@@ -124,10 +123,7 @@ class EditPost extends EditRecord
             'lazy_loading' => $data['featured_image_lazy_loading'] ?? false,
             'width'        => $data['featured_image_width'] ?? null,
             'height'       => $data['featured_image_height'] ?? null,
-            'focal_point'  => [
-                'x' => $data['featured_image_focal_x'] ?? 50,
-                'y' => $data['featured_image_focal_y'] ?? 50,
-            ],
+            'focal_point'  => $data['featured_image_focal_point'] ?? '50% 50%',
         ];
 
         // Remove featured image metadata from data array to prevent mass assignment errors
@@ -140,8 +136,7 @@ class EditPost extends EditRecord
             $data['featured_image_lazy_loading'],
             $data['featured_image_width'],
             $data['featured_image_height'],
-            $data['featured_image_focal_x'],
-            $data['featured_image_focal_y']
+            $data['featured_image_focal_point']
         );
 
         // Extract custom image fields metadata
@@ -186,8 +181,7 @@ class EditPost extends EditRecord
                 'lazy_loading' => $data["{$identifier}_lazy_loading"] ?? true,
                 'width'        => $data["{$identifier}_width"] ?? null,
                 'height'       => $data["{$identifier}_height"] ?? null,
-                'focal_x'      => $data["{$identifier}_focal_x"] ?? 50,
-                'focal_y'      => $data["{$identifier}_focal_y"] ?? 50,
+                'focal_point'  => $data["{$identifier}_focal_point"] ?? '50% 50%',
                 'collection'   => $field['properties']['collection'] ?? $identifier,
             ];
 
@@ -201,8 +195,7 @@ class EditPost extends EditRecord
                 $data["{$identifier}_lazy_loading"],
                 $data["{$identifier}_width"],
                 $data["{$identifier}_height"],
-                $data["{$identifier}_focal_x"],
-                $data["{$identifier}_focal_y"]
+                $data["{$identifier}_focal_point"]
             );
         }
 
@@ -241,7 +234,7 @@ class EditPost extends EditRecord
         $media = $record->getFirstMedia('featured');
 
         // Get the existing focal point to check if it changed
-        $existingFocalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+        $existingFocalPoint = $media->getCustomProperty('focal_point', '50% 50%');
         $newFocalPoint = $this->featuredImageMetadata['focal_point'];
 
         // Save custom properties directly to the media item
@@ -259,7 +252,7 @@ class EditPost extends EditRecord
 
         // Regenerate featured image conversions if focal point changed
         // Only regenerate thumb, featured, and listing - NOT og/twitter (SEO images don't use focal points)
-        if ($existingFocalPoint['x'] !== $newFocalPoint['x'] || $existingFocalPoint['y'] !== $newFocalPoint['y']) {
+        if ($existingFocalPoint !== $newFocalPoint) {
             app(\Spatie\MediaLibrary\Conversions\FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
         }
     }
@@ -297,8 +290,7 @@ class EditPost extends EditRecord
                 'loading'     => $metadata['lazy_loading'] ? 'lazy' : 'eager',
                 'width'       => $metadata['width'],
                 'height'      => $metadata['height'],
-                'focal_x'     => $metadata['focal_x'],
-                'focal_y'     => $metadata['focal_y'],
+                'focal_point' => $metadata['focal_point'],
             ]);
 
             $media->save();

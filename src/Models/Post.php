@@ -241,7 +241,7 @@ class Post extends Model implements HasMedia, HasRichContent
             return collect();
         }
 
-        $query = <<<SQL
+        $query = <<<'SQL'
             WITH RECURSIVE ancestors AS (
                 SELECT id, post_slug, post_title, parent_id, 1 as level
                 FROM posts

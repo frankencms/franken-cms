@@ -94,16 +94,14 @@ class MediaImageFieldRenderer implements FieldRendererInterface
             $html .= ' class="' . htmlspecialchars($classes) . '"';
         }
 
-        // Add focal point styling (skip if centered at 50%, 50% as that's the default)
-        if (isset($imageData['focal_x']) && isset($imageData['focal_y'])) {
-            $focalX = (float) $imageData['focal_x'];
-            $focalY = (float) $imageData['focal_y'];
+        // Add focal point styling (skip if centered at 50% 50% as that's the default)
+        if (isset($imageData['focal_point']) && ! empty($imageData['focal_point'])) {
+            $focalPoint = $imageData['focal_point'];
 
-            // Only add focal point styling if it's NOT centered (50%, 50%)
-            if ($focalX !== 50.0 || $focalY !== 50.0) {
+            // Only add focal point styling if it's NOT centered (50% 50%)
+            if ($focalPoint !== '50% 50%') {
                 $html .= ' style="object-fit: cover; object-position: '
-                    . htmlspecialchars($focalX) . '% '
-                    . htmlspecialchars($focalY) . '%;"';
+                    . htmlspecialchars($focalPoint) . ';"';
             }
         }
 
