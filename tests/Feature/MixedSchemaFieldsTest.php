@@ -3,10 +3,10 @@
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use FrankenCms\Services\CmsFieldBuilder;
+use FrankenCms\Services\FilamentFieldSchemaBuilder;
 
 it('builds schema from array definitions', function () {
-    $builder = app(CmsFieldBuilder::class);
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $schema = $builder->buildSchema([
         ['name' => 'title', 'type' => 'text', 'label' => 'Title', 'required' => true],
@@ -19,7 +19,7 @@ it('builds schema from array definitions', function () {
 });
 
 it('builds schema from Filament Component instances', function () {
-    $builder = app(CmsFieldBuilder::class);
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $schema = $builder->buildSchema([
         TextInput::make('title')->label('Title')->required(),
@@ -32,7 +32,7 @@ it('builds schema from Filament Component instances', function () {
 });
 
 it('builds schema from mixed array and Component definitions', function () {
-    $builder = app(CmsFieldBuilder::class);
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $schema = $builder->buildSchema([
         // Array definition
@@ -50,7 +50,7 @@ it('builds schema from mixed array and Component definitions', function () {
 });
 
 it('throws exception if array definition missing name', function () {
-    $builder = app(CmsFieldBuilder::class);
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $builder->buildSchemaField([
         'type'  => 'text',
@@ -59,7 +59,7 @@ it('throws exception if array definition missing name', function () {
 })->throws(\InvalidArgumentException::class, 'Field definition array must have a "name" key');
 
 it('defaults to text type if not specified', function () {
-    $builder = app(CmsFieldBuilder::class);
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $field = $builder->buildSchemaField([
         'name'  => 'test_field',
@@ -70,7 +70,7 @@ it('defaults to text type if not specified', function () {
 });
 
 it('applies options from array definition', function () {
-    $builder = app(CmsFieldBuilder::class);
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $field = $builder->buildSchemaField([
         'name'     => 'description',

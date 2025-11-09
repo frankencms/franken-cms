@@ -5,8 +5,7 @@ namespace FrankenCms\Filament\Resources\Page\Pages;
 use Filament\Resources\Pages\CreateRecord;
 use FrankenCms\Filament\Resources\Page\PageResource;
 use FrankenCms\Models\Page;
-use FrankenCms\Registries\FieldRegistry;
-use FrankenCms\Services\CmsFieldParser;
+use FrankenCms\Services\TemplateFieldExtractor;
 
 class CreatePage extends CreateRecord
 {
@@ -61,13 +60,13 @@ class CreatePage extends CreateRecord
             return $data;
         }
 
-        $parser = new CmsFieldParser;
-        $parser->parse($templatePath);
-
-        $fields = FieldRegistry::getFields();
+        $extractor = app(TemplateFieldExtractor::class);
+        $fields = $extractor->parseTemplate($templatePath);
 
         // Extract metadata for each image field (media_image is legacy alias)
-        foreach ($fields as $identifier => $field) {
+        foreach ($fields as $field) {
+            $identifier = $field['name'];
+
             if (! in_array($field['type'], ['image', 'media_image'])) {
                 continue;
             }

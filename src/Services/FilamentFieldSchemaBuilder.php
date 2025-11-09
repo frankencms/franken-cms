@@ -55,9 +55,19 @@ class FilamentFieldSchemaBuilder
         // Apply options as method calls
         foreach ($options as $method => $value) {
             if (method_exists($field, $method)) {
-                // Handle special cases
-                if (is_array($value)) {
-                    $field->{$method}(...$value);
+                // Special handling for 'schema' option (used by Repeater and other container components)
+                if ($method === 'schema' && is_array($value)) {
+                    $schemaComponents = [];
+                    foreach ($value as $schemaField) {
+                        $builtField = $this->buildSchemaField($schemaField);
+                        // If buildSchemaField returns an array (e.g., from ImageFieldSchema), flatten it
+                        if (is_array($builtField)) {
+                            $schemaComponents = array_merge($schemaComponents, $builtField);
+                        } else {
+                            $schemaComponents[] = $builtField;
+                        }
+                    }
+                    $field->schema($schemaComponents);
                 } else {
                     $field->{$method}($value);
                 }

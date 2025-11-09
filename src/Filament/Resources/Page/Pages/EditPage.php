@@ -6,8 +6,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use FrankenCms\Filament\Resources\Page\PageResource;
 use FrankenCms\Models\Page;
-use FrankenCms\Registries\FieldRegistry;
-use FrankenCms\Services\CmsFieldParser;
+use FrankenCms\Services\TemplateFieldExtractor;
 
 class EditPage extends EditRecord
 {
@@ -61,18 +60,18 @@ class EditPage extends EditRecord
             return $data;
         }
 
-        $parser = new CmsFieldParser;
-        $parser->parse($templatePath);
-
-        $fields = FieldRegistry::getFields();
+        $extractor = app(TemplateFieldExtractor::class);
+        $fields = $extractor->parseTemplate($templatePath);
 
         // Load metadata for each image field (media_image is legacy alias)
-        foreach ($fields as $identifier => $field) {
+        foreach ($fields as $field) {
+            $identifier = $field['name'];
+
             if (! in_array($field['type'], ['image', 'media_image'])) {
                 continue;
             }
 
-            $collection = $field['properties']['collection'] ?? $identifier;
+            $collection = $field['options']['collection'] ?? $identifier;
 
             if (! $this->record->hasMedia($collection)) {
                 continue;
@@ -132,10 +131,8 @@ class EditPage extends EditRecord
             return $data;
         }
 
-        $parser = new CmsFieldParser;
-        $parser->parse($templatePath);
-
-        $fields = FieldRegistry::getFields();
+        $extractor = app(TemplateFieldExtractor::class);
+        $fields = $extractor->parseTemplate($templatePath);
 
         // Extract metadata for each image field (media_image is legacy alias)
         foreach ($fields as $identifier => $field) {

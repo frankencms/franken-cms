@@ -2,11 +2,11 @@
 
 namespace FrankenCms\Factories;
 
+use Exception;
 use Filament\Schemas\Components\Section;
 use FrankenCms\Filament\Schemas\ImageFieldSchema;
-use FrankenCms\Registries\FieldRegistry;
-use FrankenCms\Services\CmsFieldParser;
 use FrankenCms\Services\FilamentFieldSchemaBuilder;
+use FrankenCms\Services\TemplateFieldExtractor;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -21,11 +21,9 @@ class TemplateFieldFactory
         $themeFolder = config('franken-cms.theme_folder');
         $templatePath = resource_path("views/{$themeFolder}/{$templateName}.blade.php");
 
-        $parser = new CmsFieldParser;
-        $parser->parse($templatePath);
-
-        // Retrieve fields from the Field Registry.
-        $fields = FieldRegistry::getFields();
+        // Parse template and extract field definitions
+        $extractor = app(TemplateFieldExtractor::class);
+        $fields = $extractor->parseTemplate($templatePath);
 
         if (empty($fields)) {
             return [];
@@ -43,12 +41,11 @@ class TemplateFieldFactory
 
             foreach ($sectionFields as $identifier => $field) {
                 $type = $field['type'];
-                $properties = $field['properties'];
+                $options = $field['options'] ?? [];
 
                 // Special handling for image type (media_image is legacy alias)
                 if (in_array($type, ['image', 'media_image'])) {
-                    $collection = $properties['collection'] ?? $identifier;
-                    $options = $properties;
+                    $collection = $options['collection'] ?? $identifier;
 
                     // ImageFieldSchema::make() returns an array of components
                     $imageComponents = ImageFieldSchema::make($identifier, $collection, $options);
@@ -61,35 +58,19 @@ class TemplateFieldFactory
                     continue;
                 }
 
-                // Check if this field type has a mapped Filament class
-                if (! isset($fieldMapping[$type])) {
-                    Log::warning("No mapping found for field type: {$type}");
-                    continue;
+                // Use FilamentFieldSchemaBuilder to create the field
+                $fieldDefinition = [
+                    'name'    => $identifier,
+                    'type'    => $type,
+                    'options' => $options,
+                ];
+
+                try {
+                    $fieldInstance = $fieldBuilder->buildField($fieldDefinition);
+                    $sectionFieldComponents[] = $fieldInstance;
+                } catch (Exception $e) {
+                    Log::warning("Failed to build field '{$identifier}' of type '{$type}': {$e->getMessage()}");
                 }
-
-                // Get the class from the mapping and create an instance
-                $filamentClass = $fieldMapping[$type];
-                $fieldInstance = $filamentClass::make("custom_fields.{$identifier}");
-
-                // Configure field properties if supported
-                foreach ($properties as $method => $value) {
-                    if (method_exists($fieldInstance, $method)) {
-                        // Special handling for 'schema' - build fields from mixed definitions
-                        if ($method === 'schema' && is_array($value)) {
-                            $schemaBuilder = app(FilamentFieldSchemaBuilder::class);
-                            $builtSchema = $schemaBuilder->buildSchema($value);
-                            $fieldInstance = $fieldInstance->schema($builtSchema);
-                        }
-                        // Handle other array values that should be spread
-                        elseif (is_array($value) && in_array($method, ['columns'])) {
-                            $fieldInstance = $fieldInstance->$method($value);
-                        } else {
-                            $fieldInstance = $fieldInstance->$method($value);
-                        }
-                    }
-                }
-
-                $sectionFieldComponents[] = $fieldInstance;
             }
 
             // Create a Filament Section for each group
@@ -114,16 +95,18 @@ class TemplateFieldFactory
     {
         $sections = [];
 
-        foreach ($fields as $identifier => $field) {
+        foreach ($fields as $field) {
+            $fieldName = $field['name'];
+
             // Check if field uses dot notation
-            if (str_contains($identifier, '.')) {
-                $parts = explode('.', $identifier, 2);
+            if (str_contains($fieldName, '.')) {
+                $parts = explode('.', $fieldName, 2);
                 $sectionName = $parts[0];
             } else {
                 $sectionName = 'general';
             }
 
-            $sections[$sectionName][$identifier] = $field;
+            $sections[$sectionName][$fieldName] = $field;
         }
 
         return $sections;

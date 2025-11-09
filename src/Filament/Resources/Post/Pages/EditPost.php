@@ -6,8 +6,7 @@ use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use FrankenCms\Filament\Resources\Post\PostResource;
 use FrankenCms\Models\Post;
-use FrankenCms\Registries\FieldRegistry;
-use FrankenCms\Services\CmsFieldParser;
+use FrankenCms\Services\TemplateFieldExtractor;
 
 class EditPost extends EditRecord
 {
@@ -72,10 +71,8 @@ class EditPost extends EditRecord
             return $data;
         }
 
-        $parser = new CmsFieldParser;
-        $parser->parse($templatePath);
-
-        $fields = FieldRegistry::getFields();
+        $extractor = app(TemplateFieldExtractor::class);
+        $fields = $extractor->parseTemplate($templatePath);
 
         // Load metadata for each image field (media_image is legacy alias)
         foreach ($fields as $identifier => $field) {
@@ -170,10 +167,8 @@ class EditPost extends EditRecord
             return $data;
         }
 
-        $parser = new CmsFieldParser;
-        $parser->parse($templatePath);
-
-        $fields = FieldRegistry::getFields();
+        $extractor = app(TemplateFieldExtractor::class);
+        $fields = $extractor->parseTemplate($templatePath);
 
         // Extract metadata for each image field (media_image is legacy alias)
         foreach ($fields as $identifier => $field) {
