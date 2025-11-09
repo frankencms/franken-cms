@@ -24,24 +24,3 @@
 .fi-fo-rich-editor .ProseMirror figure[data-type="enhanced-image"].ProseMirror-selectednode {
     @apply ring-2 ring-primary-500 rounded-lg;
 }
-
-/* Focal point picker styles */
-.focal-point-picker {
-    @apply relative;
-}
-
-.focal-point-picker .preview-area {
-    @apply relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600 cursor-crosshair;
-}
-
-.focal-point-picker .focal-point-indicator {
-    @apply absolute w-4 h-4 bg-red-500 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg pointer-events-none;
-}
-
-.focal-point-picker .crosshair-h {
-    @apply absolute w-full h-0.5 bg-red-500 opacity-50 pointer-events-none;
-}
-
-.focal-point-picker .crosshair-v {
-    @apply absolute h-full w-0.5 bg-red-500 opacity-50 pointer-events-none;
-}

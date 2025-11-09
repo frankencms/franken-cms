@@ -6,7 +6,7 @@ use FrankenCms\Services\TemplateFieldExtractor;
 use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\View\View;
 
-class CmsFieldComposer
+class FrankenFieldComposer
 {
     protected static array $parsedFields = [];
     protected static array $fileTimestamps = [];

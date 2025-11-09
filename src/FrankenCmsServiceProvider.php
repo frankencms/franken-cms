@@ -5,13 +5,14 @@ namespace FrankenCms;
 use BladeUI\Icons\Factory;
 use Composer\InstalledVersions;
 use Exception;
-use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use FrankenCms\Commands\GenerateSitemapCommand;
 use FrankenCms\Commands\InstallCommand;
+use FrankenCms\Directives\Providers;
+use FrankenCms\Directives\Providers\MenuDirectiveProvider;
 use FrankenCms\Http\Middleware\AddSeoDefaults;
 use FrankenCms\Http\Middleware\SetCurrentPage;
 use FrankenCms\Listeners\ClearFeedCacheListener;
@@ -26,9 +27,8 @@ use FrankenCms\Models\Term;
 use FrankenCms\Observers\PostObserver;
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Providers\SeoServiceProvider;
-use FrankenCms\Registries\SettingsTabRegistry;
-use FrankenCms\Directives\Providers;
 use FrankenCms\Registries\FieldTypeRegistry;
+use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\AiService;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
 use FrankenCms\Services\BladeFormDirectiveRegistry;
@@ -48,7 +48,7 @@ use FrankenCms\Services\TemplateFieldRenderer;
 use FrankenCms\Settings\StackSettings;
 use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
-use FrankenCms\View\Composers\CmsFieldComposer;
+use FrankenCms\View\Composers\FrankenFieldComposer;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
@@ -225,16 +225,6 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             )
                 ->loadedOnRequest(),
 
-            AlpineComponent::make(
-                id: 'focal-point-picker',
-                path: __DIR__ . '/../resources/dist/focal-point-picker.js'
-            ),
-
-            AlpineComponent::make(
-                id: 'featured-image-focal-picker',
-                path: __DIR__ . '/../resources/dist/featured-image-focal-picker.js'
-            ),
-
         ], 'frankencms/franken-cms');
 
     }
@@ -266,99 +256,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
     private function registerBladeDirectives(): void
     {
-        // Helper to extract balanced brackets
-        $extractBalancedArray = function ($str, $start) {
-            $depth = 0;
-            $inString = false;
-            $stringChar = null;
-            for ($i = $start; $i < strlen($str); $i++) {
-                $char = $str[$i];
-                if (! $inString && ($char === '"' || $char === "'")) {
-                    $inString = true;
-                    $stringChar = $char;
-                } elseif ($inString && $char === $stringChar && ($i === 0 || $str[$i - 1] !== '\\')) {
-                    $inString = false;
-                } elseif (! $inString) {
-                    if ($char === '[') {
-                        $depth++;
-                    }
-                    if ($char === ']') {
-                        $depth--;
-                        if ($depth === 0) {
-                            return substr($str, $start, $i - $start + 1);
-                        }
-                    }
-                }
-            }
-            return null;
-        };
-
-        // Register @frankenMenu directive - works with automatic loop
-        // Usage: @frankenMenu('menu-location') ... {{ $menuItem }} ... @endFrankenMenu
-        Blade::directive('frankenMenu', function ($expression) use ($extractBalancedArray) {
-            // Parse menu slug/location
-            if (! preg_match('/^([\'"])(.*?)\1/', $expression, $nameMatch)) {
-                return '<?php /* Invalid frankenMenu syntax */ ?>';
-            }
-            $menuSlug = $nameMatch[2];
-            $after = substr($expression, strlen($nameMatch[0]));
-
-            // Check for options array
-            if (preg_match('/^\s*,\s*\[/', $after)) {
-                $arrayStart = strpos($after, '[');
-                $options = $extractBalancedArray($after, $arrayStart);
-                $after = $options ? substr($after, $arrayStart + strlen($options)) : '';
-            } else {
-                $options = '[]';
-            }
-
-            // Check for placeholder boolean
-            $placeholder = (preg_match('/^\s*,\s*(true|false)/', $after, $placeholderMatch)) ? $placeholderMatch[1] : 'true';
-
-            return "<?php
-                \$__menuSlug = '{$menuSlug}';
-                \$__menuOpts = {$options};
-                \$__showPlaceholder = {$placeholder};
-                \$__menuService = app(\FrankenCms\Services\MenuService::class);
-                \$__menuItems = \$__menuService->getMenuItems(\$__menuSlug);
-                \$__currentUrl = request()->url();
-                \$__menuService->addActiveState(\$__menuItems, \$__currentUrl);
-
-                \$__menuIsEmpty = empty(\$__menuItems);
-                ob_start();
-                foreach (\$__menuItems as \$__menuItemData):
-                    \$menuItem = \$__menuItemData;
-            ?>";
-        });
-
-        Blade::directive('endFrankenMenu', function () {
-            return <<<'PHP'
-<?php
-                endforeach;
-
-                // Capture buffer content
-                $__menuContent = ob_get_clean();
-
-                // Check if has actual content
-                $__menuHasContent = strlen(trim($__menuContent)) > 0;
-
-                // Output content or placeholder
-                if ($__menuHasContent) {
-                    echo $__menuContent;
-                } elseif ($__menuIsEmpty && $__showPlaceholder) {
-                    // Show placeholder for empty menu
-                    $__menuLabel = str_replace(['-', '_'], ' ', $__menuSlug);
-                    $__menuLabel = ucwords($__menuLabel);
-                    echo '<div style="display: inline-block; padding: 0.5rem 1rem; background: rgba(59, 130, 246, 0.05); border: 2px dashed rgba(59, 130, 246, 0.2); border-radius: 0.375rem; color: rgba(59, 130, 246, 0.6); font-size: 0.875rem;">';
-                    echo '<svg style="display: inline-block; width: 1rem; height: 1rem; margin-right: 0.5rem; vertical-align: text-bottom;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>';
-                    echo htmlspecialchars($__menuLabel) . ' (empty)';
-                    echo '</div>';
-                }
-
-                unset($menuItem, $__menuItemData, $__menuItems, $__menuSlug, $__menuOpts, $__menuService, $__currentUrl, $__showPlaceholder, $__menuIsEmpty, $__menuContent, $__menuHasContent, $__menuLabel);
-            ?>
-PHP;
-        });
+        // Register menu directives using provider
+        $menuProvider = new MenuDirectiveProvider;
+        $menuProvider->register();
     }
 
     private function registerFieldTypes(): void
@@ -395,7 +295,7 @@ PHP;
     {
         // Register the composer for all views
         // The composer itself will check if it's a theme template
-        View::composer('*', CmsFieldComposer::class);
+        View::composer('*', FrankenFieldComposer::class);
     }
 
     private function registerStackInjection(): void
@@ -440,7 +340,7 @@ PHP;
         if ($this->app->runningInConsole()) {
             if (class_exists(AboutCommand::class) && class_exists(InstalledVersions::class)) {
 
-                AboutCommand::add('🧟 FRANKEN CMS - Alive & Wel', fn () => [
+                AboutCommand::add('🧟 FRANKEN CMS - Alive & Well', fn () => [
 
                     'Version'          => InstalledVersions::getPrettyVersion('frankencms/franken-cms') ?? 'Unknown',
                     'Theme'            => config('franken-cms.theme_folder', 'theme'),
