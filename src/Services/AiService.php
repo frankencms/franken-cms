@@ -52,6 +52,7 @@ class AiService
             $prismRequest = prism()
                 ->text()
                 ->using($settings->provider, $settings->model)
+                ->usingProviderConfig(['api_key' => $settings->api_key])
                 ->withMaxTokens($promptConfig['max_tokens'] ?? 500);
 
             // Add prompt with optional image
@@ -129,6 +130,7 @@ class AiService
             $response = prism()
                 ->text()
                 ->using($settings->provider, $settings->model)
+                ->usingProviderConfig(['api_key' => $settings->api_key])
                 ->withPrompt('Respond with only the word "OK"')
                 ->withMaxTokens(10)
                 ->generate();
