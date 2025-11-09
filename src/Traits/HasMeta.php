@@ -159,6 +159,7 @@ trait HasMeta
             '_attribution',
             '_css',
             '_lazy_loading',
+            '_fetchpriority',
             '_width',
             '_height',
             '_focal_point',

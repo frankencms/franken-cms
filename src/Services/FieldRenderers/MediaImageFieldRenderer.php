@@ -90,6 +90,10 @@ class MediaImageFieldRenderer implements FieldRendererInterface
             $html .= ' loading="' . htmlspecialchars($imageData['loading']) . '"';
         }
 
+        if (! empty($imageData['fetchpriority']) && $imageData['fetchpriority'] !== 'none') {
+            $html .= ' fetchpriority="' . htmlspecialchars($imageData['fetchpriority']) . '"';
+        }
+
         if (! empty($classes)) {
             $html .= ' class="' . htmlspecialchars($classes) . '"';
         }

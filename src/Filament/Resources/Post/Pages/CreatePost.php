@@ -30,15 +30,16 @@ class CreatePost extends CreateRecord
     {
         // Extract featured image metadata before mass assignment
         $this->featuredImageMetadata = [
-            'alt'          => $data['featured_image_alt'] ?? '',
-            'title'        => $data['featured_image_title'] ?? '',
-            'caption'      => $data['featured_image_caption'] ?? '',
-            'attribution'  => $data['featured_image_attribution'] ?? '',
-            'css_classes'  => $data['featured_image_css'] ?? '',
-            'lazy_loading' => $data['featured_image_lazy_loading'] ?? false,
-            'width'        => $data['featured_image_width'] ?? null,
-            'height'       => $data['featured_image_height'] ?? null,
-            'focal_point'  => $data['featured_image_focal_point'] ?? '50% 50%',
+            'alt'           => $data['featured_image_alt'] ?? '',
+            'title'         => $data['featured_image_title'] ?? '',
+            'caption'       => $data['featured_image_caption'] ?? '',
+            'attribution'   => $data['featured_image_attribution'] ?? '',
+            'css_classes'   => $data['featured_image_css'] ?? '',
+            'lazy_loading'  => $data['featured_image_lazy_loading'] ?? false,
+            'fetchpriority' => $data['featured_image_fetchpriority'] ?? 'none',
+            'width'         => $data['featured_image_width'] ?? null,
+            'height'        => $data['featured_image_height'] ?? null,
+            'focal_point'   => $data['featured_image_focal_point'] ?? '50% 50%',
         ];
 
         // Remove featured image metadata from data array to prevent mass assignment errors
@@ -49,6 +50,7 @@ class CreatePost extends CreateRecord
             $data['featured_image_attribution'],
             $data['featured_image_css'],
             $data['featured_image_lazy_loading'],
+            $data['featured_image_fetchpriority'],
             $data['featured_image_width'],
             $data['featured_image_height'],
             $data['featured_image_focal_point']
@@ -98,6 +100,7 @@ class CreatePost extends CreateRecord
         $media->setCustomProperty('attribution', $this->featuredImageMetadata['attribution']);
         $media->setCustomProperty('css_classes', $this->featuredImageMetadata['css_classes']);
         $media->setCustomProperty('lazy_loading', $this->featuredImageMetadata['lazy_loading']);
+        $media->setCustomProperty('fetchpriority', $this->featuredImageMetadata['fetchpriority']);
         $media->setCustomProperty('width', $this->featuredImageMetadata['width']);
         $media->setCustomProperty('height', $this->featuredImageMetadata['height']);
         $media->setCustomProperty('focal_point', $newFocalPoint);

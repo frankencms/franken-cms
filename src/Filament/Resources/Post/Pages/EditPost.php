@@ -102,6 +102,7 @@ class EditPost extends EditRecord
                 $data["{$identifier}_attribution"] = $metadata['attribution'] ?? '';
                 $data["{$identifier}_css"] = $metadata['css'] ?? '';
                 $data["{$identifier}_lazy_loading"] = ($metadata['loading'] ?? 'lazy') === 'lazy';
+                $data["{$identifier}_fetchpriority"] = $metadata['fetchpriority'] ?? 'none';
                 $data["{$identifier}_width"] = $metadata['width'] ?? null;
                 $data["{$identifier}_height"] = $metadata['height'] ?? null;
                 $data["{$identifier}_focal_point"] = $metadata['focal_point'] ?? '50% 50%';
@@ -115,15 +116,16 @@ class EditPost extends EditRecord
     {
         // Extract featured image metadata before mass assignment
         $this->featuredImageMetadata = [
-            'alt'          => $data['featured_image_alt'] ?? '',
-            'title'        => $data['featured_image_title'] ?? '',
-            'caption'      => $data['featured_image_caption'] ?? '',
-            'attribution'  => $data['featured_image_attribution'] ?? '',
-            'css_classes'  => $data['featured_image_css'] ?? '',
-            'lazy_loading' => $data['featured_image_lazy_loading'] ?? false,
-            'width'        => $data['featured_image_width'] ?? null,
-            'height'       => $data['featured_image_height'] ?? null,
-            'focal_point'  => $data['featured_image_focal_point'] ?? '50% 50%',
+            'alt'           => $data['featured_image_alt'] ?? '',
+            'title'         => $data['featured_image_title'] ?? '',
+            'caption'       => $data['featured_image_caption'] ?? '',
+            'attribution'   => $data['featured_image_attribution'] ?? '',
+            'css_classes'   => $data['featured_image_css'] ?? '',
+            'lazy_loading'  => $data['featured_image_lazy_loading'] ?? false,
+            'fetchpriority' => $data['featured_image_fetchpriority'] ?? 'none',
+            'width'         => $data['featured_image_width'] ?? null,
+            'height'        => $data['featured_image_height'] ?? null,
+            'focal_point'   => $data['featured_image_focal_point'] ?? '50% 50%',
         ];
 
         // Remove featured image metadata from data array to prevent mass assignment errors
@@ -134,6 +136,7 @@ class EditPost extends EditRecord
             $data['featured_image_attribution'],
             $data['featured_image_css'],
             $data['featured_image_lazy_loading'],
+            $data['featured_image_fetchpriority'],
             $data['featured_image_width'],
             $data['featured_image_height'],
             $data['featured_image_focal_point']
@@ -173,16 +176,17 @@ class EditPost extends EditRecord
 
             // Extract metadata for this field
             $this->customImageFieldsMetadata[$identifier] = [
-                'alt'          => $data["{$identifier}_alt"] ?? '',
-                'title'        => $data["{$identifier}_title"] ?? '',
-                'caption'      => $data["{$identifier}_caption"] ?? '',
-                'attribution'  => $data["{$identifier}_attribution"] ?? '',
-                'css'          => $data["{$identifier}_css"] ?? '',
-                'lazy_loading' => $data["{$identifier}_lazy_loading"] ?? true,
-                'width'        => $data["{$identifier}_width"] ?? null,
-                'height'       => $data["{$identifier}_height"] ?? null,
-                'focal_point'  => $data["{$identifier}_focal_point"] ?? '50% 50%',
-                'collection'   => $field['properties']['collection'] ?? $identifier,
+                'alt'           => $data["{$identifier}_alt"] ?? '',
+                'title'         => $data["{$identifier}_title"] ?? '',
+                'caption'       => $data["{$identifier}_caption"] ?? '',
+                'attribution'   => $data["{$identifier}_attribution"] ?? '',
+                'css'           => $data["{$identifier}_css"] ?? '',
+                'lazy_loading'  => $data["{$identifier}_lazy_loading"] ?? true,
+                'fetchpriority' => $data["{$identifier}_fetchpriority"] ?? 'none',
+                'width'         => $data["{$identifier}_width"] ?? null,
+                'height'        => $data["{$identifier}_height"] ?? null,
+                'focal_point'   => $data["{$identifier}_focal_point"] ?? '50% 50%',
+                'collection'    => $field['properties']['collection'] ?? $identifier,
             ];
 
             // Remove from data array to prevent mass assignment errors
@@ -193,6 +197,7 @@ class EditPost extends EditRecord
                 $data["{$identifier}_attribution"],
                 $data["{$identifier}_css"],
                 $data["{$identifier}_lazy_loading"],
+                $data["{$identifier}_fetchpriority"],
                 $data["{$identifier}_width"],
                 $data["{$identifier}_height"],
                 $data["{$identifier}_focal_point"]
@@ -244,6 +249,7 @@ class EditPost extends EditRecord
         $media->setCustomProperty('attribution', $this->featuredImageMetadata['attribution']);
         $media->setCustomProperty('css_classes', $this->featuredImageMetadata['css_classes']);
         $media->setCustomProperty('lazy_loading', $this->featuredImageMetadata['lazy_loading']);
+        $media->setCustomProperty('fetchpriority', $this->featuredImageMetadata['fetchpriority']);
         $media->setCustomProperty('width', $this->featuredImageMetadata['width']);
         $media->setCustomProperty('height', $this->featuredImageMetadata['height']);
         $media->setCustomProperty('focal_point', $newFocalPoint);
@@ -282,15 +288,16 @@ class EditPost extends EditRecord
 
             // Save all metadata to the media item
             $media->setCustomProperty("{$fieldName}_data", [
-                'alt'         => $metadata['alt'],
-                'title'       => $metadata['title'],
-                'caption'     => $metadata['caption'],
-                'attribution' => $metadata['attribution'],
-                'css'         => $metadata['css'],
-                'loading'     => $metadata['lazy_loading'] ? 'lazy' : 'eager',
-                'width'       => $metadata['width'],
-                'height'      => $metadata['height'],
-                'focal_point' => $metadata['focal_point'],
+                'alt'           => $metadata['alt'],
+                'title'         => $metadata['title'],
+                'caption'       => $metadata['caption'],
+                'attribution'   => $metadata['attribution'],
+                'css'           => $metadata['css'],
+                'loading'       => $metadata['lazy_loading'] ? 'lazy' : 'eager',
+                'fetchpriority' => $metadata['fetchpriority'],
+                'width'         => $metadata['width'],
+                'height'        => $metadata['height'],
+                'focal_point'   => $metadata['focal_point'],
             ]);
 
             $media->save();

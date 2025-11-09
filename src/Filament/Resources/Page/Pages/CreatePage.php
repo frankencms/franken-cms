@@ -76,16 +76,17 @@ class CreatePage extends CreateRecord
 
             // Extract metadata for this field
             $this->customImageFieldsMetadata[$normalizedFieldName] = [
-                'alt'          => $data["{$normalizedFieldName}_alt"] ?? '',
-                'title'        => $data["{$normalizedFieldName}_title"] ?? '',
-                'caption'      => $data["{$normalizedFieldName}_caption"] ?? '',
-                'attribution'  => $data["{$normalizedFieldName}_attribution"] ?? '',
-                'css'          => $data["{$normalizedFieldName}_css"] ?? '',
-                'lazy_loading' => $data["{$normalizedFieldName}_lazy_loading"] ?? true,
-                'width'        => $data["{$normalizedFieldName}_width"] ?? null,
-                'height'       => $data["{$normalizedFieldName}_height"] ?? null,
-                'focal_point'  => $data["{$normalizedFieldName}_focal_point"] ?? '50% 50%',
-                'collection'   => $field['properties']['collection'] ?? $identifier,
+                'alt'           => $data["{$normalizedFieldName}_alt"] ?? '',
+                'title'         => $data["{$normalizedFieldName}_title"] ?? '',
+                'caption'       => $data["{$normalizedFieldName}_caption"] ?? '',
+                'attribution'   => $data["{$normalizedFieldName}_attribution"] ?? '',
+                'css'           => $data["{$normalizedFieldName}_css"] ?? '',
+                'lazy_loading'  => $data["{$normalizedFieldName}_lazy_loading"] ?? true,
+                'fetchpriority' => $data["{$normalizedFieldName}_fetchpriority"] ?? 'none',
+                'width'         => $data["{$normalizedFieldName}_width"] ?? null,
+                'height'        => $data["{$normalizedFieldName}_height"] ?? null,
+                'focal_point'   => $data["{$normalizedFieldName}_focal_point"] ?? '50% 50%',
+                'collection'    => $field['properties']['collection'] ?? $identifier,
             ];
 
             // Remove from data array to prevent mass assignment errors
@@ -96,6 +97,7 @@ class CreatePage extends CreateRecord
                 $data["{$normalizedFieldName}_attribution"],
                 $data["{$normalizedFieldName}_css"],
                 $data["{$normalizedFieldName}_lazy_loading"],
+                $data["{$normalizedFieldName}_fetchpriority"],
                 $data["{$normalizedFieldName}_width"],
                 $data["{$normalizedFieldName}_height"],
                 $data["{$normalizedFieldName}_focal_point"]
@@ -135,15 +137,16 @@ class CreatePage extends CreateRecord
 
             // Save all metadata to the media item
             $media->setCustomProperty("{$fieldName}_data", [
-                'alt'         => $metadata['alt'],
-                'title'       => $metadata['title'],
-                'caption'     => $metadata['caption'],
-                'attribution' => $metadata['attribution'],
-                'css'         => $metadata['css'],
-                'loading'     => $metadata['lazy_loading'] ? 'lazy' : 'eager',
-                'width'       => $metadata['width'],
-                'height'      => $metadata['height'],
-                'focal_point' => $metadata['focal_point'],
+                'alt'           => $metadata['alt'],
+                'title'         => $metadata['title'],
+                'caption'       => $metadata['caption'],
+                'attribution'   => $metadata['attribution'],
+                'css'           => $metadata['css'],
+                'loading'       => $metadata['lazy_loading'] ? 'lazy' : 'eager',
+                'fetchpriority' => $metadata['fetchpriority'],
+                'width'         => $metadata['width'],
+                'height'        => $metadata['height'],
+                'focal_point'   => $metadata['focal_point'],
             ]);
 
             $media->save();

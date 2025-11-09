@@ -5,6 +5,7 @@ namespace FrankenCms\Filament\Resources\Post\Schemas;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -77,14 +78,15 @@ class FeaturedImageSchema
                         ->modalDescription(__('Configure accessibility, display options, and metadata for your featured image.'))
                         ->modalWidth(Width::ThreeExtraLarge)
                         ->fillForm(fn (?array $arguments, callable $get): array => [
-                            'modal_featured_image_alt'          => $get('featured_image_alt') ?? '',
-                            'modal_featured_image_caption'      => $get('featured_image_caption') ?? '',
-                            'modal_featured_image_attribution'  => $get('featured_image_attribution') ?? '',
-                            'modal_featured_image_css'          => $get('featured_image_css') ?? '',
-                            'modal_featured_image_lazy_loading' => $get('featured_image_lazy_loading') ?? true,
-                            'modal_featured_image_width'        => $get('featured_image_width'),
-                            'modal_featured_image_height'       => $get('featured_image_height'),
-                            'modal_featured_image_focal_point'  => $get('featured_image_focal_point') ?? '50% 50%',
+                            'modal_featured_image_alt'           => $get('featured_image_alt') ?? '',
+                            'modal_featured_image_caption'       => $get('featured_image_caption') ?? '',
+                            'modal_featured_image_attribution'   => $get('featured_image_attribution') ?? '',
+                            'modal_featured_image_css'           => $get('featured_image_css') ?? '',
+                            'modal_featured_image_lazy_loading'  => $get('featured_image_lazy_loading') ?? true,
+                            'modal_featured_image_fetchpriority' => $get('featured_image_fetchpriority') ?? 'none',
+                            'modal_featured_image_width'         => $get('featured_image_width'),
+                            'modal_featured_image_height'        => $get('featured_image_height'),
+                            'modal_featured_image_focal_point'   => $get('featured_image_focal_point') ?? '50% 50%',
                         ])
                         ->schema([
 
@@ -156,6 +158,16 @@ class FeaturedImageSchema
                                                 ->default(true)
                                                 ->inline(),
 
+                                            Select::make('modal_featured_image_fetchpriority')
+                                                ->label(__('Fetch Priority'))
+                                                ->helperText(__('Hint to browser about resource priority'))
+                                                ->options([
+                                                    'none' => __('None (default)'),
+                                                    'high' => __('High'),
+                                                    'low'  => __('Low'),
+                                                ])
+                                                ->default('none'),
+
                                             Grid::make(2)
                                                 ->schema([
                                                     TextInput::make('modal_featured_image_width')
@@ -188,6 +200,7 @@ class FeaturedImageSchema
                             $set('featured_image_attribution', $data['modal_featured_image_attribution'] ?? '');
                             $set('featured_image_css', $data['modal_featured_image_css'] ?? '');
                             $set('featured_image_lazy_loading', $data['modal_featured_image_lazy_loading'] ?? true);
+                            $set('featured_image_fetchpriority', $data['modal_featured_image_fetchpriority'] ?? 'none');
                             $set('featured_image_width', $data['modal_featured_image_width']);
                             $set('featured_image_height', $data['modal_featured_image_height']);
                             $set('featured_image_focal_point', $data['modal_featured_image_focal_point'] ?? '50% 50%');
@@ -202,6 +215,7 @@ class FeaturedImageSchema
             Hidden::make('featured_image_attribution'),
             Hidden::make('featured_image_css'),
             Hidden::make('featured_image_lazy_loading')->default(true),
+            Hidden::make('featured_image_fetchpriority')->default('none'),
             Hidden::make('featured_image_width'),
             Hidden::make('featured_image_height'),
             Hidden::make('featured_image_focal_point')->default('50% 50%'),
@@ -217,14 +231,15 @@ class FeaturedImageSchema
 
         if ($media) {
             $customProperties = [
-                'alt'         => $data['featured_image_alt'] ?? '',
-                'caption'     => $data['featured_image_caption'] ?? '',
-                'attribution' => $data['featured_image_attribution'] ?? '',
-                'focal_point' => $data['featured_image_focal_point'] ?? '50% 50%',
-                'width'       => $data['featured_image_width'] ?? null,
-                'height'      => $data['featured_image_height'] ?? null,
-                'css'         => $data['featured_image_css'] ?? '',
-                'loading'     => isset($data['featured_image_lazy_loading']) && $data['featured_image_lazy_loading'] ? 'lazy' : 'eager',
+                'alt'           => $data['featured_image_alt'] ?? '',
+                'caption'       => $data['featured_image_caption'] ?? '',
+                'attribution'   => $data['featured_image_attribution'] ?? '',
+                'focal_point'   => $data['featured_image_focal_point'] ?? '50% 50%',
+                'width'         => $data['featured_image_width'] ?? null,
+                'height'        => $data['featured_image_height'] ?? null,
+                'css'           => $data['featured_image_css'] ?? '',
+                'loading'       => isset($data['featured_image_lazy_loading']) && $data['featured_image_lazy_loading'] ? 'lazy' : 'eager',
+                'fetchpriority' => $data['featured_image_fetchpriority'] ?? 'none',
             ];
 
             $media->setCustomProperty('featured_image_data', $customProperties);
@@ -246,14 +261,15 @@ class FeaturedImageSchema
         $data = $media->getCustomProperty('featured_image_data', []);
 
         return [
-            'featured_image_alt'          => $data['alt'] ?? '',
-            'featured_image_caption'      => $data['caption'] ?? '',
-            'featured_image_attribution'  => $data['attribution'] ?? '',
-            'featured_image_focal_point'  => $data['focal_point'] ?? '50% 50%',
-            'featured_image_width'        => $data['width'] ?? null,
-            'featured_image_height'       => $data['height'] ?? null,
-            'featured_image_css'          => $data['css'] ?? '',
-            'featured_image_lazy_loading' => ($data['loading'] ?? 'lazy') === 'lazy',
+            'featured_image_alt'           => $data['alt'] ?? '',
+            'featured_image_caption'       => $data['caption'] ?? '',
+            'featured_image_attribution'   => $data['attribution'] ?? '',
+            'featured_image_focal_point'   => $data['focal_point'] ?? '50% 50%',
+            'featured_image_width'         => $data['width'] ?? null,
+            'featured_image_height'        => $data['height'] ?? null,
+            'featured_image_css'           => $data['css'] ?? '',
+            'featured_image_lazy_loading'  => ($data['loading'] ?? 'lazy') === 'lazy',
+            'featured_image_fetchpriority' => $data['fetchpriority'] ?? 'none',
         ];
     }
 
@@ -271,16 +287,17 @@ class FeaturedImageSchema
         $customProperties = $media->getCustomProperty('featured_image_data', []);
 
         return [
-            'url'         => $media->getUrl(),
-            'alt'         => $customProperties['alt'] ?? '',
-            'caption'     => $customProperties['caption'] ?? '',
-            'attribution' => $customProperties['attribution'] ?? '',
-            'focal_point' => $customProperties['focal_point'] ?? '50% 50%',
-            'width'       => $customProperties['width'] ?? null,
-            'height'      => $customProperties['height'] ?? null,
-            'css'         => $customProperties['css'] ?? '',
-            'loading'     => $customProperties['loading'] ?? 'lazy',
-            'media'       => $media,
+            'url'           => $media->getUrl(),
+            'alt'           => $customProperties['alt'] ?? '',
+            'caption'       => $customProperties['caption'] ?? '',
+            'attribution'   => $customProperties['attribution'] ?? '',
+            'focal_point'   => $customProperties['focal_point'] ?? '50% 50%',
+            'width'         => $customProperties['width'] ?? null,
+            'height'        => $customProperties['height'] ?? null,
+            'css'           => $customProperties['css'] ?? '',
+            'loading'       => $customProperties['loading'] ?? 'lazy',
+            'fetchpriority' => $customProperties['fetchpriority'] ?? 'none',
+            'media'         => $media,
         ];
     }
 

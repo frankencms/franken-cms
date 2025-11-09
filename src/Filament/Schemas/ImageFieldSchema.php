@@ -5,6 +5,7 @@ namespace FrankenCms\Filament\Schemas;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -73,15 +74,16 @@ class ImageFieldSchema
                         ->modalDescription(__('Configure accessibility, display options, and metadata for your image.'))
                         ->modalWidth(Width::ThreeExtraLarge)
                         ->fillForm(fn (?array $arguments, callable $get): array => [
-                            "modal_{$normalizedFieldName}_alt"          => $get("{$normalizedFieldName}_alt") ?? '',
-                            "modal_{$normalizedFieldName}_title"        => $get("{$normalizedFieldName}_title") ?? '',
-                            "modal_{$normalizedFieldName}_caption"      => $get("{$normalizedFieldName}_caption") ?? '',
-                            "modal_{$normalizedFieldName}_attribution"  => $get("{$normalizedFieldName}_attribution") ?? '',
-                            "modal_{$normalizedFieldName}_css"          => $get("{$normalizedFieldName}_css") ?? '',
-                            "modal_{$normalizedFieldName}_lazy_loading" => $get("{$normalizedFieldName}_lazy_loading") ?? true,
-                            "modal_{$normalizedFieldName}_width"        => $get("{$normalizedFieldName}_width"),
-                            "modal_{$normalizedFieldName}_height"       => $get("{$normalizedFieldName}_height"),
-                            "modal_{$normalizedFieldName}_focal_point"  => $get("{$normalizedFieldName}_focal_point") ?? '50% 50%',
+                            "modal_{$normalizedFieldName}_alt"           => $get("{$normalizedFieldName}_alt") ?? '',
+                            "modal_{$normalizedFieldName}_title"         => $get("{$normalizedFieldName}_title") ?? '',
+                            "modal_{$normalizedFieldName}_caption"       => $get("{$normalizedFieldName}_caption") ?? '',
+                            "modal_{$normalizedFieldName}_attribution"   => $get("{$normalizedFieldName}_attribution") ?? '',
+                            "modal_{$normalizedFieldName}_css"           => $get("{$normalizedFieldName}_css") ?? '',
+                            "modal_{$normalizedFieldName}_lazy_loading"  => $get("{$normalizedFieldName}_lazy_loading") ?? true,
+                            "modal_{$normalizedFieldName}_fetchpriority" => $get("{$normalizedFieldName}_fetchpriority") ?? 'none',
+                            "modal_{$normalizedFieldName}_width"         => $get("{$normalizedFieldName}_width"),
+                            "modal_{$normalizedFieldName}_height"        => $get("{$normalizedFieldName}_height"),
+                            "modal_{$normalizedFieldName}_focal_point"   => $get("{$normalizedFieldName}_focal_point") ?? '50% 50%',
                         ])
                         ->schema([
                             SpatieMediaLibraryFileUpload::make($normalizedFieldName)
@@ -156,6 +158,16 @@ class ImageFieldSchema
                                                 ->default(true)
                                                 ->inline(),
 
+                                            Select::make("modal_{$normalizedFieldName}_fetchpriority")
+                                                ->label(__('Fetch Priority'))
+                                                ->helperText(__('Hint to browser about resource priority'))
+                                                ->options([
+                                                    'none' => __('None (default)'),
+                                                    'high' => __('High'),
+                                                    'low'  => __('Low'),
+                                                ])
+                                                ->default('none'),
+
                                             Grid::make(2)
                                                 ->schema([
                                                     TextInput::make("modal_{$normalizedFieldName}_width")
@@ -188,6 +200,7 @@ class ImageFieldSchema
                             $set("{$normalizedFieldName}_attribution", $data["modal_{$normalizedFieldName}_attribution"] ?? '');
                             $set("{$normalizedFieldName}_css", $data["modal_{$normalizedFieldName}_css"] ?? '');
                             $set("{$normalizedFieldName}_lazy_loading", $data["modal_{$normalizedFieldName}_lazy_loading"] ?? true);
+                            $set("{$normalizedFieldName}_fetchpriority", $data["modal_{$normalizedFieldName}_fetchpriority"] ?? 'none');
                             $set("{$normalizedFieldName}_width", $data["modal_{$normalizedFieldName}_width"] ?? null);
                             $set("{$normalizedFieldName}_height", $data["modal_{$normalizedFieldName}_height"] ?? null);
                             $set("{$normalizedFieldName}_focal_point", $data["modal_{$normalizedFieldName}_focal_point"] ?? '50% 50%');
@@ -203,6 +216,7 @@ class ImageFieldSchema
             Hidden::make("{$normalizedFieldName}_attribution"),
             Hidden::make("{$normalizedFieldName}_css"),
             Hidden::make("{$normalizedFieldName}_lazy_loading")->default(true),
+            Hidden::make("{$normalizedFieldName}_fetchpriority")->default('none'),
             Hidden::make("{$normalizedFieldName}_width"),
             Hidden::make("{$normalizedFieldName}_height"),
             Hidden::make("{$normalizedFieldName}_focal_point")->default('50% 50%'),
@@ -222,15 +236,16 @@ class ImageFieldSchema
 
         if ($media) {
             $customProperties = [
-                'alt'         => $data["{$fieldName}_alt"] ?? '',
-                'title'       => $data["{$fieldName}_title"] ?? '',
-                'caption'     => $data["{$fieldName}_caption"] ?? '',
-                'attribution' => $data["{$fieldName}_attribution"] ?? '',
-                'focal_point' => $data["{$fieldName}_focal_point"] ?? '50% 50%',
-                'width'       => $data["{$fieldName}_width"] ?? null,
-                'height'      => $data["{$fieldName}_height"] ?? null,
-                'css'         => $data["{$fieldName}_css"] ?? '',
-                'loading'     => isset($data["{$fieldName}_lazy_loading"]) && $data["{$fieldName}_lazy_loading"] ? 'lazy' : 'eager',
+                'alt'           => $data["{$fieldName}_alt"] ?? '',
+                'title'         => $data["{$fieldName}_title"] ?? '',
+                'caption'       => $data["{$fieldName}_caption"] ?? '',
+                'attribution'   => $data["{$fieldName}_attribution"] ?? '',
+                'focal_point'   => $data["{$fieldName}_focal_point"] ?? '50% 50%',
+                'width'         => $data["{$fieldName}_width"] ?? null,
+                'height'        => $data["{$fieldName}_height"] ?? null,
+                'css'           => $data["{$fieldName}_css"] ?? '',
+                'loading'       => isset($data["{$fieldName}_lazy_loading"]) && $data["{$fieldName}_lazy_loading"] ? 'lazy' : 'eager',
+                'fetchpriority' => $data["{$fieldName}_fetchpriority"] ?? 'none',
             ];
 
             $media->setCustomProperty("{$fieldName}_data", $customProperties);
@@ -255,15 +270,16 @@ class ImageFieldSchema
         $data = $media->getCustomProperty("{$fieldName}_data", []);
 
         return [
-            "{$fieldName}_alt"          => $data['alt'] ?? '',
-            "{$fieldName}_title"        => $data['title'] ?? '',
-            "{$fieldName}_caption"      => $data['caption'] ?? '',
-            "{$fieldName}_attribution"  => $data['attribution'] ?? '',
-            "{$fieldName}_focal_point"  => $data['focal_point'] ?? '50% 50%',
-            "{$fieldName}_width"        => $data['width'] ?? null,
-            "{$fieldName}_height"       => $data['height'] ?? null,
-            "{$fieldName}_css"          => $data['css'] ?? '',
-            "{$fieldName}_lazy_loading" => ($data['loading'] ?? 'lazy') === 'lazy',
+            "{$fieldName}_alt"           => $data['alt'] ?? '',
+            "{$fieldName}_title"         => $data['title'] ?? '',
+            "{$fieldName}_caption"       => $data['caption'] ?? '',
+            "{$fieldName}_attribution"   => $data['attribution'] ?? '',
+            "{$fieldName}_focal_point"   => $data['focal_point'] ?? '50% 50%',
+            "{$fieldName}_width"         => $data['width'] ?? null,
+            "{$fieldName}_height"        => $data['height'] ?? null,
+            "{$fieldName}_css"           => $data['css'] ?? '',
+            "{$fieldName}_lazy_loading"  => ($data['loading'] ?? 'lazy') === 'lazy',
+            "{$fieldName}_fetchpriority" => $data['fetchpriority'] ?? 'none',
         ];
     }
 
@@ -284,17 +300,18 @@ class ImageFieldSchema
         $customProperties = $media->getCustomProperty("{$fieldName}_data", []);
 
         return [
-            'url'         => $media->getUrl(),
-            'alt'         => $customProperties['alt'] ?? '',
-            'title'       => $customProperties['title'] ?? '',
-            'caption'     => $customProperties['caption'] ?? '',
-            'attribution' => $customProperties['attribution'] ?? '',
-            'focal_point' => $customProperties['focal_point'] ?? '50% 50%',
-            'width'       => $customProperties['width'] ?? null,
-            'height'      => $customProperties['height'] ?? null,
-            'css'         => $customProperties['css'] ?? '',
-            'loading'     => $customProperties['loading'] ?? 'lazy',
-            'media'       => $media,
+            'url'           => $media->getUrl(),
+            'alt'           => $customProperties['alt'] ?? '',
+            'title'         => $customProperties['title'] ?? '',
+            'caption'       => $customProperties['caption'] ?? '',
+            'attribution'   => $customProperties['attribution'] ?? '',
+            'focal_point'   => $customProperties['focal_point'] ?? '50% 50%',
+            'width'         => $customProperties['width'] ?? null,
+            'height'        => $customProperties['height'] ?? null,
+            'css'           => $customProperties['css'] ?? '',
+            'loading'       => $customProperties['loading'] ?? 'lazy',
+            'fetchpriority' => $customProperties['fetchpriority'] ?? 'none',
+            'media'         => $media,
         ];
     }
 

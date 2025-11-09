@@ -17,6 +17,7 @@ class EnhancedImageTool
                 caption: $getEditor().getAttributes(\'image\')?.caption ?? null,
                 attribution: $getEditor().getAttributes(\'image\')?.attribution ?? null,
                 loading: $getEditor().getAttributes(\'image\')?.loading ?? \'lazy\',
+                fetchpriority: $getEditor().getAttributes(\'image\')?.fetchpriority ?? \'none\',
                 focal_point: $getEditor().getAttributes(\'image\')?.focal_point ?? \'50% 50%\',
                 width: $getEditor().getAttributes(\'image\')?.width ?? null,
                 height: $getEditor().getAttributes(\'image\')?.height ?? null,

@@ -8,6 +8,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\RichEditor\EditorCommand;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -15,11 +16,11 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\View;
 use Filament\Support\Enums\Width;
 use FrankenCms\Filament\Forms\Components\FocalPointPicker;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Storage;
 
 class EnhancedImageAction
 {
@@ -30,15 +31,16 @@ class EnhancedImageAction
             ->modalHeading(__('Insert Enhanced Image'))
             ->modalWidth(Width::ExtraLarge)
             ->fillForm(fn (array $arguments): array => [
-                'alt'         => $arguments['alt'] ?? null,
-                'title'       => $arguments['title'] ?? null,
-                'caption'     => $arguments['caption'] ?? null,
-                'attribution' => $arguments['attribution'] ?? null,
-                'loading'     => ($arguments['loading'] ?? 'lazy') === 'lazy',
-                'focal_point' => $arguments['focal_point'] ?? '50% 50%',
-                'width'       => $arguments['width'] ?? null,
-                'height'      => $arguments['height'] ?? null,
-                'css'         => $arguments['css'] ?? null,
+                'alt'           => $arguments['alt'] ?? null,
+                'title'         => $arguments['title'] ?? null,
+                'caption'       => $arguments['caption'] ?? null,
+                'attribution'   => $arguments['attribution'] ?? null,
+                'loading'       => ($arguments['loading'] ?? 'lazy') === 'lazy',
+                'fetchpriority' => $arguments['fetchpriority'] ?? 'none',
+                'focal_point'   => $arguments['focal_point'] ?? '50% 50%',
+                'width'         => $arguments['width'] ?? null,
+                'height'        => $arguments['height'] ?? null,
+                'css'           => $arguments['css'] ?? null,
             ])
             ->schema(fn (array $arguments, RichEditor $component): array => [
                 FileUpload::make('file')
@@ -120,6 +122,16 @@ class EnhancedImageAction
                                     ->default(true)
                                     ->inline(),
 
+                                Select::make('fetchpriority')
+                                    ->label(__('Fetch Priority'))
+                                    ->helperText(__('Hint to browser about resource priority'))
+                                    ->options([
+                                        'none' => __('None (default)'),
+                                        'high' => __('High'),
+                                        'low'  => __('Low'),
+                                    ])
+                                    ->default('none'),
+
                                 Grid::make(2)
                                     ->schema([
                                         TextInput::make('width')
@@ -182,10 +194,10 @@ class EnhancedImageAction
                         $path = $file->store($directory, $diskName);
 
                         // Get the public URL for the stored file
-                        $src = \Storage::disk($diskName)->url($path);
+                        $src = Storage::disk($diskName)->url($path);
 
                         // Don't track in componentFileAttachments since it's already permanently stored
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // Fallback to temporary URL if permanent storage fails
                         data_set($livewire, "componentFileAttachments.{$component->getStatePath()}.{$id}", $data['file']);
                         $src = $component->getUploadedFileAttachmentTemporaryUrl($data['file']);
@@ -238,17 +250,18 @@ class EnhancedImageAction
     protected static function prepareImageAttributes(array $data, ?string $id, ?string $src): array
     {
         return [
-            'id'          => $id,
-            'src'         => $src,
-            'alt'         => $data['alt'] ?? null,
-            'title'       => $data['title'] ?? null,
-            'caption'     => $data['caption'] ?? null,
-            'attribution' => $data['attribution'] ?? null,
-            'loading'     => $data['loading'] ? 'lazy' : 'eager',
-            'focal_point' => $data['focal_point'] ?? '50% 50%',
-            'width'       => $data['width'] ?? null,
-            'height'      => $data['height'] ?? null,
-            'css'         => $data['css'] ?? null,
+            'id'            => $id,
+            'src'           => $src,
+            'alt'           => $data['alt'] ?? null,
+            'title'         => $data['title'] ?? null,
+            'caption'       => $data['caption'] ?? null,
+            'attribution'   => $data['attribution'] ?? null,
+            'loading'       => $data['loading'] ? 'lazy' : 'eager',
+            'fetchpriority' => $data['fetchpriority'] ?? 'none',
+            'focal_point'   => $data['focal_point'] ?? '50% 50%',
+            'width'         => $data['width'] ?? null,
+            'height'        => $data['height'] ?? null,
+            'css'           => $data['css'] ?? null,
         ];
     }
 

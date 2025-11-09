@@ -426,6 +426,22 @@ class PostForm
                                                                 }
                                                             }),
 
+                                                        Select::make('featured_image_fetchpriority')
+                                                            ->label(__('Fetch Priority'))
+                                                            ->helperText(__('Hint to browser about resource priority'))
+                                                            ->options([
+                                                                'none' => __('None (default)'),
+                                                                'high' => __('High'),
+                                                                'low'  => __('Low'),
+                                                            ])
+                                                            ->default('none')
+                                                            ->afterStateHydrated(function ($component, $state, ?Post $record): void {
+                                                                if ($record && $record->hasMedia('featured')) {
+                                                                    $media = $record->getFirstMedia('featured');
+                                                                    $component->state($media->getCustomProperty('fetchpriority', 'none'));
+                                                                }
+                                                            }),
+
                                                         Grid::make(2)
                                                             ->schema([
                                                                 TextInput::make('featured_image_width')
