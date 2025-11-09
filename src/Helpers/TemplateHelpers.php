@@ -16,7 +16,7 @@ final class TemplateHelpers
      * @param  string  $string  The input string to be wrapped.
      * @return string The wrapped string in the format '[% input_string %]'.
      */
-    public static function wrap_text_placeholder(string $string): string
+    public static function wrapTextPlaceholder(string $string): string
     {
         return sprintf('[%% %s %%]', $string);
     }

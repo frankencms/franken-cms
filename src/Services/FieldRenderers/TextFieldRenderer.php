@@ -3,7 +3,7 @@
 namespace FrankenCms\Services\FieldRenderers;
 
 use FrankenCms\Contracts\FieldRendererInterface;
-use Illuminate\Support\HtmlString;
+use FrankenCms\Helpers\TemplateHelpers;
 
 class TextFieldRenderer implements FieldRendererInterface
 {
@@ -16,8 +16,7 @@ class TextFieldRenderer implements FieldRendererInterface
 
         // If no value and we have a field name, return placeholder text
         if ($fieldName) {
-            $fieldLabel = str($fieldName)->replace(['.', '_'], ' ')->title();
-            return '[' . $fieldLabel . ']';
+            return TemplateHelpers::wrapTextPlaceholder($fieldName);
         }
 
         // Otherwise return empty string
