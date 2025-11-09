@@ -27,20 +27,24 @@ use FrankenCms\Observers\PostObserver;
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Providers\SeoServiceProvider;
 use FrankenCms\Registries\SettingsTabRegistry;
+use FrankenCms\Directives\Providers;
+use FrankenCms\Registries\FieldTypeRegistry;
 use FrankenCms\Services\AiService;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
 use FrankenCms\Services\BladeFormDirectiveRegistry;
-use FrankenCms\Services\CmsFieldBuilder;
-use FrankenCms\Services\CmsFieldRenderer;
 use FrankenCms\Services\CurrentPageService;
+use FrankenCms\Services\DirectiveRenderer;
 use FrankenCms\Services\FeedService;
+use FrankenCms\Services\FieldTypeManager;
+use FrankenCms\Services\FilamentFieldSchemaBuilder;
 use FrankenCms\Services\MenuService;
 use FrankenCms\Services\PageRouteService;
 use FrankenCms\Services\PostService;
 use FrankenCms\Services\RobotsService;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Services\SitemapService;
-use FrankenCms\Services\TemplateFieldParser;
+use FrankenCms\Services\TemplateFieldExtractor;
+use FrankenCms\Services\TemplateFieldRenderer;
 use FrankenCms\Settings\StackSettings;
 use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
@@ -124,10 +128,13 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register the page route service
         $this->app->singleton(PageRouteService::class);
 
-        // Register custom field services
-        $this->app->singleton(CmsFieldRenderer::class);
-        $this->app->singleton(TemplateFieldParser::class);
-        $this->app->singleton(CmsFieldBuilder::class);
+        // Register field type system
+        $this->app->singleton(FieldTypeRegistry::class);
+        $this->app->singleton(DirectiveRenderer::class);
+        $this->app->singleton(FieldTypeManager::class);
+        $this->app->singleton(TemplateFieldRenderer::class);
+        $this->app->singleton(TemplateFieldExtractor::class);
+        $this->app->singleton(FilamentFieldSchemaBuilder::class);
 
         // Register robots, sitemap, and feed services
         $this->app->singleton(RobotsService::class);
@@ -192,7 +199,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         // Register custom blade directives
         $this->registerBladeDirectives();
-        $this->registerTypedFieldDirectives();
+        $this->registerFieldTypes();
 
         // Initialize the blade form directive registry
         $this->app->make(BladeFormDirectiveRegistry::class);
@@ -354,235 +361,34 @@ PHP;
         });
     }
 
-    private function registerTypedFieldDirectives(): void
+    private function registerFieldTypes(): void
     {
-        $fieldTypes = [
-            'Text'       => 'text',
-            'Textarea'   => 'textarea',
-            'Email'      => 'email',
-            'Url'        => 'url',
-            'Number'     => 'number',
-            'Select'     => 'select',
-            'File'       => 'file',
-            'Image'      => 'image',
-            'MediaImage' => 'image',
-            'RichEditor' => 'richEditor',
-            'Toggle'     => 'toggle',
-            'Checkbox'   => 'checkbox',
-            // Note: Tags is registered separately as a block directive below
+        $registry = $this->app->make(FieldTypeRegistry::class);
+
+        // Register all field type providers
+        $providers = [
+            new Providers\TextDirectiveProvider,
+            new Providers\TextareaDirectiveProvider,
+            new Providers\EmailDirectiveProvider,
+            new Providers\UrlDirectiveProvider,
+            new Providers\NumberDirectiveProvider,
+            new Providers\SelectDirectiveProvider,
+            new Providers\FileDirectiveProvider,
+            new Providers\ImageDirectiveProvider,
+            new Providers\RepeaterDirectiveProvider,
+            new Providers\RichEditorDirectiveProvider,
+            new Providers\ToggleDirectiveProvider,
+            new Providers\CheckboxDirectiveProvider,
+            new Providers\TagsDirectiveProvider,
         ];
 
-        foreach ($fieldTypes as $directiveSuffix => $fieldType) {
-            Blade::directive("franken{$directiveSuffix}", function ($expression) use ($fieldType) {
-                return "<?php
-                \$__fParams = _parseFieldExpression({$expression});
-                \$__fName = \$__fParams['name'];
-                \$__fOpts = \$__fParams['options'];
-                \$__fVar = cmsFieldVariableName(\$__fName);
+        foreach ($providers as $provider) {
+            // Register field type in registry
+            $registry->register($provider->getFieldType());
 
-                if (!isset(\$frankenFields)) {
-                    \$frankenFields = collect();
-                    view()->share('frankenFields', \$frankenFields);
-                }
-
-                if (!\$frankenFields->has(\$__fVar)) {
-                    \$__fValue = _renderCmsField(\$__fName, '{$fieldType}', \$__fOpts);
-                    \$frankenFields[\$__fVar] = \$__fValue;
-                    view()->share('frankenFields', \$frankenFields);
-                } else {
-                    \$__fValue = \$frankenFields->get(\$__fVar);
-                }
-
-                echo \$__fValue;
-                unset(\$__fParams, \$__fName, \$__fOpts, \$__fVar, \$__fValue);
-            ?>";
-            });
+            // Register Blade directives
+            $provider->register();
         }
-
-        // Helper to extract balanced brackets
-        $extractBalancedArray = function ($str, $start) {
-            $depth = 0;
-            $inString = false;
-            $stringChar = null;
-            for ($i = $start; $i < strlen($str); $i++) {
-                $char = $str[$i];
-                if (! $inString && ($char === '"' || $char === "'")) {
-                    $inString = true;
-                    $stringChar = $char;
-                } elseif ($inString && $char === $stringChar && ($i === 0 || $str[$i - 1] !== '\\')) {
-                    $inString = false;
-                } elseif (! $inString) {
-                    if ($char === '[') {
-                        $depth++;
-                    }
-                    if ($char === ']') {
-                        $depth--;
-                        if ($depth === 0) {
-                            return substr($str, $start, $i - $start + 1);
-                        }
-                    }
-                }
-            }
-            return null;
-        };
-
-        // Register repeater block directive
-        // Usage: @frankenRepeater('field.items', [...options], false)
-        Blade::directive('frankenRepeater', function ($expression) use ($extractBalancedArray) {
-            // Parse field name
-            if (! preg_match('/^([\'"])(.*?)\1/', $expression, $nameMatch)) {
-                return '<?php /* Invalid frankenRepeater syntax */ ?>';
-            }
-            $fieldName = $nameMatch[2];
-            $after = substr($expression, strlen($nameMatch[0]));
-
-            // Check for options array
-            if (preg_match('/^\s*,\s*\[/', $after)) {
-                $arrayStart = strpos($after, '[');
-                $options = $extractBalancedArray($after, $arrayStart);
-                $after = $options ? substr($after, $arrayStart + strlen($options)) : '';
-            } else {
-                $options = '[]';
-            }
-
-            // Check for placeholder boolean
-            $placeholder = (preg_match('/^\s*,\s*(true|false)/', $after, $placeholderMatch)) ? $placeholderMatch[1] : 'true';
-
-            return "<?php
-                \$__rptName = '{$fieldName}';
-                \$__rptOpts = {$options};
-                \$__rptShowPlaceholder = {$placeholder};
-                \$__rptVar = cmsFieldVariableName(\$__rptName);
-
-                if (!isset(\$frankenFields)) {
-                    \$frankenFields = collect();
-                    view()->share('frankenFields', \$frankenFields);
-                }
-
-                if (!\$frankenFields->has(\$__rptVar)) {
-                    \$__rptCollection = _renderCmsField(\$__rptName, 'repeater', \$__rptOpts);
-                    \$frankenFields[\$__rptVar] = \$__rptCollection;
-                    view()->share('frankenFields', \$frankenFields);
-                } else {
-                    \$__rptCollection = \$frankenFields[\$__rptVar];
-                }
-
-                \$__rptIsEmpty = \$__rptCollection->isEmpty();
-                ob_start();
-                foreach (\$__rptCollection as \$__rptItem):
-                    \$franken = \$__rptItem;
-            ?>";
-        });
-
-        Blade::directive('endFrankenRepeater', function () {
-            return <<<'PHP'
-<?php
-                endforeach;
-
-                // Capture buffer content
-                $__rptContent = ob_get_clean();
-
-                // Check if has actual content
-                $__rptHasContent = strlen(trim($__rptContent)) > 0;
-
-                // Output content or placeholder
-                if ($__rptHasContent) {
-                    echo $__rptContent;
-                } elseif ($__rptIsEmpty && $__rptShowPlaceholder) {
-                    // Show placeholder for empty repeater
-                    $__rptLabel = str_replace(['.', '_'], ' ', $__rptName);
-                    $__rptLabel = ucwords($__rptLabel);
-                    echo '<div style="display: inline-block; padding: 0.5rem 1rem; background: rgba(59, 130, 246, 0.05); border: 2px dashed rgba(59, 130, 246, 0.2); border-radius: 0.375rem; color: rgba(59, 130, 246, 0.6); font-size: 0.875rem;">';
-                    echo '<svg style="display: inline-block; width: 1rem; height: 1rem; margin-right: 0.5rem; vertical-align: text-bottom;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>';
-                    echo htmlspecialchars($__rptLabel) . ' (empty)';
-                    echo '</div>';
-                }
-
-                unset($franken, $__rptItem, $__rptCollection, $__rptVar, $__rptName, $__rptOpts, $__rptMatches, $__rptShowPlaceholder, $__rptIsEmpty, $__rptContent, $__rptHasContent, $__rptLabel);
-            ?>
-PHP;
-        });
-
-        // Register tags directive - works both as loop and inline
-        // Loop mode: @frankenTags('field') ... {{ $tag }} ... @endFrankenTags
-        // Inline mode: @frankenTags('field', [], false) @endFrankenTags
-        Blade::directive('frankenTags', function ($expression) use ($extractBalancedArray) {
-            // Parse field name
-            if (! preg_match('/^([\'"])(.*?)\1/', $expression, $nameMatch)) {
-                return '<?php /* Invalid frankenTags syntax */ ?>';
-            }
-            $fieldName = $nameMatch[2];
-            $after = substr($expression, strlen($nameMatch[0]));
-
-            // Check for options array
-            if (preg_match('/^\s*,\s*\[/', $after)) {
-                $arrayStart = strpos($after, '[');
-                $options = $extractBalancedArray($after, $arrayStart);
-                $after = $options ? substr($after, $arrayStart + strlen($options)) : '';
-            } else {
-                $options = '[]';
-            }
-
-            // Check for placeholder boolean
-            $placeholder = (preg_match('/^\s*,\s*(true|false)/', $after, $placeholderMatch)) ? $placeholderMatch[1] : 'true';
-
-            return "<?php
-                \$__tagName = '{$fieldName}';
-                \$__tagOpts = {$options};
-                \$__showPlaceholder = {$placeholder};
-                \$__tagVar = cmsFieldVariableName(\$__tagName);
-
-                if (!isset(\$frankenFields)) {
-                    \$frankenFields = collect();
-                    view()->share('frankenFields', \$frankenFields);
-                }
-
-                if (!\$frankenFields->has(\$__tagVar)) {
-                    \$__tagCollection = _renderCmsField(\$__tagName, 'tags', \$__tagOpts);
-                    \$frankenFields[\$__tagVar] = \$__tagCollection;
-                    view()->share('frankenFields', \$frankenFields);
-                } else {
-                    \$__tagCollection = \$frankenFields[\$__tagVar];
-                }
-
-                // Start buffering to capture loop content
-                \$__tagsArray = is_array(\$__tagCollection) ? \$__tagCollection : (\$__tagCollection ?? []);
-                \$__tagsEmpty = empty(\$__tagsArray);
-                ob_start();
-                foreach (\$__tagsArray as \$__tagItem):
-                    \$tag = \$__tagItem;
-            ?>";
-        });
-
-        Blade::directive('endFrankenTags', function () {
-            return <<<'PHP'
-<?php
-                endforeach;
-
-                // Capture whatever was in the buffer
-                $__tagContent = ob_get_clean();
-
-                // Check if there's actual content (not just whitespace)
-                $__hasActualContent = strlen(trim($__tagContent)) > 0;
-
-                // If there's actual content, output it
-                if ($__hasActualContent) {
-                    echo $__tagContent;
-                } elseif ($__tagsEmpty && $__showPlaceholder) {
-                    // Empty array + placeholder enabled = show placeholder
-                    $__fieldLabel = str_replace(['.', '_'], ' ', $__tagName);
-                    $__fieldLabel = ucwords($__fieldLabel);
-                    echo '<div style="display: inline-block; padding: 0.5rem 1rem; background: rgba(59, 130, 246, 0.05); border: 2px dashed rgba(59, 130, 246, 0.2); border-radius: 0.375rem; color: rgba(59, 130, 246, 0.6); font-size: 0.875rem;">';
-                    echo '<svg style="display: inline-block; width: 1rem; height: 1rem; margin-right: 0.5rem; vertical-align: text-bottom;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>';
-                    echo htmlspecialchars($__fieldLabel) . ' (empty)';
-                    echo '</div>';
-                }
-                // Else: no output (inline mode or placeholder disabled)
-
-                unset($tag, $__tagItem, $__tagsArray, $__tagsEmpty, $__tagContent, $__hasActualContent, $__showPlaceholder, $__fieldLabel, $__tagCollection, $__tagVar, $__tagName, $__tagOpts, $__tagParams);
-            ?>
-PHP;
-        });
     }
 
     private function registerCmsFieldComposer(): void

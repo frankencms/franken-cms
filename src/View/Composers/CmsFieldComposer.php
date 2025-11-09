@@ -2,7 +2,7 @@
 
 namespace FrankenCms\View\Composers;
 
-use FrankenCms\Services\TemplateFieldParser;
+use FrankenCms\Services\TemplateFieldExtractor;
 use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\View\View;
 
@@ -12,7 +12,7 @@ class CmsFieldComposer
     protected static array $fileTimestamps = [];
 
     public function __construct(
-        protected TemplateFieldParser $parser
+        protected TemplateFieldExtractor $parser
     ) {}
 
     /**

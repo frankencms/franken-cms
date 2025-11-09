@@ -5,8 +5,8 @@ namespace FrankenCms\Factories;
 use Filament\Schemas\Components\Section;
 use FrankenCms\Filament\Schemas\ImageFieldSchema;
 use FrankenCms\Registries\FieldRegistry;
-use FrankenCms\Services\CmsFieldBuilder;
 use FrankenCms\Services\CmsFieldParser;
+use FrankenCms\Services\FilamentFieldSchemaBuilder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -34,7 +34,7 @@ class TemplateFieldFactory
         // Group fields by section (based on dot notation prefix)
         $sections = static::groupFieldsBySection($fields);
 
-        $fieldBuilder = app(CmsFieldBuilder::class);
+        $fieldBuilder = app(FilamentFieldSchemaBuilder::class);
         $fieldMapping = $fieldBuilder->getFieldTypeMap();
         $formComponents = [];
 
@@ -76,8 +76,8 @@ class TemplateFieldFactory
                     if (method_exists($fieldInstance, $method)) {
                         // Special handling for 'schema' - build fields from mixed definitions
                         if ($method === 'schema' && is_array($value)) {
-                            $fieldBuilder = app(CmsFieldBuilder::class);
-                            $builtSchema = $fieldBuilder->buildSchema($value);
+                            $schemaBuilder = app(FilamentFieldSchemaBuilder::class);
+                            $builtSchema = $schemaBuilder->buildSchema($value);
                             $fieldInstance = $fieldInstance->schema($builtSchema);
                         }
                         // Handle other array values that should be spread

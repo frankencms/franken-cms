@@ -3,8 +3,8 @@
 namespace FrankenCms\Helpers;
 
 use Exception;
-use FrankenCms\Services\CmsFieldRenderer;
 use FrankenCms\Services\CurrentPageService;
+use FrankenCms\Services\TemplateFieldRenderer;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -100,7 +100,7 @@ final class TemplateHelpers
      */
     public static function cmsField(string $fieldName, string $fieldType = 'text', array $options = []): mixed
     {
-        $renderer = app(CmsFieldRenderer::class);
+        $renderer = app(TemplateFieldRenderer::class);
         $currentPage = app(CurrentPageService::class)->getPage();
 
         // For image fields using Spatie Media Library, get from media collection

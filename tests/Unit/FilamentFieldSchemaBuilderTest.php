@@ -8,10 +8,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use FrankenCms\Services\CmsFieldBuilder;
+use FrankenCms\Services\FilamentFieldSchemaBuilder;
 
 it('builds TextInput field from definition', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'title',
@@ -25,7 +25,7 @@ it('builds TextInput field from definition', function () {
 });
 
 it('builds Textarea field from definition', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'description',
@@ -39,7 +39,7 @@ it('builds Textarea field from definition', function () {
 });
 
 it('builds Select field from definition', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'status',
@@ -53,7 +53,7 @@ it('builds Select field from definition', function () {
 });
 
 it('builds FileUpload field from definition', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'avatar',
@@ -67,7 +67,7 @@ it('builds FileUpload field from definition', function () {
 });
 
 it('builds image field with imageEditor', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'featured_image',
@@ -77,11 +77,13 @@ it('builds image field with imageEditor', function () {
 
     $field = $builder->buildField($definition);
 
-    expect($field)->toBeInstanceOf(FileUpload::class);
+    // Image fields return an array of components (schema), not a single component
+    expect($field)->toBeArray()
+        ->and($field)->not->toBeEmpty();
 });
 
 it('builds Repeater field from definition', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'items',
@@ -95,7 +97,7 @@ it('builds Repeater field from definition', function () {
 });
 
 it('builds RichEditor field from definition', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'content',
@@ -109,7 +111,7 @@ it('builds RichEditor field from definition', function () {
 });
 
 it('builds Toggle field from definition', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'is_active',
@@ -123,7 +125,7 @@ it('builds Toggle field from definition', function () {
 });
 
 it('builds Checkbox field from definition', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'agree',
@@ -137,7 +139,7 @@ it('builds Checkbox field from definition', function () {
 });
 
 it('applies email validation to email fields', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'email',
@@ -151,7 +153,7 @@ it('applies email validation to email fields', function () {
 });
 
 it('applies url validation to url fields', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'website',
@@ -165,7 +167,7 @@ it('applies url validation to url fields', function () {
 });
 
 it('applies numeric validation to number fields', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'age',
@@ -179,7 +181,7 @@ it('applies numeric validation to number fields', function () {
 });
 
 it('uses custom_fields prefix for field names', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'hero.title',
@@ -193,7 +195,7 @@ it('uses custom_fields prefix for field names', function () {
 });
 
 it('builds multiple fields from array of definitions', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definitions = [
         ['name' => 'title', 'type' => 'text', 'options' => []],
@@ -210,7 +212,7 @@ it('builds multiple fields from array of definitions', function () {
 });
 
 it('can register custom field type', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $builder->registerFieldType('custom', TextInput::class);
 
@@ -221,7 +223,7 @@ it('can register custom field type', function () {
 });
 
 it('falls back to TextInput for unknown field types', function () {
-    $builder = new CmsFieldBuilder;
+    $builder = app(FilamentFieldSchemaBuilder::class);
 
     $definition = [
         'name'    => 'unknown',

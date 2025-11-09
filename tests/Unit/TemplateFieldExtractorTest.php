@@ -1,11 +1,11 @@
 <?php
 
-use FrankenCms\Services\TemplateFieldParser;
+use FrankenCms\Services\TemplateFieldExtractor;
 
-it('parses simple cmsField directive', function () {
-    $parser = new TemplateFieldParser;
+it('parses simple franken directive', function () {
+    $parser = app(TemplateFieldExtractor::class);
 
-    $content = "@cmsField('hero_title', 'text')";
+    $content = "@frankenText('hero_title')";
     $fields = $parser->parseContent($content);
 
     expect($fields)->toHaveKey('hero_title')
@@ -14,10 +14,10 @@ it('parses simple cmsField directive', function () {
         ->and($fields['hero_title']['options'])->toBe([]);
 });
 
-it('parses cmsField directive with options', function () {
-    $parser = new TemplateFieldParser;
+it('parses franken directive with options', function () {
+    $parser = app(TemplateFieldExtractor::class);
 
-    $content = "@cmsField('hero_title', 'text', ['label' => 'Hero Title', 'required' => true])";
+    $content = "@frankenText('hero_title', ['label' => 'Hero Title', 'required' => true])";
     $fields = $parser->parseContent($content);
 
     expect($fields)->toHaveKey('hero_title')
@@ -26,14 +26,14 @@ it('parses cmsField directive with options', function () {
         ->and($fields['hero_title']['options']['required'])->toBeTrue();
 });
 
-it('parses multiple cmsField directives', function () {
-    $parser = new TemplateFieldParser;
+it('parses multiple franken directives', function () {
+    $parser = app(TemplateFieldExtractor::class);
 
     $content = <<<'BLADE'
     <div>
-        <h1>@cmsField('title', 'text', ['label' => 'Title'])</h1>
-        <p>@cmsField('subtitle', 'textarea', ['label' => 'Subtitle'])</p>
-        <img src="@cmsField('image', 'file')" />
+        <h1>@frankenText('title', ['label' => 'Title'])</h1>
+        <p>@frankenTextarea('subtitle', ['label' => 'Subtitle'])</p>
+        <img src="@frankenFile('image')" />
     </div>
     BLADE;
 
@@ -44,9 +44,9 @@ it('parses multiple cmsField directives', function () {
 });
 
 it('supports dot notation in field names', function () {
-    $parser = new TemplateFieldParser;
+    $parser = app(TemplateFieldExtractor::class);
 
-    $content = "@cmsField('hero.title', 'text')";
+    $content = "@frankenText('hero.title')";
     $fields = $parser->parseContent($content);
 
     expect($fields)->toHaveKey('hero.title')
@@ -54,18 +54,18 @@ it('supports dot notation in field names', function () {
 });
 
 it('throws exception for duplicate field names', function () {
-    $parser = new TemplateFieldParser;
+    $parser = app(TemplateFieldExtractor::class);
 
     $content = <<<'BLADE'
-    @cmsField('title', 'text')
-    @cmsField('title', 'textarea')
+    @frankenText('title')
+    @frankenTextarea('title')
     BLADE;
 
     $parser->parseContent($content);
 })->throws(RuntimeException::class, "Duplicate field name 'title' found in template");
 
 it('groups fields by section using dot notation', function () {
-    $parser = new TemplateFieldParser;
+    $parser = app(TemplateFieldExtractor::class);
 
     $fields = [
         'hero.title'    => ['name' => 'hero.title', 'type' => 'text', 'options' => []],
@@ -85,7 +85,7 @@ it('groups fields by section using dot notation', function () {
 });
 
 it('validates fields correctly', function () {
-    $parser = new TemplateFieldParser;
+    $parser = app(TemplateFieldExtractor::class);
 
     $validFields = [
         'title' => ['name' => 'title', 'type' => 'text', 'options' => []],
@@ -100,15 +100,15 @@ it('validates fields correctly', function () {
 });
 
 it('handles empty template content', function () {
-    $parser = new TemplateFieldParser;
+    $parser = app(TemplateFieldExtractor::class);
 
     $fields = $parser->parseContent('');
 
     expect($fields)->toBe([]);
 });
 
-it('handles template with no cmsField directives', function () {
-    $parser = new TemplateFieldParser;
+it('handles template with no franken directives', function () {
+    $parser = app(TemplateFieldExtractor::class);
 
     $content = <<<'BLADE'
     <div>
@@ -123,12 +123,32 @@ it('handles template with no cmsField directives', function () {
 });
 
 it('parses fields with complex options', function () {
-    $parser = new TemplateFieldParser;
+    $parser = app(TemplateFieldExtractor::class);
 
-    $content = "@cmsField('status', 'select', ['options' => ['draft' => 'Draft', 'published' => 'Published'], 'default' => 'draft'])";
+    $content = "@frankenSelect('status', ['options' => ['draft' => 'Draft', 'published' => 'Published'], 'default' => 'draft'])";
     $fields = $parser->parseContent($content);
 
     expect($fields['status']['options'])->toHaveKey('options')
         ->and($fields['status']['options']['options'])->toBeArray()
         ->and($fields['status']['options']['default'])->toBe('draft');
+});
+
+it('correctly identifies field types from directive names', function () {
+    $parser = app(TemplateFieldExtractor::class);
+
+    $content = <<<'BLADE'
+    @frankenText('text_field')
+    @frankenTextarea('textarea_field')
+    @frankenSelect('select_field')
+    @frankenRichEditor('rich_field')
+    @frankenToggle('toggle_field')
+    BLADE;
+
+    $fields = $parser->parseContent($content);
+
+    expect($fields['text_field']['type'])->toBe('text')
+        ->and($fields['textarea_field']['type'])->toBe('textarea')
+        ->and($fields['select_field']['type'])->toBe('select')
+        ->and($fields['rich_field']['type'])->toBe('richEditor')
+        ->and($fields['toggle_field']['type'])->toBe('toggle');
 });

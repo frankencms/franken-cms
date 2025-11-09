@@ -1,33 +1,33 @@
 <?php
 
-use FrankenCms\Services\CmsFieldRenderer;
 use FrankenCms\Services\FieldRenderers\TextFieldRenderer;
+use FrankenCms\Services\TemplateFieldRenderer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
 
 it('renders text fields correctly', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
     $result = $renderer->render('text', 'Hello World');
 
     expect($result)->toBe('Hello World');
 });
 
 it('renders textarea fields correctly', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
     $result = $renderer->render('textarea', 'Multi line\ntext here');
 
     expect($result)->toBe('Multi line\ntext here');
 });
 
 it('escapes HTML in text fields', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
     $result = $renderer->render('text', '<script>alert("xss")</script>');
 
     expect($result)->toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
 });
 
 it('renders rich editor fields as HtmlString', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
     $result = $renderer->render('richEditor', '<p>This is <strong>bold</strong></p>');
 
     expect($result)->toBeInstanceOf(HtmlString::class)
@@ -35,7 +35,7 @@ it('renders rich editor fields as HtmlString', function () {
 });
 
 it('renders repeater fields as Collection', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
     $data = [
         ['title' => 'Item 1'],
         ['title' => 'Item 2'],
@@ -49,7 +49,7 @@ it('renders repeater fields as Collection', function () {
 });
 
 it('renders boolean fields correctly', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
 
     expect($renderer->render('toggle', true))->toBeTrue()
         ->and($renderer->render('toggle', false))->toBeFalse()
@@ -58,7 +58,7 @@ it('renders boolean fields correctly', function () {
 });
 
 it('handles null values gracefully', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
 
     expect($renderer->render('text', null))->toBe('')
         ->and($renderer->render('richEditor', null)->toHtml())->toBe('')
@@ -67,11 +67,11 @@ it('handles null values gracefully', function () {
 });
 
 it('can register custom renderers', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
 
     $customRenderer = new class implements \FrankenCms\Contracts\FieldRendererInterface
     {
-        public function render(mixed $value): mixed
+        public function render(mixed $value, ?string $fieldName = null): mixed
         {
             return 'custom: ' . $value;
         }
@@ -85,14 +85,14 @@ it('can register custom renderers', function () {
 });
 
 it('falls back to text renderer for unknown field types', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
     $result = $renderer->render('unknown_type', 'some value');
 
     expect($result)->toBe('some value');
 });
 
 it('gets all registered renderers', function () {
-    $renderer = new CmsFieldRenderer;
+    $renderer = app(TemplateFieldRenderer::class);
     $renderers = $renderer->getRenderers();
 
     expect($renderers)->toBeArray()

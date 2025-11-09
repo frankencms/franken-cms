@@ -2,12 +2,16 @@
 
 namespace FrankenCms\Services;
 
+use FrankenCms\Registries\FieldTypeRegistry;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
 use Throwable;
 
-class TemplateFieldParser
+class TemplateFieldExtractor
 {
+    public function __construct(
+        protected FieldTypeRegistry $fieldTypeRegistry
+    ) {}
     /**
      * Parse a template file and extract all field directives
      *
@@ -37,8 +41,12 @@ class TemplateFieldParser
     {
         $fields = [];
 
-        // Pattern for new typed directives - match directive name and opening paren
-        $directiveTypes = 'Text|Textarea|Email|Url|Number|Select|File|Image|MediaImage|RichEditor|Toggle|Checkbox|Tags|Repeater';
+        // Build directive pattern from registry
+        $directiveNames = [];
+        foreach ($this->fieldTypeRegistry->all() as $fieldType) {
+            $directiveNames = array_merge($directiveNames, $fieldType->getDirectiveNames());
+        }
+        $directiveTypes = implode('|', $directiveNames);
         $directivePattern = '/@franken(' . $directiveTypes . ')\s*\(/';
 
         // Find all directive positions
@@ -244,30 +252,18 @@ class TemplateFieldParser
     }
 
     /**
-     * Get the field type from a directive suffix
-     * Maps directive names to field types (same mapping as service provider)
+     * Get the field type from a directive name using the registry
      */
     protected function getFieldTypeFromDirective(string $directiveType): string
     {
-        // This mapping must match the one in FrankenCmsServiceProvider::registerTypedFieldDirectives()
-        $mapping = [
-            'Text'       => 'text',
-            'Textarea'   => 'textarea',
-            'Email'      => 'email',
-            'Url'        => 'url',
-            'Number'     => 'number',
-            'Select'     => 'select',
-            'File'       => 'file',
-            'Image'      => 'image',
-            'MediaImage' => 'image',  // Both Image and MediaImage map to 'image'
-            'RichEditor' => 'richEditor',
-            'Toggle'     => 'toggle',
-            'Checkbox'   => 'checkbox',
-            'Tags'       => 'tags',
-            'Repeater'   => 'repeater',
-        ];
+        $fieldType = $this->fieldTypeRegistry->getByDirective($directiveType);
 
-        return $mapping[$directiveType] ?? lcfirst($directiveType);
+        if ($fieldType === null) {
+            // Fallback for unknown directives
+            return lcfirst($directiveType);
+        }
+
+        return $fieldType->getName();
     }
 
     /**

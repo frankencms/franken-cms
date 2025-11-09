@@ -2,40 +2,22 @@
 
 namespace FrankenCms\Services;
 
-use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
 use FrankenCms\Filament\Schemas\ImageFieldSchema;
+use FrankenCms\Registries\FieldTypeRegistry;
 use InvalidArgumentException;
 
-class CmsFieldBuilder
+class FilamentFieldSchemaBuilder
 {
     /**
-     * Map of field types to Filament component classes
+     * Custom component class overrides
      */
-    protected array $fieldTypeMap = [
-        'text'       => TextInput::class,
-        'textarea'   => Textarea::class,
-        'email'      => TextInput::class,
-        'url'        => TextInput::class,
-        'number'     => TextInput::class,
-        'select'     => Select::class,
-        'file'       => FileUpload::class,
-        'image'      => SpatieMediaLibraryFileUpload::class,
-        'repeater'   => Repeater::class,
-        'richEditor' => RichEditor::class,
-        'toggle'     => Toggle::class,
-        'checkbox'   => Checkbox::class,
-        'tags'       => TagsInput::class,
-    ];
+    protected array $customComponents = [];
+
+    public function __construct(
+        protected FieldTypeRegistry $fieldTypeRegistry
+    ) {}
 
     /**
      * Build a Filament form component from field definition
@@ -58,8 +40,14 @@ class CmsFieldBuilder
             );
         }
 
-        // Get the component class for non-image fields
-        $componentClass = $this->fieldTypeMap[$type] ?? TextInput::class;
+        // Check for custom component override first
+        if (isset($this->customComponents[$type])) {
+            $componentClass = $this->customComponents[$type];
+        } else {
+            // Get component class from registry
+            $fieldTypeDefinition = $this->fieldTypeRegistry->get($type);
+            $componentClass = $fieldTypeDefinition?->getFilamentComponentClass() ?? TextInput::class;
+        }
 
         // All fields (except images) are stored in custom_fields JSON
         $field = $componentClass::make("custom_fields.{$name}");
@@ -168,19 +156,27 @@ class CmsFieldBuilder
     }
 
     /**
-     * Register a custom field type mapping
+     * Register a custom component class override
      */
     public function registerFieldType(string $type, string $componentClass): void
     {
-        $this->fieldTypeMap[$type] = $componentClass;
+        $this->customComponents[$type] = $componentClass;
     }
 
     /**
-     * Get all registered field type mappings
+     * Get all registered field type mappings (from registry and custom overrides)
      */
     public function getFieldTypeMap(): array
     {
-        return $this->fieldTypeMap;
+        $mappings = [];
+
+        // Get mappings from registry
+        foreach ($this->fieldTypeRegistry->all() as $fieldType) {
+            $mappings[$fieldType->getName()] = $fieldType->getFilamentComponentClass();
+        }
+
+        // Merge custom overrides
+        return array_merge($mappings, $this->customComponents);
     }
 
     /**
