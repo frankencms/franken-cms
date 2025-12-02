@@ -40,15 +40,15 @@ class SiteSettingsMedia extends Model implements HasMedia
     {
         $this->addMediaCollection('og-default')
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk(config('franken-cms.media_disk_name'));
 
         $this->addMediaCollection('twitter-default')
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk(config('franken-cms.media_disk_name'));
 
         $this->addMediaCollection('default-featured')
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk(config('franken-cms.media_disk_name'));
     }
 
     /**

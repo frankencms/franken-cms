@@ -39,7 +39,7 @@ class ImageFieldSchema
         $label = $options['label'] ?? str($fieldName)->title()->replace('_', ' ')->toString();
         $description = $options['description'] ?? null;
         $maxSize = $options['maxSize'] ?? 10240; // 10MB default
-        $disk = $options['disk'] ?? 'public';
+        $disk = $options['disk'] ?? config('franken-cms.media_disk_name');
         $visibility = $options['visibility'] ?? 'public';
 
         $acceptedFileTypes = $options['acceptedFileTypes'] ?? [

@@ -302,17 +302,17 @@ class Post extends Model implements HasMedia, HasRichContent
         // Featured image - single file only
         $this->addMediaCollection('featured')
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk(config('franken-cms.media_disk_name'));
 
         // SEO OpenGraph image - single file only
         $this->addMediaCollection('seo-og')
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk(config('franken-cms.media_disk_name'));
 
         // SEO Twitter image - single file only
         $this->addMediaCollection('seo-twitter')
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk(config('franken-cms.media_disk_name'));
     }
 
     /**

@@ -15,7 +15,7 @@ return [
 
     ],
 
-    'media_disk_name' => 'public',
+    'media_disk_name' => env('MEDIA_DISK', 'public'),
 
     'settings' => [
 

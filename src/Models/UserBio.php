@@ -60,7 +60,7 @@ class UserBio extends Model implements HasMedia
         // Bio image - single file only
         $this->addMediaCollection('bio-image')
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk(config('franken-cms.media_disk_name'));
     }
 
     /**

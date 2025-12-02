@@ -53,7 +53,7 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                             ])
                             ->directory('site-icons')
                             ->visibility('public')
-                            ->disk('public')
+                            ->disk(config('franken-cms.media_disk_name'))
                             ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'])
                             ->maxSize(5120)
                             ->columnSpan(2)
@@ -62,12 +62,14 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                                 // This callback is ONLY called when a NEW file is uploaded
                                 // It does NOT run when just saving the form with an existing file
 
+                                $diskName = config('franken-cms.media_disk_name');
+
                                 // Store the file
-                                $path = $file->store('site-icons', 'public');
+                                $path = $file->store('site-icons', $diskName);
 
                                 // Generate favicons from the uploaded file
                                 $faviconGenerator = app(FaviconGenerator::class);
-                                $sourcePath = Storage::disk('public')->path($path);
+                                $sourcePath = Storage::disk($diskName)->path($path);
 
                                 if (file_exists($sourcePath)) {
                                     $faviconGenerator->generate($sourcePath);
