@@ -39,7 +39,7 @@ class UserForm
                             ->label('Profile Image')
                             ->inlineLabel()
                             ->collection('bio-image')
-                            ->disk(config('franken-cms.media_disk_name', 'public'))
+//                            ->disk(config('franken-cms.media_disk_name', 'public'))
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios(['1:1', null])

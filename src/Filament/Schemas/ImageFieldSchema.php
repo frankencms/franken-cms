@@ -89,7 +89,7 @@ class ImageFieldSchema
                             SpatieMediaLibraryFileUpload::make($normalizedFieldName)
                                 ->label($label)
                                 ->collection($collection)
-                                ->disk($disk)
+//                                ->disk($disk)
                                 ->image()
                                 ->imageEditor()
                                 ->previewable()

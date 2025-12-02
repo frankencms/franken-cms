@@ -93,7 +93,6 @@ class FeaturedImageSchema
                             SpatieMediaLibraryFileUpload::make('featured_image')
                                 ->label(__('Featured Image'))
                                 ->collection($collection)
-                                ->disk('public') // todo: make configurable
                                 ->image()
                                 ->imageEditor()
                                 ->previewable()

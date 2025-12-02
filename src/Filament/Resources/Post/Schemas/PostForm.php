@@ -282,7 +282,7 @@ class PostForm
                                         SpatieMediaLibraryFileUpload::make('featured_image')
                                             ->label(__('Featured Image'))
                                             ->collection('featured')
-                                            ->disk('public')
+//                                            ->disk('public')
                                             ->image()
                                             ->imageEditor()
                                             ->imageEditorAspectRatios(function () use ($mediaSettings) {
