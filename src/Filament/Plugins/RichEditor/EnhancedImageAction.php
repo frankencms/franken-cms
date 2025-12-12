@@ -179,28 +179,66 @@ class EnhancedImageAction
                     ]),
             ])
             ->action(function (array $arguments, array $data, RichEditor $component, Component $livewire): void {
-                if ($data['file'] ?? null) {
-                    $id = (string) Str::orderedUuid();
+                $fileData = $data['file'] ?? null;
 
-                    // Store the file permanently instead of using temporary URL
-                    try {
-                        $file = $data['file'];
+                // Handle file upload - FileUpload with storeFiles(false) returns a TemporaryUploadedFile
+                // It may be wrapped in an array
+                if ($fileData) {
+                    $file = is_array($fileData) ? ($fileData[0] ?? null) : $fileData;
 
-                        // Store file in the configured directory using public disk
-                        $directory = $component->getFileAttachmentsDirectory() ?? 'posts/images';
-                        $diskName = 'public'; // Use public disk for images
+                    if ($file) {
+                        // Store the file permanently instead of using temporary URL
+                        try {
+                            // Store file in the configured directory using the component's configured disk
+                            $directory = $component->getFileAttachmentsDirectory() ?? 'posts/images';
+                            $diskName = $component->getFileAttachmentsDiskName() ?? config('franken-cms.media_disk_name', 'public');
 
-                        // Store the file
-                        $path = $file->store($directory, $diskName);
+                            // Generate a unique filename
+                            $extension = $file->getClientOriginalExtension() ?: 'jpg';
+                            $filename = Str::orderedUuid().'.'.$extension;
+                            $fullPath = $directory.'/'.$filename;
 
-                        // Get the public URL for the stored file
-                        $src = Storage::disk($diskName)->url($path);
+                            // Get the file contents from the temporary file
+                            // TemporaryUploadedFile may be on a different disk than the target
+                            $tempDisk = $file->disk ?? config('livewire.temporary_file_upload.disk');
+                            $tempFilePath = $file->path();
 
-                        // Don't track in componentFileAttachments since it's already permanently stored
-                    } catch (Exception $e) {
-                        // Fallback to temporary URL if permanent storage fails
-                        data_set($livewire, "componentFileAttachments.{$component->getStatePath()}.{$id}", $data['file']);
-                        $src = $component->getUploadedFileAttachmentTemporaryUrl($data['file']);
+                            // Read the file content using a stream for memory efficiency
+                            $stream = Storage::disk($tempDisk)->readStream($tempFilePath);
+
+                            if (! $stream) {
+                                throw new Exception('Failed to read temporary file stream');
+                            }
+
+                            // Write to the target disk
+                            $success = Storage::disk($diskName)->writeStream($fullPath, $stream);
+
+                            if (is_resource($stream)) {
+                                fclose($stream);
+                            }
+
+                            if (! $success) {
+                                throw new Exception('Failed to write file to disk: '.$diskName);
+                            }
+
+                            // Use the path as the id so Filament can verify the file exists
+                            $id = $fullPath;
+
+                            // Get the public URL for the stored file
+                            $src = Storage::disk($diskName)->url($fullPath);
+                        } catch (Exception $e) {
+                            // Fallback to temporary URL if permanent storage fails
+                            $id = (string) Str::orderedUuid();
+                            data_set($livewire, "componentFileAttachments.{$component->getStatePath()}.{$id}", $file);
+                            $src = $component->getUploadedFileAttachmentTemporaryUrl($file);
+
+                            // Log the error for debugging
+                            logger()->error('EnhancedImageAction: Failed to store file permanently', [
+                                'error'     => $e->getMessage(),
+                                'disk'      => $diskName ?? 'unknown',
+                                'directory' => $directory ?? 'unknown',
+                            ]);
+                        }
                     }
                 }
 

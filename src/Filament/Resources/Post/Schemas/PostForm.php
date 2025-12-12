@@ -6,6 +6,7 @@ namespace FrankenCms\Filament\Resources\Post\Schemas;
 
 use Exception;
 use Filament\Forms\Components\DateTimePicker;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -102,6 +103,25 @@ class PostForm
                                     ->fileAttachmentsDirectory('posts/images')
                                     ->fileAttachmentsDisk(config('franken-cms.media_disk_name'))
                                     ->fileAttachmentsVisibility('public')
+                                    ->getFileAttachmentUrlUsing(function (mixed $file, RichEditor $component): ?string {
+                                        // If file is null or empty, return null
+                                        if (blank($file)) {
+                                            return null;
+                                        }
+
+                                        // If the file is already a full URL (http/https), return it as-is
+                                        if (is_string($file) && str_starts_with($file, 'http')) {
+                                            return $file;
+                                        }
+
+                                        // Otherwise, check if the file exists on the configured disk and return its URL
+                                        $disk = Storage::disk($component->getFileAttachmentsDiskName());
+                                        if ($disk->exists($file)) {
+                                            return $disk->url($file);
+                                        }
+
+                                        return null;
+                                    })
                                     ->hintAction(GenerateBlogPostAction::make('generate_blog_post'))
                                     ->toolbarButtons([
                                         // Text Formatting
