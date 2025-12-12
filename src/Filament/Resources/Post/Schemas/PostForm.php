@@ -100,6 +100,7 @@ class PostForm
                                         EnhancedImagePlugin::make(),
                                     ])
                                     ->fileAttachmentsDirectory('posts/images')
+                                    ->fileAttachmentsDisk(config('franken-cms.media_disk_name'))
                                     ->fileAttachmentsVisibility('public')
                                     ->hintAction(GenerateBlogPostAction::make('generate_blog_post'))
                                     ->toolbarButtons([

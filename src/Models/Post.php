@@ -5,6 +5,7 @@ namespace FrankenCms\Models;
 use Filament\Forms\Components\RichEditor\FileAttachmentProviders\SpatieMediaLibraryFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Models\Concerns\InteractsWithRichContent;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use FrankenCms\Casts\PostContentCast;
 use FrankenCms\Database\Factories\PostFactory;
 use FrankenCms\Enums\PostStatus;
@@ -420,22 +421,42 @@ class Post extends Model implements HasMedia, HasRichContent
 
     /**
      * Override renderRichContent to add enhanced image attributes
+     *
+     * Uses toUnsafeHtml() instead of toHtml() to avoid Filament's HTML sanitizer
+     * which encodes special characters (like ' to &#039; and @ to &#64;).
+     * The content is already sanitized by TipTap during editing.
      */
     public function renderRichContent(string $attribute): string
     {
-        // Get the base HTML from the parent trait (uses TipTap with EnhancedImagePlugin)
-        $richContentAttribute = $this->getRichContentAttribute($attribute);
+        $content = $this->getAttribute($attribute);
 
-        if (! $richContentAttribute) {
+        if (blank($content)) {
             return '';
         }
 
-        $html = $richContentAttribute->toHtml();
+        // Get the registered rich content attribute for plugins/config
+        $richContentAttribute = $this->getRichContentAttribute($attribute);
+
+        // Build renderer with registered configuration
+        $renderer = RichContentRenderer::make($content);
+
+        if ($richContentAttribute) {
+            $renderer
+                ->plugins($richContentAttribute->getPlugins())
+                ->customBlocks($richContentAttribute->getCustomBlocks())
+                ->fileAttachmentsDisk($richContentAttribute->getFileAttachmentsDiskName())
+                ->fileAttachmentsVisibility($richContentAttribute->getFileAttachmentsVisibility())
+                ->fileAttachmentProvider($richContentAttribute->getFileAttachmentProvider())
+                ->textColors($richContentAttribute->getTextColors());
+        }
+
+        // Use toUnsafeHtml() to avoid HTML entity encoding of special characters
+        $html = $renderer->toUnsafeHtml();
 
         // Post-process to add enhanced image attributes from JSON
-        if ($attribute === 'post_content' && ! empty($this->$attribute)) {
-            $renderer = app(\FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer::class);
-            $html = $renderer->processEnhancedImages($html, $this->$attribute);
+        if ($attribute === 'post_content' && ! empty($content)) {
+            $fieldRenderer = app(\FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer::class);
+            $html = $fieldRenderer->processEnhancedImages($html, $content);
         }
 
         return $html;

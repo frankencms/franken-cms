@@ -34,7 +34,6 @@ trait HasSeoFields
                         TextInput::make('seo_title')
                             ->label('SEO Title')
                             ->helperText('The title that appears in search results. Recommended: 50-60 characters. Leave blank to use the post/page title.')
-                            ->maxLength(60)
                             ->afterStateHydrated(function ($component, $state, $record): void {
                                 if ($record) {
                                     $component->state($record->getMeta('seo_title', ''));
@@ -114,7 +113,6 @@ trait HasSeoFields
                             ->label('Meta Description')
                             ->helperText('A brief description that appears in search results. Desktop: 150-160 characters. Mobile: 120-130 characters.')
                             ->rows(3)
-                            ->maxLength(160)
                             ->afterStateHydrated(function ($component, $state, $record): void {
                                 if ($record) {
                                     $component->state($record->getMeta('seo_description', ''));
