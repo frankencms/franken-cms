@@ -33,9 +33,12 @@ class RouteController
             return $this->contentResolver->resolveHomePage();
         }
 
-        // Check if this path is the homepage slug - redirect to root
-        if ($this->settings->home_page && $path === $this->settings->home_page) {
-            return redirect('/');
+        // Check if this path is the homepage - redirect to root
+        if ($this->settings->home_page) {
+            $homePage = Page::where('post_slug', $this->settings->home_page)->first();
+            if ($homePage && '/' . $path === $homePage->getHierarchicalPath()) {
+                return redirect('/');
+            }
         }
 
         // Check if this is the blog listing page (post_page without a slug)

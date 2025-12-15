@@ -43,6 +43,12 @@ trait HasPermalinkUrl
      */
     private function getPageUrl(): string
     {
+        // Check if this page is the homepage
+        $readingSettings = app(ReadingSettings::class);
+        if ($readingSettings->home_page && $this->post_slug === $readingSettings->home_page) {
+            return '/';
+        }
+
         return $this->getHierarchicalPath();
     }
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace FrankenCms\Models;
 
 use Exception;
+use FrankenCms\Models\Page;
+use FrankenCms\Models\Post;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -66,8 +68,18 @@ class MenuItem extends Model
      */
     public function getUrl(): string
     {
-        // If direct URL is provided, use it
+        // If linkable model is provided, compute URL from model (supports dynamic homepage)
+        if ($this->linkable) {
+            return $this->getLinkableUrl();
+        }
+
+        // If direct URL is provided, use it (custom URLs)
         if ($this->url) {
+            // Convert relative URLs to full URLs
+            if (str_starts_with($this->url, '/')) {
+                return url($this->url);
+            }
+
             return $this->url;
         }
 
@@ -78,11 +90,6 @@ class MenuItem extends Model
             } catch (Exception $e) {
                 return '#';
             }
-        }
-
-        // If linkable model is provided, get URL from model
-        if ($this->linkable) {
-            return $this->getLinkableUrl();
         }
 
         return '#';
@@ -137,23 +144,28 @@ class MenuItem extends Model
     {
         $linkable = $this->linkable;
 
-        // Handle Post model
-        if ($linkable instanceof Post) {
-            return route('post.show', ['slug' => $linkable->post_slug]);
+        // Page/Post models use HasPermalinkUrl trait which provides a 'url' attribute
+        // This handles homepage detection, permalink structures, etc.
+        if ($linkable instanceof Post || $linkable instanceof Page) {
+            return url($linkable->url);
         }
 
         // Handle other models by checking for common URL methods
         if (method_exists($linkable, 'getUrl')) {
-            return $linkable->getUrl();
+            $linkableUrl = $linkable->getUrl();
+
+            return str_starts_with($linkableUrl, '/') ? url($linkableUrl) : $linkableUrl;
         }
 
         if (method_exists($linkable, 'url')) {
-            return $linkable->url();
+            $linkableUrl = $linkable->url();
+
+            return str_starts_with($linkableUrl, '/') ? url($linkableUrl) : $linkableUrl;
         }
 
         // Fallback to slug-based URL
         if (isset($linkable->slug)) {
-            return "/{$linkable->slug}";
+            return url("/{$linkable->slug}");
         }
 
         return '#';

@@ -12,11 +12,13 @@ use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use FrankenCms\Commands\GenerateSitemapCommand;
 use FrankenCms\Commands\InstallCommand;
+use FrankenCms\Commands\MigrateMenuLinksCommand;
 use FrankenCms\Directives\Providers;
 use FrankenCms\Directives\Providers\MenuDirectiveProvider;
 use FrankenCms\Http\Middleware\AddSeoDefaults;
 use FrankenCms\Http\Middleware\SetCurrentPage;
 use FrankenCms\Listeners\ClearFeedCacheListener;
+use FrankenCms\Listeners\ClearMenuCacheListener;
 use FrankenCms\Listeners\ClearRobotsCacheListener;
 use FrankenCms\Listeners\ClearSitemapCacheListener;
 use FrankenCms\Listeners\RegeneratePostImagesListener;
@@ -101,6 +103,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             ->hasCommands([
                 InstallCommand::class,
                 GenerateSitemapCommand::class,
+                MigrateMenuLinksCommand::class,
             ]);
     }
 
@@ -179,6 +182,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Event::listen(SettingsSaved::class, ClearSitemapCacheListener::class);
         Event::listen(SettingsSaved::class, ClearFeedCacheListener::class);
         Event::listen(SettingsSaved::class, ClearRobotsCacheListener::class);
+        Event::listen(SettingsSaved::class, ClearMenuCacheListener::class);
         Event::listen(SettingsSaved::class, RegeneratePostImagesListener::class);
 
         Blade::component('cms-field', CmsField::class);

@@ -77,10 +77,7 @@ class MenuItems
                                             $linkableId = $get('linkable_id');
                                             $url = $get('url');
 
-                                            if ($url) {
-                                                return 'custom';
-                                            }
-
+                                            // Check linkable first (page/post links store both linkable and url)
                                             if ($linkableType && $linkableId) {
                                                 if (str_contains($linkableType, 'Page')) {
                                                     return 'page:' . $linkableId;
@@ -89,31 +86,33 @@ class MenuItems
                                                 }
                                             }
 
+                                            // Fall back to custom URL if no linkable
+                                            if ($url) {
+                                                return 'custom';
+                                            }
+
                                             return null;
                                         })
                                         ->afterStateUpdated(function (callable $set, $state) {
                                             if ($state === 'custom') {
-                                                // Clear URL field so user can enter custom URL
+                                                // Clear linkable fields so user can enter custom URL
                                                 $set('url', null);
                                                 $set('linkable_type', null);
                                                 $set('linkable_id', null);
                                             } elseif ($state && $state !== 'custom') {
-                                                // Parse selection and get the URL
+                                                // Parse selection and set linkable relationship
                                                 [$type, $id] = explode(':', $state);
 
-                                                // Fetch the model and get its URL
                                                 if ($type === 'page') {
                                                     $page = Page::find($id);
-                                                    if ($page) {
-                                                        $set('url', $page->url);
-                                                    }
                                                     $set('linkable_type', Page::class);
+                                                    // Show computed URL for reference (actual URL computed from linkable at runtime)
+                                                    $set('url', $page?->url);
                                                 } else {
                                                     $post = Post::find($id);
-                                                    if ($post) {
-                                                        $set('url', $post->url);
-                                                    }
                                                     $set('linkable_type', Post::class);
+                                                    // Show computed URL for reference (actual URL computed from linkable at runtime)
+                                                    $set('url', $post?->url);
                                                 }
 
                                                 $set('linkable_id', (int) $id);

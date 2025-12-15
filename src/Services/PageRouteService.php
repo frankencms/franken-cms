@@ -53,6 +53,12 @@ class PageRouteService
         Route::get($page['path'], function () use ($page) {
             $post = Post::withoutGlobalScopes()->findOrFail($page['id']);
 
+            // Check if this page is the homepage - redirect to root
+            $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+            if ($readingSettings->home_page && $post->post_slug === $readingSettings->home_page) {
+                return redirect('/');
+            }
+
             $themeFolder = config('franken-cms.theme_folder');
             $template = $post->template ?? 'page';
             $view = sprintf('%s.%s', $themeFolder, $template);
@@ -65,7 +71,6 @@ class PageRouteService
             $data = ['page' => $post];
 
             // Check if this is the blog listing page and add posts
-            $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
             if ($readingSettings->post_page && $post->post_slug === $readingSettings->post_page) {
                 $posts = Post::where('post_type', 'post')
                     ->where('post_status', 'published')
