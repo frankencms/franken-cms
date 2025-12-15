@@ -71,8 +71,8 @@ class MenuItems
                                         })
                                         ->searchable()
                                         ->live()
-                                        ->default(function (callable $get) {
-                                            // Populate from existing linkable data
+                                        ->afterStateHydrated(function (Select $component, callable $get) {
+                                            // Populate from existing linkable data when editing
                                             $linkableType = $get('linkable_type');
                                             $linkableId = $get('linkable_id');
                                             $url = $get('url');
@@ -80,18 +80,20 @@ class MenuItems
                                             // Check linkable first (page/post links store both linkable and url)
                                             if ($linkableType && $linkableId) {
                                                 if (str_contains($linkableType, 'Page')) {
-                                                    return 'page:' . $linkableId;
+                                                    $component->state('page:' . $linkableId);
+
+                                                    return;
                                                 } elseif (str_contains($linkableType, 'Post')) {
-                                                    return 'post:' . $linkableId;
+                                                    $component->state('post:' . $linkableId);
+
+                                                    return;
                                                 }
                                             }
 
                                             // Fall back to custom URL if no linkable
                                             if ($url) {
-                                                return 'custom';
+                                                $component->state('custom');
                                             }
-
-                                            return null;
                                         })
                                         ->afterStateUpdated(function (callable $set, $state) {
                                             if ($state === 'custom') {
