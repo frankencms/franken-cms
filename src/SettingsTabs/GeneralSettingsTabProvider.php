@@ -53,7 +53,7 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                             ])
                             ->directory('site-icons')
                             ->visibility('public')
-                            ->disk(config('franken-cms.media_disk_name'))
+                            ->disk('public')
                             ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'])
                             ->maxSize(5120)
                             ->columnSpan(2)
@@ -62,7 +62,7 @@ class GeneralSettingsTabProvider implements SettingsTabProviderInterface
                                 // This callback is ONLY called when a NEW file is uploaded
                                 // It does NOT run when just saving the form with an existing file
 
-                                $diskName = config('franken-cms.media_disk_name');
+                                $diskName = 'public';
 
                                 // Store the file
                                 $path = $file->store('site-icons', $diskName);
