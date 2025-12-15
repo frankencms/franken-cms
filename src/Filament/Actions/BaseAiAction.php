@@ -83,6 +83,9 @@ abstract class BaseAiAction extends Action
                     $fieldName = $this->getFieldName();
                     $livewire->data[$fieldName] = $generatedText;
 
+                    // Dispatch Alpine events to update character count displays
+                    $this->dispatchCharacterCountEvent($livewire, $fieldName, $characterCount);
+
                     // If there's a record, persist the generated content immediately
                     if (isset($livewire->record) && $livewire->record) {
                         $record = $livewire->record;
@@ -201,5 +204,22 @@ abstract class BaseAiAction extends Action
         }
 
         return trim($text);
+    }
+
+    /**
+     * Dispatch Alpine events to update character count displays for SEO fields
+     */
+    protected function dispatchCharacterCountEvent($livewire, string $fieldName, int $characterCount): void
+    {
+        $eventMap = [
+            'seo_title'       => 'seo-title-update',
+            'seo_description' => 'seo-description-update',
+        ];
+
+        if (isset($eventMap[$fieldName])) {
+            $eventName = $eventMap[$fieldName];
+            // Dispatch browser event that Alpine can listen to on window
+            $livewire->js("window.dispatchEvent(new CustomEvent('{$eventName}', { detail: { length: {$characterCount} } }))");
+        }
     }
 }
