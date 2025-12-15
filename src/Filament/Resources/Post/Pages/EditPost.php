@@ -5,6 +5,7 @@ namespace FrankenCms\Filament\Resources\Post\Pages;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use FrankenCms\Filament\Resources\Post\PostResource;
+use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Services\TemplateFieldExtractor;
 
@@ -212,6 +213,24 @@ class EditPost extends EditRecord
         $this->saveFeaturedImageMetadata();
         $this->saveCustomImageFieldsMetadata();
         $this->saveSeoTwitterToggle();
+        $this->calculateAndSaveReadTime();
+    }
+
+    protected function calculateAndSaveReadTime(): void
+    {
+        /** @var Post $record */
+        $record = $this->record;
+
+        // Only calculate read time for posts with content
+        if (empty($record->post_content)) {
+            return;
+        }
+
+        $readTime = PostHelper::calculate_read_time(
+            PostHelper::convert_tip_tap_to_plain_text($record->post_content)
+        );
+
+        $record->setMeta('read_time', $readTime);
     }
 
     protected function saveSeoTwitterToggle(): void

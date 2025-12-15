@@ -4,6 +4,7 @@ namespace FrankenCms\Filament\Resources\Post\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
 use FrankenCms\Filament\Resources\Post\PostResource;
+use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
 
 class CreatePost extends CreateRecord
@@ -63,6 +64,24 @@ class CreatePost extends CreateRecord
     {
         $this->saveFeaturedImageMetadata();
         $this->saveSeoTwitterToggle();
+        $this->calculateAndSaveReadTime();
+    }
+
+    protected function calculateAndSaveReadTime(): void
+    {
+        /** @var Post $record */
+        $record = $this->record;
+
+        // Only calculate read time for posts with content
+        if (empty($record->post_content)) {
+            return;
+        }
+
+        $readTime = PostHelper::calculate_read_time(
+            PostHelper::convert_tip_tap_to_plain_text($record->post_content)
+        );
+
+        $record->setMeta('read_time', $readTime);
     }
 
     protected function saveSeoTwitterToggle(): void

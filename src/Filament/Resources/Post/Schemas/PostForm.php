@@ -288,8 +288,18 @@ class PostForm
                                         TextEntry::make('read_time')
                                             ->label('Read Time')
                                             ->icon('heroicon-o-clock')
-                                            ->html(function ($record): string {
-                                                return '- Not calculated yet';
+                                            ->state(function ($record): string {
+                                                if (! $record) {
+                                                    return 'Save post to calculate';
+                                                }
+
+                                                $readTime = $record->getMeta('read_time');
+
+                                                if ($readTime === null) {
+                                                    return 'Not calculated yet';
+                                                }
+
+                                                return $readTime . ' min read';
                                             }),
                                     ]),
                             ]),
