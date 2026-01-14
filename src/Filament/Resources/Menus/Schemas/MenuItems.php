@@ -36,6 +36,7 @@ class MenuItems
                                         ->label('Link To')
                                         ->inlineLabel()
                                         ->options(function () {
+                                            // Custom URL option at the top
                                             $options = ['custom' => 'Custom URL'];
 
                                             // Get all pages (Page model has PageScope that filters by post_type='page')
@@ -71,69 +72,16 @@ class MenuItems
                                         })
                                         ->searchable()
                                         ->live()
-                                        ->afterStateHydrated(function (Select $component, callable $get) {
-                                            // Populate from existing linkable data when editing
-                                            $linkableType = $get('linkable_type');
-                                            $linkableId = $get('linkable_id');
-                                            $url = $get('url');
-
-                                            // Check linkable first (page/post links store both linkable and url)
-                                            if ($linkableType && $linkableId) {
-                                                if (str_contains($linkableType, 'Page')) {
-                                                    $component->state('page:' . $linkableId);
-
-                                                    return;
-                                                } elseif (str_contains($linkableType, 'Post')) {
-                                                    $component->state('post:' . $linkableId);
-
-                                                    return;
-                                                }
-                                            }
-
-                                            // Fall back to custom URL if no linkable
-                                            if ($url) {
-                                                $component->state('custom');
-                                            }
-                                        })
-                                        ->afterStateUpdated(function (callable $set, $state) {
-                                            if ($state === 'custom') {
-                                                // Clear linkable fields so user can enter custom URL
-                                                $set('url', null);
-                                                $set('linkable_type', null);
-                                                $set('linkable_id', null);
-                                            } elseif ($state && $state !== 'custom') {
-                                                // Parse selection and set linkable relationship
-                                                [$type, $id] = explode(':', $state);
-
-                                                if ($type === 'page') {
-                                                    $page = Page::find($id);
-                                                    $set('linkable_type', Page::class);
-                                                    // Show computed URL for reference (actual URL computed from linkable at runtime)
-                                                    $set('url', $page?->url);
-                                                } else {
-                                                    $post = Post::find($id);
-                                                    $set('linkable_type', Post::class);
-                                                    // Show computed URL for reference (actual URL computed from linkable at runtime)
-                                                    $set('url', $post?->url);
-                                                }
-
-                                                $set('linkable_id', (int) $id);
-                                            }
-                                        })
-                                        ->dehydrated(false)
-                                        ->helperText('Select a page/post or choose Custom URL'),
+                                        ->required(),
 
                                     TextInput::make('url')
                                         ->label('URL')
                                         ->inlineLabel()
                                         ->placeholder('https://example.com')
-                                        ->readOnly(fn (callable $get) => $get('link_to') !== 'custom' && $get('link_to') !== null)
-                                        ->required(fn (callable $get) => $get('link_to') === 'custom')
-                                        ->rules(fn (callable $get) => $get('link_to') === 'custom' ? ['url'] : [])
-                                        ->dehydrated()
-                                        ->helperText(fn (callable $get) => $get('link_to') === 'custom'
-                                            ? 'Enter the full URL including https://'
-                                            : 'This URL is automatically set from the selected page/post'),
+                                        ->visible(fn (callable $get): bool => $get('link_to') === 'custom')
+                                        ->required(fn (callable $get): bool => $get('link_to') === 'custom')
+                                        ->url()
+                                        ->dehydrated(),
 
                                     // Hidden fields to store the polymorphic relationship
                                     TextInput::make('linkable_type')

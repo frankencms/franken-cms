@@ -69,15 +69,18 @@ class ManageMenuItems extends Page implements HasSchemas
 
             // Create new menu items
             foreach ($data['menu_items'] as $index => $itemData) {
+                // Process link_to value to get url and linkable fields
+                $linkData = $this->processLinkTo($itemData['link_to'] ?? null, $itemData['url'] ?? null);
+
                 $this->record->allMenuItems()->create([
                     'label'            => $itemData['label'],
-                    'url'              => $itemData['url'] ?? null,
+                    'url'              => $linkData['url'],
                     'route_name'       => $itemData['route_name'] ?? null,
                     'route_parameters' => $itemData['route_parameters'] ?? [],
                     'target'           => $itemData['target'] ?? '_self',
                     'is_active'        => $itemData['is_active'] ?? true,
-                    'linkable_type'    => $itemData['linkable_type'] ?? null,
-                    'linkable_id'      => $itemData['linkable_id'] ?? null,
+                    'linkable_type'    => $linkData['linkable_type'],
+                    'linkable_id'      => $linkData['linkable_id'],
                     'additional_data'  => $itemData['additional_data'] ?? [],
                     'parent_id'        => $itemData['parent_id'] ?? null,
                     'sort_order'       => $index,
@@ -95,6 +98,53 @@ class ManageMenuItems extends Page implements HasSchemas
             ->title('Menu items saved successfully')
             ->success()
             ->send();
+    }
+
+    /**
+     * Process the link_to select value into url and linkable fields
+     */
+    protected function processLinkTo(?string $linkTo, ?string $customUrl): array
+    {
+        // Default values
+        $result = [
+            'url'           => null,
+            'linkable_type' => null,
+            'linkable_id'   => null,
+        ];
+
+        if (! $linkTo) {
+            return $result;
+        }
+
+        // Custom URL - use the provided URL
+        if ($linkTo === 'custom') {
+            $result['url'] = $customUrl;
+
+            return $result;
+        }
+
+        // Page or Post selection
+        if (str_contains($linkTo, ':')) {
+            [$type, $id] = explode(':', $linkTo);
+
+            if ($type === 'page') {
+                $page = \FrankenCms\Models\Page::find($id);
+                if ($page) {
+                    $result['url'] = $page->url;
+                    $result['linkable_type'] = \FrankenCms\Models\Page::class;
+                    $result['linkable_id'] = (int) $id;
+                }
+            } elseif ($type === 'post') {
+                $post = \FrankenCms\Models\Post::find($id);
+                if ($post) {
+                    $result['url'] = $post->url;
+                    $result['linkable_type'] = \FrankenCms\Models\Post::class;
+                    $result['linkable_id'] = (int) $id;
+                }
+            }
+        }
+
+        return $result;
     }
 
     protected function loadMenuItemsData(): void
@@ -118,10 +168,34 @@ class ManageMenuItems extends Page implements HasSchemas
                         'additional_data'  => $item->additional_data,
                         'parent_id'        => $item->parent_id,
                         'sort_order'       => $item->sort_order,
+                        // Compute link_to value for the Select field
+                        'link_to'          => $this->computeLinkTo($item),
                     ];
                 })
                 ->toArray(),
         ];
+    }
+
+    /**
+     * Compute the link_to select value from menu item data
+     */
+    protected function computeLinkTo($item): ?string
+    {
+        // Check if it's a page/post link via linkable relationship
+        if ($item->linkable_type && $item->linkable_id) {
+            if (str_contains($item->linkable_type, 'Page')) {
+                return 'page:' . $item->linkable_id;
+            } elseif (str_contains($item->linkable_type, 'Post')) {
+                return 'post:' . $item->linkable_id;
+            }
+        }
+
+        // If there's a URL but no linkable, it's a custom URL
+        if ($item->url) {
+            return 'custom';
+        }
+
+        return null;
     }
 
     protected function getHeaderActions(): array
