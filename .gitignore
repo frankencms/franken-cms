@@ -30,3 +30,9 @@ phpstan.neon
 testbench.yaml
 /coverage
 .DS_Store
+
+# AI Tools
+.claude
+CLAUDE.md
+.ai
+
