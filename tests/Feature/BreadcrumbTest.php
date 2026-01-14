@@ -163,10 +163,35 @@ test('blog listing breadcrumbs', function () {
 });
 
 test('taxonomy archive breadcrumbs', function () {
-    // Note: This test requires Taxonomy and Term factories which aren't created yet
-    // The breadcrumb generation logic is tested indirectly through other tests
-    expect(true)->toBeTrue();
-})->skip('Taxonomy and Term factories not yet implemented');
+    // Set up blog page (required as parent for taxonomy breadcrumbs)
+    $readingSettings = app(ReadingSettings::class);
+    $readingSettings->post_page = 'blog';
+    $readingSettings->save();
+
+    Page::factory()->create([
+        'post_title' => 'Blog',
+        'post_slug'  => 'blog',
+    ]);
+
+    // Create taxonomy and term
+    $taxonomy = Taxonomy::factory()->create([
+        'name'         => 'category',
+        'hierarchical' => true,
+    ]);
+
+    $term = Term::factory()->forTaxonomy($taxonomy)->create([
+        'name' => 'Technology',
+        'slug' => 'technology',
+    ]);
+
+    $breadcrumbs = Breadcrumbs::generate('franken-cms.taxonomy', $taxonomy, $term);
+
+    expect($breadcrumbs)->toHaveCount(3);
+    expect($breadcrumbs[0]->title)->toBe('Home');
+    expect($breadcrumbs[1]->title)->toBe('Blog');
+    expect($breadcrumbs[2]->title)->toBe('Technology');
+    expect($breadcrumbs[2]->url)->toBe(url('/category/technology'));
+});
 
 test('breadcrumbs component renders correctly', function () {
     $page = Page::factory()->create([
@@ -198,8 +223,11 @@ test('breadcrumbs can be disabled via config', function () {
 });
 
 test('custom home text is used in breadcrumbs', function () {
-    // This test would require re-registering breadcrumbs which causes issues
-    // The home text configuration is tested indirectly through other tests
-    // In real usage, config is set before ServiceProvider boots
+    // The beforeEach sets 'Home' as the home text
+    // Verify it's being used in breadcrumb generation
+    $breadcrumbs = Breadcrumbs::generate('franken-cms.home');
+
+    expect($breadcrumbs)->toHaveCount(1);
+    expect($breadcrumbs[0]->title)->toBe('Home');
     expect(config('franken-cms.breadcrumbs.home_text'))->toBe('Home');
-})->skip('Config must be set before breadcrumbs register');
+});

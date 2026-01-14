@@ -37,17 +37,16 @@ beforeEach(function () {
     // Clear and initialize settings with default values
     \DB::table('settings')->truncate();
     \DB::table('settings')->insert([
-        ['group' => 'cms_general', 'name' => 'title', 'payload' => json_encode('Default Title'), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'tagline', 'payload' => json_encode(null), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'icon', 'payload' => json_encode(null), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'membership', 'payload' => json_encode(false), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'new_user_default_role', 'payload' => json_encode('subscriber'), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'language', 'payload' => json_encode(null), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'timezone', 'payload' => json_encode('UTC+0'), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'date_format', 'payload' => json_encode('F j, Y'), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'custom_date_format', 'payload' => json_encode(null), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'time_format', 'payload' => json_encode('g:i a'), 'locked' => false],
-        ['group' => 'cms_general', 'name' => 'custom_time_format', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'title', 'payload' => json_encode('Default Title'), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'icon', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'membership', 'payload' => json_encode(false), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'new_user_default_role', 'payload' => json_encode('subscriber'), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'language', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'timezone', 'payload' => json_encode('UTC'), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'date_format', 'payload' => json_encode('F j, Y'), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'custom_date_format', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'time_format', 'payload' => json_encode('g:i a'), 'locked' => false],
+        ['group' => 'franken_cms_general', 'name' => 'custom_time_format', 'payload' => json_encode(null), 'locked' => false],
     ]);
 });
 
@@ -63,19 +62,19 @@ it('can load and save settings through the tab system', function () {
     // Test settings can be loaded
     $generalSettings = app(GeneralSettings::class);
     expect($generalSettings->title)->toBe('Default Title');
-    expect($generalSettings->tagline)->toBeNull();
+    expect($generalSettings->timezone)->toBe('UTC');
     expect($generalSettings->membership)->toBe(false);
 
     // Test settings can be updated
     $generalSettings->title = 'Updated Title';
-    $generalSettings->tagline = 'Updated Tagline';
+    $generalSettings->timezone = 'America/New_York';
     $generalSettings->membership = true;
     $generalSettings->save();
 
     // Verify changes persisted
     $freshSettings = app(GeneralSettings::class);
     expect($freshSettings->title)->toBe('Updated Title');
-    expect($freshSettings->tagline)->toBe('Updated Tagline');
+    expect($freshSettings->timezone)->toBe('America/New_York');
     expect($freshSettings->membership)->toBe(true);
 });
 
@@ -151,21 +150,24 @@ it('can register and use custom tabs', function () {
 it('handles multiple settings classes correctly', function () {
     // Set up multiple settings - ReadingSettings
     \DB::table('settings')->insert([
-        ['group' => 'cms_reading', 'name' => 'posts_per_page', 'payload' => json_encode(10), 'locked' => false],
-        ['group' => 'cms_reading', 'name' => 'for_each_post_in_a_feed_include', 'payload' => json_encode('excerpt'), 'locked' => false],
-        ['group' => 'cms_reading', 'name' => 'for_each_post_in_a_feed_show_the_most_recent', 'payload' => json_encode(10), 'locked' => false],
-        ['group' => 'cms_reading', 'name' => 'search_engine_visibility', 'payload' => json_encode(false), 'locked' => false],
+        ['group' => 'franken_cms_reading', 'name' => 'home_page', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_reading', 'name' => 'post_page', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_reading', 'name' => 'posts_per_page', 'payload' => json_encode(10), 'locked' => false],
+        ['group' => 'franken_cms_reading', 'name' => 'enable_feeds', 'payload' => json_encode(true), 'locked' => false],
+        ['group' => 'franken_cms_reading', 'name' => 'syndicate_feeds', 'payload' => json_encode(10), 'locked' => false],
+        ['group' => 'franken_cms_reading', 'name' => 'include_in_feed', 'payload' => json_encode('full_text'), 'locked' => false],
         // MediaSettings
-        ['group' => 'cms_media', 'name' => 'thumbnail_size_w', 'payload' => json_encode(150), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'thumbnail_size_h', 'payload' => json_encode(150), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'thumbnail_crop', 'payload' => json_encode(false), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'medium_size_w', 'payload' => json_encode(300), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'medium_size_h', 'payload' => json_encode(300), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'medium_crop', 'payload' => json_encode(false), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'large_size_w', 'payload' => json_encode(1024), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'large_size_h', 'payload' => json_encode(1024), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'large_crop', 'payload' => json_encode(false), 'locked' => false],
-        ['group' => 'cms_media', 'name' => 'uploads_use_yearmonth_folders', 'payload' => json_encode(false), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'featured_aspect_ratio', 'payload' => json_encode('16:9'), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'featured_width', 'payload' => json_encode(1200), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'featured_custom_width', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'featured_custom_height', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'featured_crop', 'payload' => json_encode(true), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'listing_aspect_ratio', 'payload' => json_encode('3:2'), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'listing_width', 'payload' => json_encode(800), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'listing_custom_width', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'listing_custom_height', 'payload' => json_encode(null), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'listing_crop', 'payload' => json_encode(true), 'locked' => false],
+        ['group' => 'franken_cms_media', 'name' => 'enable_responsive_images', 'payload' => json_encode(true), 'locked' => false],
     ]);
 
     $settingsTabService = app(SettingsTabService::class);

@@ -2,6 +2,7 @@
 
 namespace FrankenCms\Models;
 
+use FrankenCms\Database\Factories\TermFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,11 @@ class Term extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'slug', 'taxonomy_id', 'parent_id', 'description'];
+
+    protected static function newFactory()
+    {
+        return TermFactory::new();
+    }
 
     protected $appends = ['url'];
 
