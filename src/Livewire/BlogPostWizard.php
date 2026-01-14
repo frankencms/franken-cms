@@ -59,7 +59,7 @@ class BlogPostWizard extends Component
         // Validate current step
         if ($this->step === 1) {
             $this->validate([
-                'focus' => 'required|min:3|max:500',
+                'focus'    => 'required|min:3|max:500',
                 'audience' => 'required|min:3|max:200',
             ]);
 

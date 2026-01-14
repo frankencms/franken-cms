@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace FrankenCms\Models;
 
 use Exception;
-use FrankenCms\Models\Page;
-use FrankenCms\Models\Post;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;

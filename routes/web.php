@@ -1,13 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 use FrankenCms\Http\Controllers\FeedController;
 use FrankenCms\Http\Controllers\RobotsController;
 use FrankenCms\Http\Controllers\RouteController;
 use FrankenCms\Http\Controllers\SitemapController;
 use FrankenCms\Services\PageRouteService;
-
+use Illuminate\Support\Facades\Route;
 
 // Apply web middleware group to all package routes
 Route::middleware('web')->group(function () {
@@ -30,9 +28,6 @@ Route::middleware('web')->group(function () {
     // This should be the last route registered
     Route::fallback([RouteController::class, 'index']);
 });
-
-
-
 
 /**
  * Favicon Routes

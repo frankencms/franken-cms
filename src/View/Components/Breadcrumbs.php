@@ -3,6 +3,7 @@
 namespace FrankenCms\View\Components;
 
 use Diglactic\Breadcrumbs\Breadcrumbs as BreadcrumbsFacade;
+use Exception;
 use FrankenCms\Services\CurrentPageService;
 use Illuminate\View\Component;
 use Illuminate\View\View;
@@ -39,8 +40,8 @@ class Breadcrumbs extends Component
 
         // Determine the breadcrumb name based on the page type
         $breadcrumbName = match ($currentPage->post_type) {
-            'page' => 'franken-cms.page',
-            'post' => 'franken-cms.post',
+            'page'  => 'franken-cms.page',
+            'post'  => 'franken-cms.post',
             default => null,
         };
 
@@ -51,7 +52,7 @@ class Breadcrumbs extends Component
         try {
             // Generate breadcrumbs using the diglactic package
             $this->breadcrumbs = BreadcrumbsFacade::generate($breadcrumbName, $currentPage)->toArray();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently fail if breadcrumbs can't be generated
             // This allows pages without breadcrumb definitions to work normally
             $this->breadcrumbs = [];
@@ -61,7 +62,7 @@ class Breadcrumbs extends Component
     /**
      * Get the view / contents that represent the component.
      */
-    public function render(): View|string
+    public function render(): View | string
     {
         // Don't render if no breadcrumbs
         if (empty($this->breadcrumbs)) {

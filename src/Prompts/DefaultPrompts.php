@@ -249,6 +249,4 @@ OUTPUT FORMAT
 Return only the final SEO blog post title text.
 PROMPT;
     }
-
-
 }

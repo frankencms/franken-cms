@@ -12,6 +12,7 @@ class TemplateFieldExtractor
     public function __construct(
         protected FieldTypeRegistry $fieldTypeRegistry
     ) {}
+
     /**
      * Parse a template file and extract all field directives
      *

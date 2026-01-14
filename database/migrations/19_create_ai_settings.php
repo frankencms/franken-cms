@@ -40,6 +40,4 @@ return new class extends SettingsMigration
         $this->migrator->add('franken_cms_ai.blog_post_title_enabled', true);
         $this->migrator->add('franken_cms_ai.blog_post_title_prompt', DefaultPrompts::blogPostTitle());
     }
-
-
 };

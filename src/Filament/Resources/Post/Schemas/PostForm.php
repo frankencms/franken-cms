@@ -6,7 +6,6 @@ namespace FrankenCms\Filament\Resources\Post\Schemas;
 
 use Exception;
 use Filament\Forms\Components\DateTimePicker;
-use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -38,6 +37,7 @@ use FrankenCms\Models\Post;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\ReadingSettings;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 class PostForm

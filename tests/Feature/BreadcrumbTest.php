@@ -5,7 +5,6 @@ use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 use FrankenCms\Models\Taxonomy;
 use FrankenCms\Models\Term;
-use FrankenCms\Services\BreadcrumbService;
 use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Support\Facades\DB;
 

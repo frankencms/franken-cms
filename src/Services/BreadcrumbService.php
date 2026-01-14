@@ -8,6 +8,7 @@ use FrankenCms\Models\Post;
 use FrankenCms\Models\Taxonomy;
 use FrankenCms\Models\Term;
 use FrankenCms\Settings\ReadingSettings;
+use ReflectionClass;
 
 class BreadcrumbService
 {
@@ -150,7 +151,7 @@ class BreadcrumbService
     protected function isBreadcrumbRegistered(string $name): bool
     {
         $manager = app(\Diglactic\Breadcrumbs\Manager::class);
-        $reflection = new \ReflectionClass($manager);
+        $reflection = new ReflectionClass($manager);
         $callbacksProperty = $reflection->getProperty('callbacks');
         $callbacksProperty->setAccessible(true);
         $callbacks = $callbacksProperty->getValue($manager);

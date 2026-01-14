@@ -195,8 +195,8 @@ class EnhancedImageAction
 
                             // Generate a unique filename
                             $extension = $file->getClientOriginalExtension() ?: 'jpg';
-                            $filename = Str::orderedUuid().'.'.$extension;
-                            $fullPath = $directory.'/'.$filename;
+                            $filename = Str::orderedUuid() . '.' . $extension;
+                            $fullPath = $directory . '/' . $filename;
 
                             // Get the file contents from the temporary file
                             // TemporaryUploadedFile may be on a different disk than the target
@@ -218,7 +218,7 @@ class EnhancedImageAction
                             }
 
                             if (! $success) {
-                                throw new Exception('Failed to write file to disk: '.$diskName);
+                                throw new Exception('Failed to write file to disk: ' . $diskName);
                             }
 
                             // Use the path as the id so Filament can verify the file exists

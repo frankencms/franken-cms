@@ -6,6 +6,7 @@ namespace FrankenCms\Http\Middleware;
 
 use Closure;
 use Diglactic\Breadcrumbs\Breadcrumbs;
+use Exception;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\SeoService;
 use FrankenCms\Settings\SeoSettings;
@@ -287,8 +288,8 @@ class AddSeoDefaults
 
         // Determine the breadcrumb name based on the page type
         $breadcrumbName = match ($post->post_type) {
-            'page' => 'franken-cms.page',
-            'post' => 'franken-cms.post',
+            'page'  => 'franken-cms.page',
+            'post'  => 'franken-cms.post',
             default => null,
         };
 
@@ -302,17 +303,17 @@ class AddSeoDefaults
 
             // Build Schema.org BreadcrumbList structure
             $json = [
-                '@context' => 'https://schema.org',
-                '@type' => 'BreadcrumbList',
+                '@context'        => 'https://schema.org',
+                '@type'           => 'BreadcrumbList',
                 'itemListElement' => [],
             ];
 
             foreach ($breadcrumbs as $i => $breadcrumb) {
                 $json['itemListElement'][] = [
-                    '@type' => 'ListItem',
+                    '@type'    => 'ListItem',
                     'position' => $i + 1,
-                    'item' => [
-                        '@id' => $breadcrumb->url ?: request()->fullUrl(),
+                    'item'     => [
+                        '@id'  => $breadcrumb->url ?: request()->fullUrl(),
                         'name' => $breadcrumb->title,
                     ],
                 ];
@@ -324,7 +325,7 @@ class AddSeoDefaults
                     ->attr('type', 'application/ld+json')
                     ->body(json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), false)
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently fail if breadcrumbs can't be generated
         }
     }

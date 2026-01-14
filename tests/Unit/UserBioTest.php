@@ -7,19 +7,19 @@ describe('UserBio Model', function () {
 
     it('can create a user bio', function () {
         $user = User::create([
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
+            'name'     => 'John Doe',
+            'email'    => 'john@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
-            'user_id' => $user->id,
-            'title' => 'Senior Developer',
-            'bio' => 'I love building things with Laravel.',
-            'website' => 'https://example.com',
+            'user_id'      => $user->id,
+            'title'        => 'Senior Developer',
+            'bio'          => 'I love building things with Laravel.',
+            'website'      => 'https://example.com',
             'social_links' => [
                 'twitter' => 'https://twitter.com/johndoe',
-                'github' => 'https://github.com/johndoe',
+                'github'  => 'https://github.com/johndoe',
             ],
         ]);
 
@@ -33,14 +33,14 @@ describe('UserBio Model', function () {
 
     it('belongs to a user', function () {
         $user = User::create([
-            'name' => 'Jane Doe',
-            'email' => 'jane@example.com',
+            'name'     => 'Jane Doe',
+            'email'    => 'jane@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
             'user_id' => $user->id,
-            'title' => 'Content Writer',
+            'title'   => 'Content Writer',
         ]);
 
         expect($bio->user)->toBeInstanceOf(User::class);
@@ -50,15 +50,15 @@ describe('UserBio Model', function () {
 
     it('can get a specific social link', function () {
         $user = User::create([
-            'name' => 'Bob Smith',
-            'email' => 'bob@example.com',
+            'name'     => 'Bob Smith',
+            'email'    => 'bob@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
-            'user_id' => $user->id,
+            'user_id'      => $user->id,
             'social_links' => [
-                'twitter' => 'https://twitter.com/bobsmith',
+                'twitter'  => 'https://twitter.com/bobsmith',
                 'linkedin' => 'https://linkedin.com/in/bobsmith',
             ],
         ]);
@@ -70,13 +70,13 @@ describe('UserBio Model', function () {
 
     it('can set a social link', function () {
         $user = User::create([
-            'name' => 'Alice Johnson',
-            'email' => 'alice@example.com',
+            'name'     => 'Alice Johnson',
+            'email'    => 'alice@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
-            'user_id' => $user->id,
+            'user_id'      => $user->id,
             'social_links' => [],
         ]);
 
@@ -88,13 +88,13 @@ describe('UserBio Model', function () {
 
     it('can update an existing social link', function () {
         $user = User::create([
-            'name' => 'Charlie Brown',
-            'email' => 'charlie@example.com',
+            'name'     => 'Charlie Brown',
+            'email'    => 'charlie@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
-            'user_id' => $user->id,
+            'user_id'      => $user->id,
             'social_links' => [
                 'twitter' => 'https://twitter.com/charlieold',
             ],
@@ -112,14 +112,14 @@ describe('HasBio Trait', function () {
 
     it('user has bio relationship', function () {
         $user = User::create([
-            'name' => 'David Miller',
-            'email' => 'david@example.com',
+            'name'     => 'David Miller',
+            'email'    => 'david@example.com',
             'password' => 'password',
         ]);
 
         UserBio::create([
             'user_id' => $user->id,
-            'title' => 'Designer',
+            'title'   => 'Designer',
         ]);
 
         expect($user->bio)->toBeInstanceOf(UserBio::class);
@@ -128,20 +128,20 @@ describe('HasBio Trait', function () {
 
     it('can check if user has a bio', function () {
         $userWithBio = User::create([
-            'name' => 'Eve Anderson',
-            'email' => 'eve@example.com',
+            'name'     => 'Eve Anderson',
+            'email'    => 'eve@example.com',
             'password' => 'password',
         ]);
 
         $userWithoutBio = User::create([
-            'name' => 'Frank Wilson',
-            'email' => 'frank@example.com',
+            'name'     => 'Frank Wilson',
+            'email'    => 'frank@example.com',
             'password' => 'password',
         ]);
 
         UserBio::create([
             'user_id' => $userWithBio->id,
-            'title' => 'Marketing Manager',
+            'title'   => 'Marketing Manager',
         ]);
 
         expect($userWithBio->hasBio())->toBeTrue();
@@ -150,8 +150,8 @@ describe('HasBio Trait', function () {
 
     it('can get or create a bio', function () {
         $user = User::create([
-            'name' => 'Grace Lee',
-            'email' => 'grace@example.com',
+            'name'     => 'Grace Lee',
+            'email'    => 'grace@example.com',
             'password' => 'password',
         ]);
 
@@ -166,14 +166,14 @@ describe('HasBio Trait', function () {
 
     it('returns existing bio when using getOrCreateBio', function () {
         $user = User::create([
-            'name' => 'Henry Davis',
-            'email' => 'henry@example.com',
+            'name'     => 'Henry Davis',
+            'email'    => 'henry@example.com',
             'password' => 'password',
         ]);
 
         $originalBio = UserBio::create([
             'user_id' => $user->id,
-            'title' => 'Original Title',
+            'title'   => 'Original Title',
         ]);
 
         $retrievedBio = $user->getOrCreateBio();
@@ -184,20 +184,20 @@ describe('HasBio Trait', function () {
 
     it('enforces one bio per user', function () {
         $user = User::create([
-            'name' => 'Isabel Martinez',
-            'email' => 'isabel@example.com',
+            'name'     => 'Isabel Martinez',
+            'email'    => 'isabel@example.com',
             'password' => 'password',
         ]);
 
         UserBio::create([
             'user_id' => $user->id,
-            'title' => 'First Bio',
+            'title'   => 'First Bio',
         ]);
 
         // Attempting to create a second bio should throw a unique constraint exception
         expect(fn () => UserBio::create([
             'user_id' => $user->id,
-            'title' => 'Second Bio',
+            'title'   => 'Second Bio',
         ]))->toThrow(Exception::class);
     });
 
@@ -207,14 +207,14 @@ describe('UserBio Media', function () {
 
     it('can register bio-image media collection', function () {
         $user = User::create([
-            'name' => 'Jack Thompson',
-            'email' => 'jack@example.com',
+            'name'     => 'Jack Thompson',
+            'email'    => 'jack@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
             'user_id' => $user->id,
-            'title' => 'Photographer',
+            'title'   => 'Photographer',
         ]);
 
         $collections = $bio->getRegisteredMediaCollections();
@@ -225,14 +225,14 @@ describe('UserBio Media', function () {
 
     it('bio-image collection is single file', function () {
         $user = User::create([
-            'name' => 'Kate Wilson',
-            'email' => 'kate@example.com',
+            'name'     => 'Kate Wilson',
+            'email'    => 'kate@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
             'user_id' => $user->id,
-            'title' => 'Designer',
+            'title'   => 'Designer',
         ]);
 
         $collection = $bio->getMediaCollection('bio-image');
@@ -242,14 +242,14 @@ describe('UserBio Media', function () {
 
     it('implements HasMedia interface', function () {
         $user = User::create([
-            'name' => 'Laura Martinez',
-            'email' => 'laura@example.com',
+            'name'     => 'Laura Martinez',
+            'email'    => 'laura@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
             'user_id' => $user->id,
-            'title' => 'Writer',
+            'title'   => 'Writer',
         ]);
 
         expect($bio)->toBeInstanceOf(\Spatie\MediaLibrary\HasMedia::class);
@@ -258,14 +258,14 @@ describe('UserBio Media', function () {
 
     it('has bio-thumb and bio-large conversions registered', function () {
         $user = User::create([
-            'name' => 'Mike Anderson',
-            'email' => 'mike@example.com',
+            'name'     => 'Mike Anderson',
+            'email'    => 'mike@example.com',
             'password' => 'password',
         ]);
 
         $bio = UserBio::create([
             'user_id' => $user->id,
-            'title' => 'Developer',
+            'title'   => 'Developer',
         ]);
 
         // MediaConversions are registered in registerMediaConversions method

@@ -8,5 +8,4 @@ return new class extends SettingsMigration
     {
         $this->migrator->add('franken_cms_stacks.stacks', []);
     }
-
 };
