@@ -10,6 +10,7 @@ use FrankenCms\Models\Post;
 use FrankenCms\Settings\SitemapSettings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\SitemapIndex;
 use Spatie\Sitemap\Tags\Url;
@@ -25,6 +26,11 @@ class SitemapService
      * Cache key prefix for post type sitemaps
      */
     protected const CACHE_KEY_PREFIX = 'sitemap_';
+
+    /**
+     * Cache key for tracking cached post types
+     */
+    protected const CACHE_KEY_TYPES = 'sitemap_cached_types';
 
     public function __construct(
         protected SitemapSettings $settings
@@ -72,6 +78,9 @@ class SitemapService
     {
         $cacheKey = self::CACHE_KEY_PREFIX . $postType;
 
+        // Track this post type as cached
+        $this->trackCachedPostType($postType);
+
         return Cache::rememberForever($cacheKey, function () use ($postType) {
             $posts = $this->getPostsForType($postType);
             $sitemap = Sitemap::create();
@@ -116,8 +125,26 @@ class SitemapService
     public function clearCache(): void
     {
         Cache::forget(self::CACHE_KEY_INDEX);
-        Cache::forget(self::CACHE_KEY_PREFIX . 'post');
-        Cache::forget(self::CACHE_KEY_PREFIX . 'page');
+
+        // Clear all tracked post type caches
+        $cachedTypes = Cache::get(self::CACHE_KEY_TYPES, []);
+        foreach ($cachedTypes as $postType) {
+            Cache::forget(self::CACHE_KEY_PREFIX . $postType);
+        }
+
+        Cache::forget(self::CACHE_KEY_TYPES);
+    }
+
+    /**
+     * Track a post type as having a cached sitemap
+     */
+    protected function trackCachedPostType(string $postType): void
+    {
+        $cachedTypes = Cache::get(self::CACHE_KEY_TYPES, []);
+        if (! in_array($postType, $cachedTypes, true)) {
+            $cachedTypes[] = $postType;
+            Cache::forever(self::CACHE_KEY_TYPES, $cachedTypes);
+        }
     }
 
     /**
@@ -182,72 +209,37 @@ class SitemapService
     }
 
     /**
-     * Get posts to include in sitemap
-     */
-    protected function getIncludedPosts(): Collection
-    {
-        // First, get the posts we want to include (always posts and pages)
-        $posts = Post::query()
-            ->withoutGlobalScopes()
-            ->with(['author', 'media', 'meta'])
-            ->whereIn('post_type', ['post', 'page'])
-            ->where('post_status', PostStatus::PUBLISH)
-            ->where(function ($query) {
-                $query->whereNull('post_published_at')
-                    ->orWhere('post_published_at', '<=', now());
-            })
-            ->get();
-
-        // Load all parent hierarchy at once
-        // Get all unique parent IDs from the posts
-        $allParentIds = $this->getAllParentIds($posts);
-
-        // Load all parents in a single query
-        $allParents = collect();
-        if ($allParentIds->isNotEmpty()) {
-            $allParents = Post::query()
-                ->withoutGlobalScopes()
-                ->with(['author', 'media', 'meta'])
-                ->whereIn('id', $allParentIds)
-                ->get()
-                ->keyBy('id');
-        }
-
-        // Manually set parent relationships using the loaded parents
-        $this->attachParents($posts, $allParents);
-
-        // Also attach parents to parents (for nested hierarchies)
-        $this->attachParents($allParents, $allParents);
-
-        return $posts->filter(function (Post $post) {
-            return ! $this->isExcluded($post);
-        });
-    }
-
-    /**
-     * Get all parent IDs recursively from a collection of posts
+     * Get all parent IDs recursively from a collection of posts using recursive CTE
      */
     protected function getAllParentIds(Collection $posts): Collection
     {
-        $parentIds = collect();
-        $toProcess = $posts;
+        $initialParentIds = $posts->pluck('parent_id')->filter()->unique()->values();
 
-        while ($toProcess->isNotEmpty()) {
-            $currentParentIds = $toProcess->pluck('parent_id')->filter();
-            if ($currentParentIds->isEmpty()) {
-                break;
-            }
-
-            $parentIds = $parentIds->merge($currentParentIds);
-
-            // Load the next level of parents to get their parent_ids
-            $toProcess = Post::query()
-                ->withoutGlobalScopes()
-                ->whereIn('id', $currentParentIds)
-                ->get(['id', 'parent_id']);
+        if ($initialParentIds->isEmpty()) {
+            return collect();
         }
 
-        return $parentIds->unique();
+        $placeholders = $initialParentIds->map(fn () => '?')->implode(',');
+        $table = (new Post)->getTable();
+
+        // Use recursive CTE to get all ancestors in a single query
+        $results = DB::select("
+            WITH RECURSIVE ancestors AS (
+                SELECT id, parent_id
+                FROM {$table}
+                WHERE id IN ({$placeholders})
+
+                UNION ALL
+
+                SELECT p.id, p.parent_id
+                FROM {$table} p
+                INNER JOIN ancestors a ON p.id = a.parent_id
+                WHERE a.parent_id IS NOT NULL
+            )
+            SELECT DISTINCT id FROM ancestors
+        ", $initialParentIds->toArray());
+
+        return collect($results)->pluck('id');
     }
 
     /**
@@ -257,16 +249,8 @@ class SitemapService
     {
         foreach ($posts as $post) {
             if ($post->parent_id && isset($parents[$post->parent_id])) {
-                // Use setRelation to manually set the loaded parent
-                // This prevents lazy loading when accessing the parent later
-                $parent = $parents[$post->parent_id];
-                $post->setRelation('parent', $parent);
-
-                // Also mark the relation as loaded to prevent Laravel from trying to lazy load
-                // This is needed because of the HasMeta trait's getAttribute() override
-                $post->relationLoaded('parent'); // Just check if it's loaded
+                $post->setRelation('parent', $parents[$post->parent_id]);
             } elseif ($post->parent_id === null) {
-                // Set parent to null explicitly to prevent lazy loading attempts
                 $post->setRelation('parent', null);
             }
         }
@@ -287,7 +271,7 @@ class SitemapService
     }
 
     /**
-     * Build hierarchical path for a page without triggering lazy loading
+     * Build hierarchical URL for a page without triggering lazy loading
      */
     protected function buildHierarchicalPath(Post $post): string
     {
@@ -302,12 +286,11 @@ class SitemapService
             if ($current->relationLoaded('parent')) {
                 $current = $current->parent;
             } else {
-                // Parent not loaded, stop traversal
                 break;
             }
         }
 
-        return '/' . implode('/', $segments);
+        return url(implode('/', $segments));
     }
 
     /**
