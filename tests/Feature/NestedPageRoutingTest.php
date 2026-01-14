@@ -416,3 +416,214 @@ describe('Page hierarchical path method', function () {
         expect($level3->getHierarchicalPath())->toBe('/company/team/leadership');
     });
 });
+
+describe('Route name cascade updates', function () {
+    test('child route_names update when parent slug changes', function () {
+        $parent = Page::factory()->create([
+            'post_slug' => 'company',
+            'parent_id' => null,
+        ]);
+
+        $child = Page::factory()->create([
+            'post_slug' => 'team',
+            'parent_id' => $parent->id,
+        ]);
+
+        // Verify initial route_names
+        expect($parent->route_name)->toBe('company');
+        expect($child->route_name)->toBe('company.team');
+
+        // Change parent slug
+        $parent->post_slug = 'organization';
+        $parent->save();
+
+        // Reload child and verify route_name was updated
+        $child->refresh();
+        expect($child->route_name)->toBe('organization.team');
+    });
+
+    test('deeply nested route_names update when ancestor slug changes', function () {
+        $level1 = Page::factory()->create([
+            'post_slug' => 'company',
+            'parent_id' => null,
+        ]);
+
+        $level2 = Page::factory()->create([
+            'post_slug' => 'departments',
+            'parent_id' => $level1->id,
+        ]);
+
+        $level3 = Page::factory()->create([
+            'post_slug' => 'engineering',
+            'parent_id' => $level2->id,
+        ]);
+
+        // Verify initial route_names
+        expect($level1->route_name)->toBe('company');
+        expect($level2->route_name)->toBe('company.departments');
+        expect($level3->route_name)->toBe('company.departments.engineering');
+
+        // Change top-level slug
+        $level1->post_slug = 'organization';
+        $level1->save();
+
+        // Reload and verify all descendant route_names were updated
+        $level2->refresh();
+        $level3->refresh();
+        expect($level2->route_name)->toBe('organization.departments');
+        expect($level3->route_name)->toBe('organization.departments.engineering');
+    });
+
+    test('route_names update when page is moved to different parent', function () {
+        $parent1 = Page::factory()->create([
+            'post_slug' => 'company',
+            'parent_id' => null,
+        ]);
+
+        $parent2 = Page::factory()->create([
+            'post_slug' => 'products',
+            'parent_id' => null,
+        ]);
+
+        $child = Page::factory()->create([
+            'post_slug' => 'overview',
+            'parent_id' => $parent1->id,
+        ]);
+
+        // Verify initial route_name
+        expect($child->route_name)->toBe('company.overview');
+
+        // Move to different parent
+        $child->parent_id = $parent2->id;
+        $child->save();
+
+        // Verify route_name was updated
+        expect($child->route_name)->toBe('products.overview');
+    });
+
+    test('route_names update when middle-level page slug changes', function () {
+        $level1 = Page::factory()->create([
+            'post_slug' => 'company',
+            'parent_id' => null,
+        ]);
+
+        $level2 = Page::factory()->create([
+            'post_slug' => 'departments',
+            'parent_id' => $level1->id,
+        ]);
+
+        $level3 = Page::factory()->create([
+            'post_slug' => 'engineering',
+            'parent_id' => $level2->id,
+        ]);
+
+        // Verify initial route_names
+        expect($level3->route_name)->toBe('company.departments.engineering');
+
+        // Change middle-level slug
+        $level2->post_slug = 'teams';
+        $level2->save();
+
+        // Reload and verify descendant route_name was updated
+        $level3->refresh();
+        expect($level2->route_name)->toBe('company.teams');
+        expect($level3->route_name)->toBe('company.teams.engineering');
+    });
+
+    test('moving page with children cascades to grandchildren', function () {
+        $parent1 = Page::factory()->create([
+            'post_slug' => 'company',
+            'parent_id' => null,
+        ]);
+
+        $parent2 = Page::factory()->create([
+            'post_slug' => 'archive',
+            'parent_id' => null,
+        ]);
+
+        $child = Page::factory()->create([
+            'post_slug' => 'departments',
+            'parent_id' => $parent1->id,
+        ]);
+
+        $grandchild = Page::factory()->create([
+            'post_slug' => 'engineering',
+            'parent_id' => $child->id,
+        ]);
+
+        // Verify initial route_names
+        expect($child->route_name)->toBe('company.departments');
+        expect($grandchild->route_name)->toBe('company.departments.engineering');
+
+        // Move child (with its grandchild) to different parent
+        $child->parent_id = $parent2->id;
+        $child->save();
+
+        // Reload and verify both were updated
+        $child->refresh();
+        $grandchild->refresh();
+        expect($child->route_name)->toBe('archive.departments');
+        expect($grandchild->route_name)->toBe('archive.departments.engineering');
+    });
+
+    test('moving nested page to root updates route_name', function () {
+        $parent = Page::factory()->create([
+            'post_slug' => 'company',
+            'parent_id' => null,
+        ]);
+
+        $child = Page::factory()->create([
+            'post_slug' => 'team',
+            'parent_id' => $parent->id,
+        ]);
+
+        // Verify initial route_name
+        expect($child->route_name)->toBe('company.team');
+
+        // Move to root
+        $child->parent_id = null;
+        $child->save();
+
+        // Verify route_name is now just the slug
+        expect($child->route_name)->toBe('team');
+    });
+
+    test('all siblings update when parent slug changes', function () {
+        $parent = Page::factory()->create([
+            'post_slug' => 'company',
+            'parent_id' => null,
+        ]);
+
+        $child1 = Page::factory()->create([
+            'post_slug' => 'about',
+            'parent_id' => $parent->id,
+        ]);
+
+        $child2 = Page::factory()->create([
+            'post_slug' => 'team',
+            'parent_id' => $parent->id,
+        ]);
+
+        $child3 = Page::factory()->create([
+            'post_slug' => 'contact',
+            'parent_id' => $parent->id,
+        ]);
+
+        // Verify initial route_names
+        expect($child1->route_name)->toBe('company.about');
+        expect($child2->route_name)->toBe('company.team');
+        expect($child3->route_name)->toBe('company.contact');
+
+        // Change parent slug
+        $parent->post_slug = 'organization';
+        $parent->save();
+
+        // Reload and verify all siblings were updated
+        $child1->refresh();
+        $child2->refresh();
+        $child3->refresh();
+        expect($child1->route_name)->toBe('organization.about');
+        expect($child2->route_name)->toBe('organization.team');
+        expect($child3->route_name)->toBe('organization.contact');
+    });
+});
