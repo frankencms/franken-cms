@@ -1,8 +1,8 @@
 <?php
 
 use FrankenCms\Models\Page;
-use FrankenCms\Services\CmsFieldRenderer;
-use FrankenCms\Services\TemplateFieldParser;
+use FrankenCms\Services\TemplateFieldExtractor;
+use FrankenCms\Services\TemplateFieldRenderer;
 use FrankenCms\Tests\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
@@ -51,7 +51,7 @@ it('updates custom fields in page', function () {
 });
 
 it('renders text field values correctly', function () {
-    $renderer = app(CmsFieldRenderer::class);
+    $renderer = app(TemplateFieldRenderer::class);
 
     $value = 'Hello World';
     $result = $renderer->render('text', $value);
@@ -60,7 +60,7 @@ it('renders text field values correctly', function () {
 });
 
 it('renders rich editor content correctly', function () {
-    $renderer = app(CmsFieldRenderer::class);
+    $renderer = app(TemplateFieldRenderer::class);
 
     $value = '<p>Rich <strong>content</strong></p>';
     $result = $renderer->render('richEditor', $value);
@@ -70,7 +70,7 @@ it('renders rich editor content correctly', function () {
 });
 
 it('renders repeater data as collection', function () {
-    $renderer = app(CmsFieldRenderer::class);
+    $renderer = app(TemplateFieldRenderer::class);
 
     $value = [
         ['name' => 'Item 1', 'description' => 'First item'],
@@ -85,17 +85,17 @@ it('renders repeater data as collection', function () {
 });
 
 it('parses template and identifies custom fields', function () {
-    $parser = app(TemplateFieldParser::class);
+    $extractor = app(TemplateFieldExtractor::class);
 
     $templateContent = <<<'BLADE'
     <div class="hero">
-        <h1>@cmsField('hero.title', 'text', ['label' => 'Hero Title', 'required' => true])</h1>
-        <p>@cmsField('hero.subtitle', 'textarea', ['label' => 'Subtitle'])</p>
-        <img src="@cmsField('hero.image', 'file', ['label' => 'Hero Image'])" />
+        <h1>@frankenText('hero.title', ['label' => 'Hero Title', 'required' => true])</h1>
+        <p>@frankenTextarea('hero.subtitle', ['label' => 'Subtitle'])</p>
+        <img src="@frankenFile('hero.image', ['label' => 'Hero Image'])" />
     </div>
     BLADE;
 
-    $fields = $parser->parseContent($templateContent);
+    $fields = $extractor->parseContent($templateContent);
 
     expect($fields)->toHaveCount(3)
         ->and($fields)->toHaveKey('hero.title')
@@ -107,18 +107,18 @@ it('parses template and identifies custom fields', function () {
 });
 
 it('groups template fields by section', function () {
-    $parser = app(TemplateFieldParser::class);
+    $extractor = app(TemplateFieldExtractor::class);
 
     $templateContent = <<<'BLADE'
-    @cmsField('hero.title', 'text')
-    @cmsField('hero.subtitle', 'text')
-    @cmsField('cta.button_text', 'text')
-    @cmsField('cta.button_link', 'text')
-    @cmsField('footer_text', 'text')
+    @frankenText('hero.title')
+    @frankenText('hero.subtitle')
+    @frankenText('cta.button_text')
+    @frankenText('cta.button_link')
+    @frankenText('footer_text')
     BLADE;
 
-    $fields = $parser->parseContent($templateContent);
-    $sections = $parser->getFieldsBySection($fields);
+    $fields = $extractor->parseContent($templateContent);
+    $sections = $extractor->getFieldsBySection($fields);
 
     expect($sections)->toHaveKey('hero')
         ->and($sections)->toHaveKey('cta')
@@ -172,7 +172,7 @@ it('handles dot notation in custom field keys', function () {
 });
 
 it('renders boolean fields correctly', function () {
-    $renderer = app(CmsFieldRenderer::class);
+    $renderer = app(TemplateFieldRenderer::class);
 
     expect($renderer->render('toggle', true))->toBeTrue()
         ->and($renderer->render('toggle', false))->toBeFalse()
@@ -181,7 +181,7 @@ it('renders boolean fields correctly', function () {
 });
 
 it('escapes HTML in text fields for security', function () {
-    $renderer = app(CmsFieldRenderer::class);
+    $renderer = app(TemplateFieldRenderer::class);
 
     $maliciousContent = '<script>alert("XSS")</script>';
     $result = $renderer->render('text', $maliciousContent);
@@ -191,7 +191,7 @@ it('escapes HTML in text fields for security', function () {
 });
 
 it('does not escape HTML in richEditor fields', function () {
-    $renderer = app(CmsFieldRenderer::class);
+    $renderer = app(TemplateFieldRenderer::class);
 
     $htmlContent = '<p>Valid <strong>HTML</strong></p>';
     $result = $renderer->render('richEditor', $htmlContent);
