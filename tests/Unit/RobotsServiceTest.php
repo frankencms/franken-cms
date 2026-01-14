@@ -3,7 +3,53 @@
 use FrankenCms\Services\RobotsService;
 use FrankenCms\Services\SitemapService;
 use FrankenCms\Settings\RobotsSettings;
+use FrankenCms\Settings\SitemapSettings;
 use Illuminate\Support\Facades\File;
+
+/**
+ * Create a mock RobotsSettings with proper initialization.
+ * Spatie Settings has typed internal properties that require special handling.
+ */
+function createRobotsSettingsMock(): RobotsSettings
+{
+    $settings = Mockery::mock(RobotsSettings::class)->makePartial();
+
+    // Set the 'loaded' property to true to prevent the load() method from being called
+    // The property is in the parent Spatie\LaravelSettings\Settings class
+    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection->setAccessible(true);
+    $reflection->setValue($settings, true);
+
+    // Set default property values
+    $settings->enabled = true;
+    $settings->discourage_indexing = false;
+    $settings->user_agents = [
+        [
+            'user_agent'  => '*',
+            'rules'       => ['Allow: /'],
+            'crawl_delay' => null,
+        ],
+    ];
+
+    return $settings;
+}
+
+/**
+ * Create a mock SitemapSettings with proper initialization.
+ */
+function createRobotsSitemapSettingsMock(): SitemapSettings
+{
+    $settings = Mockery::mock(SitemapSettings::class)->makePartial();
+
+    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection->setAccessible(true);
+    $reflection->setValue($settings, true);
+
+    $settings->enabled = true;
+    $settings->custom_sitemaps = [];
+
+    return $settings;
+}
 
 beforeEach(function () {
     // Clean up any test robots.txt file
@@ -12,19 +58,9 @@ beforeEach(function () {
         File::delete($robotsPath);
     }
 
-    // Mock settings with defaults
-    $this->settings = Mockery::mock(RobotsSettings::class);
-    $this->settings->enabled = true;
-    $this->settings->user_agents = [
-        [
-            'user_agent'  => '*',
-            'rules'       => ['Allow: /'],
-            'crawl_delay' => null,
-        ],
-    ];
-    $this->settings->additional_sitemaps = [];
-    $this->settings->host = null;
-
+    // Create properly initialized mock settings
+    $this->settings = createRobotsSettingsMock();
+    $this->sitemapSettings = createRobotsSitemapSettingsMock();
     $this->service = new RobotsService($this->settings);
 });
 
@@ -170,23 +206,6 @@ describe('Dynamic robots.txt generation', function () {
         expect($content)->toContain('Crawl-delay: 5');
     });
 
-    test('generates robots.txt with host directive', function () {
-        $this->settings->host = 'https://example.com';
-
-        $content = $this->service->generate();
-
-        expect($content)->toContain('Host: https://example.com');
-    });
-
-    test('generates robots.txt with additional sitemaps', function () {
-        $this->settings->additional_sitemaps = ['/custom-sitemap.xml'];
-
-        $content = $this->service->generate();
-
-        expect($content)->toContain('Sitemap: ');
-        expect($content)->toContain('custom-sitemap.xml');
-    });
-
     test('includes auto-generated sitemap when sitemap service is enabled', function () {
         $sitemapService = Mockery::mock(SitemapService::class);
         $sitemapService->shouldReceive('isEnabled')->andReturn(true);
@@ -203,27 +222,44 @@ describe('Dynamic robots.txt generation', function () {
         $sitemapService->shouldReceive('isEnabled')->andReturn(false);
 
         $service = new RobotsService($this->settings, $sitemapService);
-
-        // Reset settings to have no additional sitemaps
-        $this->settings->additional_sitemaps = [];
-
         $content = $service->generate();
 
         expect($content)->not->toContain('Sitemap:');
     });
 
-    test('converts relative sitemap URLs to absolute', function () {
-        $this->settings->additional_sitemaps = ['/custom-sitemap.xml'];
+    test('includes custom sitemaps from sitemap settings', function () {
+        $sitemapService = Mockery::mock(SitemapService::class);
+        $sitemapService->shouldReceive('isEnabled')->andReturn(false);
 
-        $content = $this->service->generate();
+        $this->sitemapSettings->custom_sitemaps = ['/custom-sitemap.xml'];
+
+        $service = new RobotsService($this->settings, $sitemapService, $this->sitemapSettings);
+        $content = $service->generate();
+
+        expect($content)->toContain('Sitemap: ');
+        expect($content)->toContain('custom-sitemap.xml');
+    });
+
+    test('converts relative sitemap URLs to absolute', function () {
+        $sitemapService = Mockery::mock(SitemapService::class);
+        $sitemapService->shouldReceive('isEnabled')->andReturn(false);
+
+        $this->sitemapSettings->custom_sitemaps = ['/custom-sitemap.xml'];
+
+        $service = new RobotsService($this->settings, $sitemapService, $this->sitemapSettings);
+        $content = $service->generate();
 
         expect($content)->toContain('Sitemap: http'); // Should be absolute URL
     });
 
     test('keeps absolute sitemap URLs unchanged', function () {
-        $this->settings->additional_sitemaps = ['https://cdn.example.com/sitemap.xml'];
+        $sitemapService = Mockery::mock(SitemapService::class);
+        $sitemapService->shouldReceive('isEnabled')->andReturn(false);
 
-        $content = $this->service->generate();
+        $this->sitemapSettings->custom_sitemaps = ['https://cdn.example.com/sitemap.xml'];
+
+        $service = new RobotsService($this->settings, $sitemapService, $this->sitemapSettings);
+        $content = $service->generate();
 
         expect($content)->toContain('Sitemap: https://cdn.example.com/sitemap.xml');
     });
@@ -257,6 +293,34 @@ describe('Dynamic robots.txt generation', function () {
 
         expect($content)->toContain('Disallow: /admin');
         expect($content)->toContain('Allow: /public');
+    });
+});
+
+describe('Discourage indexing', function () {
+    test('blocks all search engines when discourage_indexing is enabled', function () {
+        $this->settings->discourage_indexing = true;
+
+        $content = $this->service->generate();
+
+        expect($content)->toContain('User-agent: *');
+        expect($content)->toContain('Disallow: /');
+        expect($content)->toContain('discourage indexing');
+    });
+
+    test('uses normal rules when discourage_indexing is disabled', function () {
+        $this->settings->discourage_indexing = false;
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /'],
+                'crawl_delay' => null,
+            ],
+        ];
+
+        $content = $this->service->generate();
+
+        expect($content)->toContain('Allow: /');
+        expect($content)->not->toContain('discourage indexing');
     });
 });
 
@@ -302,14 +366,227 @@ describe('Sitemap URL generation', function () {
         $sitemapService = Mockery::mock(SitemapService::class);
         $sitemapService->shouldReceive('isEnabled')->andReturn(true);
 
-        // Add the same sitemap URL manually
-        $this->settings->additional_sitemaps = [url('/sitemap.xml')];
+        // Add the same sitemap URL manually via custom_sitemaps
+        $this->sitemapSettings->custom_sitemaps = [url('/sitemap.xml')];
 
-        $service = new RobotsService($this->settings, $sitemapService);
+        $service = new RobotsService($this->settings, $sitemapService, $this->sitemapSettings);
         $content = $service->generate();
 
         // Count occurrences of "Sitemap: "
         $count = substr_count($content, 'Sitemap: ');
         expect($count)->toBe(1); // Should only appear once despite being added twice
+    });
+});
+
+describe('Cache management', function () {
+    test('clearCache clears the robots.txt cache', function () {
+        // Generate content to populate cache
+        $this->service->getContent();
+
+        // Verify cache exists
+        expect(Cache::has('robots_txt'))->toBeTrue();
+
+        // Clear cache
+        $this->service->clearCache();
+
+        // Verify cache is cleared
+        expect(Cache::has('robots_txt'))->toBeFalse();
+    });
+
+    test('caches dynamic content', function () {
+        // First call should cache
+        $firstResult = $this->service->getContent();
+
+        // Modify settings - should NOT affect cached result
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => 'Googlebot',
+                'rules'       => ['Disallow: /secret'],
+                'crawl_delay' => null,
+            ],
+        ];
+
+        // Second call should return cached result
+        $secondResult = $this->service->getContent();
+
+        expect($firstResult)->toBe($secondResult);
+        expect($secondResult)->not->toContain('Googlebot');
+    });
+
+    test('clearCache allows fresh generation', function () {
+        // First call caches result
+        $this->service->getContent();
+
+        // Modify settings
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => 'ModifiedBot',
+                'rules'       => ['Disallow: /new-rule'],
+                'crawl_delay' => null,
+            ],
+        ];
+
+        // Clear cache
+        $this->service->clearCache();
+
+        // Now should use new settings
+        $freshResult = $this->service->getContent();
+
+        expect($freshResult)->toContain('ModifiedBot');
+        expect($freshResult)->toContain('Disallow: /new-rule');
+    });
+});
+
+describe('Header generation', function () {
+    test('includes domain in header comment', function () {
+        config()->set('app.url', 'https://example.com');
+
+        $content = $this->service->generate();
+
+        expect($content)->toContain('# robots.txt for example.com');
+    });
+
+    test('includes last updated date', function () {
+        $content = $this->service->generate();
+
+        expect($content)->toContain('# Last updated: ' . now()->toDateString());
+    });
+
+    test('includes auto-generated notice', function () {
+        $content = $this->service->generate();
+
+        expect($content)->toContain('# Auto-generated by FrankenCMS');
+    });
+});
+
+describe('Crawl delay edge cases', function () {
+    test('ignores negative crawl delay', function () {
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /'],
+                'crawl_delay' => -5,
+            ],
+        ];
+
+        $content = $this->service->generate();
+
+        expect($content)->not->toContain('Crawl-delay');
+    });
+
+    test('includes positive crawl delay', function () {
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => '*',
+                'rules'       => ['Allow: /'],
+                'crawl_delay' => 10,
+            ],
+        ];
+
+        $content = $this->service->generate();
+
+        expect($content)->toContain('Crawl-delay: 10');
+    });
+});
+
+describe('User agent edge cases', function () {
+    test('handles empty user_agents array', function () {
+        $this->settings->user_agents = [];
+
+        $content = $this->service->generate();
+
+        // Should still generate valid output (just headers, no user-agent blocks)
+        expect($content)->toContain('# Auto-generated by FrankenCMS');
+        expect($content)->not->toContain('User-agent:');
+    });
+
+    test('handles missing user_agent key in config', function () {
+        $this->settings->user_agents = [
+            [
+                // No 'user_agent' key - should default to '*'
+                'rules'       => ['Allow: /'],
+                'crawl_delay' => null,
+            ],
+        ];
+
+        $content = $this->service->generate();
+
+        expect($content)->toContain('User-agent: *');
+        expect($content)->toContain('Allow: /');
+    });
+
+    test('handles missing rules key in config', function () {
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => 'TestBot',
+                // No 'rules' key - should default to empty array
+                'crawl_delay' => null,
+            ],
+        ];
+
+        $content = $this->service->generate();
+
+        expect($content)->toContain('User-agent: TestBot');
+        // No Allow/Disallow rules should be present
+        expect($content)->not->toContain('Allow:');
+        expect($content)->not->toContain('Disallow:');
+    });
+});
+
+describe('Rule parsing edge cases', function () {
+    test('rejects invalid directive types', function () {
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => '*',
+                'rules'       => [
+                    'Allow: /valid',
+                    'Sitemap: /invalid-here',  // Sitemap is not Allow/Disallow
+                    'Crawl-delay: 5',          // Crawl-delay should be in config, not rules
+                    'Host: example.com',       // Host is not valid directive
+                ],
+                'crawl_delay' => null,
+            ],
+        ];
+
+        $content = $this->service->generate();
+
+        expect($content)->toContain('Allow: /valid');
+        expect($content)->not->toContain('Sitemap: /invalid-here');
+        // Note: Crawl-delay in rules will be rejected (not in allowed directives)
+        // The actual Crawl-delay comes from crawl_delay config key
+    });
+
+    test('handles whitespace in rules', function () {
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => '*',
+                'rules'       => [
+                    '  Allow  :   /with-spaces  ',
+                    'Disallow:    /also-spaces   ',
+                ],
+                'crawl_delay' => null,
+            ],
+        ];
+
+        $content = $this->service->generate();
+
+        expect($content)->toContain('Allow: /with-spaces');
+        expect($content)->toContain('Disallow: /also-spaces');
+    });
+
+    test('handles empty path in rules', function () {
+        $this->settings->user_agents = [
+            [
+                'user_agent'  => '*',
+                'rules'       => ['Allow: ', 'Disallow:'],
+                'crawl_delay' => null,
+            ],
+        ];
+
+        $content = $this->service->generate();
+
+        // Empty paths should still be included (valid in robots.txt)
+        expect($content)->toContain('Allow:');
+        expect($content)->toContain('Disallow:');
     });
 });

@@ -43,6 +43,10 @@ class TestCase extends Orchestra
      */
     protected function defineDatabaseMigrations(): void
     {
+        // Load test-specific migrations first (users table, etc.)
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+
+        // Load package migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 
