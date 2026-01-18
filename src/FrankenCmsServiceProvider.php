@@ -15,6 +15,7 @@ use FrankenCms\Commands\InstallCommand;
 use FrankenCms\Commands\MigrateMenuLinksCommand;
 use FrankenCms\Directives\Providers;
 use FrankenCms\Directives\Providers\MenuDirectiveProvider;
+use FrankenCms\Directives\Providers\SocialLinksDirectiveProvider;
 use FrankenCms\Http\Middleware\AddSeoDefaults;
 use FrankenCms\Http\Middleware\SetCurrentPage;
 use FrankenCms\Listeners\ClearFeedCacheListener;
@@ -46,6 +47,7 @@ use FrankenCms\Services\PostService;
 use FrankenCms\Services\RobotsService;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Services\SitemapService;
+use FrankenCms\Services\SocialLinksService;
 use FrankenCms\Services\TemplateFieldExtractor;
 use FrankenCms\Services\TemplateFieldRenderer;
 use FrankenCms\Settings\StackSettings;
@@ -140,10 +142,11 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->app->singleton(TemplateFieldExtractor::class);
         $this->app->singleton(FilamentFieldSchemaBuilder::class);
 
-        // Register robots, sitemap, and feed services
+        // Register robots, sitemap, feed, and social links services
         $this->app->singleton(RobotsService::class);
         $this->app->singleton(SitemapService::class);
         $this->app->singleton(FeedService::class);
+        $this->app->singleton(SocialLinksService::class);
 
         // Register the SEO service provider
         $this->app->register(SeoServiceProvider::class);
@@ -270,6 +273,10 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register menu directives using provider
         $menuProvider = new MenuDirectiveProvider;
         $menuProvider->register();
+
+        // Register social links directives using provider
+        $socialLinksProvider = new SocialLinksDirectiveProvider;
+        $socialLinksProvider->register();
     }
 
     private function registerFieldTypes(): void

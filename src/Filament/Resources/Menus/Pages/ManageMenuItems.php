@@ -169,7 +169,7 @@ class ManageMenuItems extends Page implements HasSchemas
                         'parent_id'        => $item->parent_id,
                         'sort_order'       => $item->sort_order,
                         // Compute link_to value for the Select field
-                        'link_to'          => $this->computeLinkTo($item),
+                        'link_to' => $this->computeLinkTo($item),
                     ];
                 })
                 ->toArray(),

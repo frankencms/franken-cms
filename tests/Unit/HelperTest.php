@@ -1,7 +1,5 @@
 <?php
 
-use FrankenCms\Models\Post;
-use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\FaviconGenerator;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;

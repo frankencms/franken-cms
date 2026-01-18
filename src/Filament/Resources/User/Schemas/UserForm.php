@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace FrankenCms\Filament\Resources\User\Schemas;
 
-use Filament\Forms\Components\KeyValue;
+use Closure;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use FrankenCms\Services\SocialLinksService;
 
 class UserForm
 {
@@ -78,15 +81,85 @@ class UserForm
                             ->url()
                             ->placeholder('https://example.com')
                             ->maxLength(255),
-                        KeyValue::make('social_links')
+                        Repeater::make('social_links')
                             ->label('Social Media Links')
                             ->inlineLabel()
-                            ->keyLabel('Platform')
-                            ->valueLabel('URL')
                             ->addActionLabel('Add social link')
-                            ->reorderable(),
+                            ->reorderable()
+                            ->collapsible()
+                            ->cloneable()
+                            ->itemLabel(fn (array $state): ?string => self::getSocialLinkItemLabel($state))
+                            ->schema([
+                                Select::make('platform')
+                                    ->label('Platform')
+                                    ->options(fn () => app(SocialLinksService::class)->getPlatformOptions())
+                                    ->searchable()
+                                    ->required()
+                                    ->live()
+                                    ->columnSpan(1),
+                                TextInput::make('value')
+                                    ->label('Username or URL')
+                                    ->placeholder(fn ($get) => self::getSocialLinkPlaceholder($get('platform')))
+                                    ->helperText('Enter a username (e.g., @johndoe) or full URL')
+                                    ->required()
+                                    ->rules([
+                                        fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                                            if (empty($value)) {
+                                                return;
+                                            }
+                                            $service = app(SocialLinksService::class);
+                                            $result = $service->validateValue('', (string) $value);
+                                            if ($result !== true) {
+                                                $fail($result);
+                                            }
+                                        },
+                                    ])
+                                    ->columnSpan(2),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(0),
                     ])
                     ->collapsible(),
             ]);
+    }
+
+    /**
+     * Get the item label for a social link repeater item
+     */
+    protected static function getSocialLinkItemLabel(array $state): ?string
+    {
+        $platform = $state['platform'] ?? null;
+        $value = $state['value'] ?? null;
+
+        if (! $platform) {
+            return null;
+        }
+
+        $service = app(SocialLinksService::class);
+        $config = $service->getPlatform($platform);
+        $label = $config['label'] ?? ucfirst($platform);
+
+        if ($value) {
+            // Show shortened value (username or truncated URL)
+            $displayValue = $service->isUrl($value)
+                ? $service->extractUsername($platform, $value)
+                : $value;
+
+            return "{$label}: {$displayValue}";
+        }
+
+        return $label;
+    }
+
+    /**
+     * Get the placeholder text for a social link value input
+     */
+    protected static function getSocialLinkPlaceholder(?string $platform): string
+    {
+        if (! $platform) {
+            return 'Select a platform first';
+        }
+
+        return app(SocialLinksService::class)->getPlaceholder($platform);
     }
 }

@@ -518,7 +518,7 @@ describe('User agent edge cases', function () {
     test('handles missing rules key in config', function () {
         $this->settings->user_agents = [
             [
-                'user_agent'  => 'TestBot',
+                'user_agent' => 'TestBot',
                 // No 'rules' key - should default to empty array
                 'crawl_delay' => null,
             ],
@@ -537,8 +537,8 @@ describe('Rule parsing edge cases', function () {
     test('rejects invalid directive types', function () {
         $this->settings->user_agents = [
             [
-                'user_agent'  => '*',
-                'rules'       => [
+                'user_agent' => '*',
+                'rules'      => [
                     'Allow: /valid',
                     'Sitemap: /invalid-here',  // Sitemap is not Allow/Disallow
                     'Crawl-delay: 5',          // Crawl-delay should be in config, not rules
@@ -559,8 +559,8 @@ describe('Rule parsing edge cases', function () {
     test('handles whitespace in rules', function () {
         $this->settings->user_agents = [
             [
-                'user_agent'  => '*',
-                'rules'       => [
+                'user_agent' => '*',
+                'rules'      => [
                     '  Allow  :   /with-spaces  ',
                     'Disallow:    /also-spaces   ',
                 ],

@@ -184,32 +184,30 @@
                                             </a>
                                         @endif
 
-                                        @if ($authorBio->social_links && count($authorBio->social_links) > 0)
-                                            @foreach ($authorBio->social_links as $platform => $url)
-                                                <a
-                                                    href="{{ $url }}"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    class="inline-flex items-center gap-1 text-sm text-lime-400 transition-colors hover:text-lime-300"
-                                                    aria-label="{{ ucfirst($platform) }}"
+                                        @frankenSocialLinks($authorBio)
+                                            <a
+                                                href="{{ $socialLink['url'] }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex items-center gap-1 text-sm text-lime-400 transition-colors hover:text-lime-300"
+                                                aria-label="{{ $socialLink['label'] }}"
+                                            >
+                                                <svg
+                                                    class="size-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
                                                 >
-                                                    <svg
-                                                        class="size-4"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                                                        />
-                                                    </svg>
-                                                    {{ ucfirst($platform) }}
-                                                </a>
-                                            @endforeach
-                                        @endif
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                                    />
+                                                </svg>
+                                                {{ $socialLink['label'] }}
+                                            </a>
+                                        @endFrankenSocialLinks
                                     </div>
                                 </div>
                             </div>

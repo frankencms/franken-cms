@@ -66,6 +66,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Social Platforms Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Define available social media platforms for user profiles. Each platform
+    | requires a label, url_pattern (with {username} placeholder), and optionally
+    | an icon (Blade Icons component name) and placeholder text.
+    |
+    | Users can enter either a username or full URL. Usernames are automatically
+    | converted to full URLs using the url_pattern.
+    |
+    | To add custom platforms or override defaults, add entries here.
+    | The defaults (Twitter, GitHub, LinkedIn, etc.) are provided by
+    | SocialLinksService if this config key is not set.
+    |
+    | Example custom platform:
+    |   'myplatform' => [
+    |       'label' => 'My Platform',
+    |       'url_pattern' => 'https://myplatform.com/u/{username}',
+    |       'icon' => 'heroicon-o-link',  // Any Blade Icons component
+    |       'placeholder' => 'username or URL',
+    |   ],
+    |
+    */
+
+    // 'social_platforms' => [
+    //     // Uncomment and customize to override or extend default platforms
+    // ],
+
+    /*
+    |--------------------------------------------------------------------------
     | CMS Field Parsing Cache
     |--------------------------------------------------------------------------
     |

@@ -83,7 +83,7 @@ The `FrankenCms\Models\UserBio` model stores all bio-related data.
 | `title` | string | Job title or role (e.g., "Senior Developer") |
 | `bio` | string | Biography text (supports HTML) |
 | `website` | string | Personal website URL |
-| `social_links` | array | Key-value pairs of platform => URL |
+| `social_links` | array | Array of social link objects (see Social Links System) |
 
 ### Media Collections
 
@@ -133,24 +133,133 @@ $bio->title = 'New Title';
 $bio->save();
 ```
 
+## Social Links System
+
+FrankenCMS provides a structured, config-driven social links system with:
+
+- **Predefined platforms** - Select from 20+ preconfigured social platforms
+- **Smart URL handling** - Enter a username OR full URL; usernames are automatically converted
+- **Icon support** - Integrates with Blade Icons ecosystem
+- **Config customization** - Add or override platforms via config only
+
+### Data Structure
+
+Social links are stored as an array of objects:
+
+```php
+[
+    ['platform' => 'twitter', 'value' => 'username'],
+    ['platform' => 'github', 'value' => 'https://github.com/username'],
+]
+```
+
+This format supports ordering, allows both usernames and URLs, and enables multiple links per platform if needed.
+
+### Available Platforms
+
+The following platforms are available by default:
+
+| Key | Platform | Example URL Pattern |
+|-----|----------|---------------------|
+| `twitter` | Twitter / X | `https://twitter.com/{username}` |
+| `github` | GitHub | `https://github.com/{username}` |
+| `linkedin` | LinkedIn | `https://linkedin.com/in/{username}` |
+| `facebook` | Facebook | `https://facebook.com/{username}` |
+| `instagram` | Instagram | `https://instagram.com/{username}` |
+| `youtube` | YouTube | `https://youtube.com/@{username}` |
+| `tiktok` | TikTok | `https://tiktok.com/@{username}` |
+| `mastodon` | Mastodon | `https://mastodon.social/@{username}` |
+| `bluesky` | Bluesky | `https://bsky.app/profile/{username}` |
+| `threads` | Threads | `https://threads.net/@{username}` |
+| `discord` | Discord | `https://discord.gg/{username}` |
+| `twitch` | Twitch | `https://twitch.tv/{username}` |
+| `dribbble` | Dribbble | `https://dribbble.com/{username}` |
+| `behance` | Behance | `https://behance.net/{username}` |
+| `medium` | Medium | `https://medium.com/@{username}` |
+| `devto` | DEV.to | `https://dev.to/{username}` |
+| `stackoverflow` | Stack Overflow | `https://stackoverflow.com/users/{username}` |
+| `codepen` | CodePen | `https://codepen.io/{username}` |
+| `pinterest` | Pinterest | `https://pinterest.com/{username}` |
+| `reddit` | Reddit | `https://reddit.com/user/{username}` |
+
+### Adding Custom Platforms
+
+Add or override platforms in `config/franken-cms.php`:
+
+```php
+'social_platforms' => [
+    'myplatform' => [
+        'label' => 'My Platform',
+        'url_pattern' => 'https://myplatform.com/u/{username}',
+        'icon' => 'heroicon-o-link',  // Blade Icons component name
+        'placeholder' => 'username or full URL',
+    ],
+    // Override an existing platform
+    'mastodon' => [
+        'label' => 'Mastodon',
+        'url_pattern' => 'https://your-instance.social/@{username}',
+        'icon' => 'fab-mastodon',
+    ],
+],
+```
+
+### Icon Support
+
+Social link icons use the [Blade Icons](https://blade-ui-kit.com/blade-icons) ecosystem. The default configuration uses Font Awesome brand icons (`fab-*`). To enable icons:
+
+1. Install a Blade Icons package:
+   ```bash
+   composer require owenvoke/blade-fontawesome
+   ```
+
+2. Icons will automatically render in the `<x-social-link>` component.
+
+If an icon package is not installed, links will display with a generic link icon fallback.
+
 ## UserBio Model Methods
 
-### `getSocialLink(string $key)`
+### `getSocialLinks()`
 
-Get a specific social link by platform key.
+Get all social links with resolved URLs. Returns a collection of link objects.
+
+```php
+$links = $authorBio->getSocialLinks();
+
+foreach ($links as $link) {
+    echo $link['platform'];  // 'twitter'
+    echo $link['value'];     // 'johndoe' or 'https://twitter.com/johndoe'
+    echo $link['url'];       // Always a full URL: 'https://twitter.com/johndoe'
+    echo $link['label'];     // 'Twitter / X'
+    echo $link['icon'];      // 'fab-x-twitter'
+}
+```
+
+### `hasSocialLinks()`
+
+Check if the user has any social links configured.
+
+```php
+if ($authorBio->hasSocialLinks()) {
+    // Show social links section
+}
+```
+
+### `getSocialLink(string $key)` (Legacy)
+
+Get a specific social link by platform key. Supports both new and legacy data formats.
 
 ```php
 $twitter = $authorBio->getSocialLink('twitter');
 $linkedin = $authorBio->getSocialLink('linkedin');
 ```
 
-### `setSocialLink(string $key, ?string $value)`
+### `setSocialLink(string $key, ?string $value)` (Legacy)
 
 Set a social link for a specific platform.
 
 ```php
-$authorBio->setSocialLink('twitter', 'https://twitter.com/username');
-$authorBio->setSocialLink('github', 'https://github.com/username');
+$authorBio->setSocialLink('twitter', '@johndoe');
+$authorBio->setSocialLink('github', 'https://github.com/johndoe');
 $authorBio->save();
 ```
 
@@ -239,25 +348,74 @@ $authorBio->save();
             </a>
         @endif
 
-        {{-- Social Links --}}
-        @if ($authorBio->social_links && count($authorBio->social_links) > 0)
-            <div class="social-links">
-                @foreach ($authorBio->social_links as $platform => $url)
-                    @if ($url)
-                        <a
-                            href="{{ $url }}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="{{ ucfirst($platform) }}"
-                        >
-                            {{ ucfirst($platform) }}
-                        </a>
-                    @endif
-                @endforeach
-            </div>
-        @endif
+        {{-- Social Links using directive --}}
+        <div class="social-links">
+            @frankenSocialLinks($authorBio)
+                <a
+                    href="{{ $socialLink['url'] }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-blue-600 hover:text-blue-800"
+                >
+                    {{ $socialLink['label'] }}
+                </a>
+            @endFrankenSocialLinks
+        </div>
     </div>
 @endif
+```
+
+### @frankenSocialLinks Directive
+
+The `@frankenSocialLinks` directive iterates over a user bio's social links, giving you full control over the markup. This follows the same pattern as `@frankenMenu`.
+
+**Usage:**
+
+```blade
+@frankenSocialLinks($authorBio)
+    {{-- Your custom markup here --}}
+    {{-- $socialLink is available inside the loop --}}
+@endFrankenSocialLinks
+```
+
+**Available `$socialLink` properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `platform` | string | Platform key (e.g., 'twitter', 'github') |
+| `value` | string | Original value entered (username or full URL) |
+| `url` | string | Resolved full URL |
+| `label` | string | Human-readable platform name (e.g., 'Twitter / X') |
+| `icon` | string\|null | Blade Icons component name (e.g., 'fab-x-twitter') |
+
+**Example with custom styling:**
+
+```blade
+@frankenSocialLinks($authorBio)
+    <a
+        href="{{ $socialLink['url'] }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full hover:bg-gray-200"
+        aria-label="{{ $socialLink['label'] }}"
+    >
+        {{-- Your icon implementation --}}
+        <span>{{ $socialLink['label'] }}</span>
+    </a>
+@endFrankenSocialLinks
+```
+
+**Example with Blade Icons (if installed):**
+
+```blade
+@frankenSocialLinks($authorBio)
+    <a href="{{ $socialLink['url'] }}" target="_blank" rel="noopener noreferrer">
+        @if($socialLink['icon'])
+            <x-dynamic-component :component="'icon-' . $socialLink['icon']" class="size-5" />
+        @endif
+        <span class="sr-only">{{ $socialLink['label'] }}</span>
+    </a>
+@endFrankenSocialLinks
 ```
 
 ### Complete Example (From Post Template)
@@ -356,19 +514,29 @@ $bio = UserBio::create([
 
 ### Updating Social Links
 
+Using the new structured format (recommended):
+
+```php
+$bio = $user->bio;
+
+// Set social links as array of objects
+$bio->social_links = [
+    ['platform' => 'twitter', 'value' => 'johndoe'],       // Username only
+    ['platform' => 'github', 'value' => 'johndoe'],        // Username only
+    ['platform' => 'linkedin', 'value' => 'john-doe'],     // Username only
+    ['platform' => 'mastodon', 'value' => 'https://mastodon.social/@johndoe'], // Full URL
+];
+$bio->save();
+```
+
+Using legacy methods (for backward compatibility):
+
 ```php
 $bio = $user->bio;
 
 // Set individual links
-$bio->setSocialLink('twitter', 'https://twitter.com/newhandle');
-$bio->setSocialLink('mastodon', 'https://mastodon.social/@username');
-$bio->save();
-
-// Or replace all at once
-$bio->social_links = [
-    'twitter' => 'https://twitter.com/username',
-    'github' => 'https://github.com/username',
-];
+$bio->setSocialLink('twitter', '@johndoe');
+$bio->setSocialLink('github', 'https://github.com/johndoe');
 $bio->save();
 ```
 
@@ -409,21 +577,16 @@ User bios are managed through the Filament admin panel under the User resource. 
 - **Website Field**: URL input with validation
 - **Social Links**: Dynamic key-value inputs for social platforms
 
-## Common Social Link Keys
+## Supported Social Platforms
 
-While you can use any key for social links, these are commonly used:
+See the [Available Platforms](#available-platforms) section above for the complete list of 20+ supported social platforms. Each platform has:
 
-| Key | Platform |
-|-----|----------|
-| `twitter` | Twitter/X |
-| `github` | GitHub |
-| `linkedin` | LinkedIn |
-| `facebook` | Facebook |
-| `instagram` | Instagram |
-| `youtube` | YouTube |
-| `mastodon` | Mastodon |
-| `bluesky` | Bluesky |
-| `threads` | Threads |
+- A human-readable label
+- A URL pattern for username-to-URL conversion
+- An icon component name (requires Blade Icons package)
+- Placeholder text for the input field
+
+To add custom platforms or override defaults, see [Adding Custom Platforms](#adding-custom-platforms).
 
 ## Best Practices
 

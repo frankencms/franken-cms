@@ -108,6 +108,165 @@ describe('UserBio Model', function () {
 
 });
 
+describe('UserBio Social Links (New Format)', function () {
+
+    it('can store social links in new array format', function () {
+        $user = User::create([
+            'name'     => 'New Format User',
+            'email'    => 'newformat@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id'      => $user->id,
+            'social_links' => [
+                ['platform' => 'twitter', 'value' => 'johndoe'],
+                ['platform' => 'github', 'value' => 'johndoe'],
+            ],
+        ]);
+
+        expect($bio->social_links)->toBeArray();
+        expect($bio->social_links[0]['platform'])->toBe('twitter');
+        expect($bio->social_links[0]['value'])->toBe('johndoe');
+    });
+
+    it('getSocialLinks returns collection with resolved URLs', function () {
+        $user = User::create([
+            'name'     => 'Resolved URL User',
+            'email'    => 'resolved@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id'      => $user->id,
+            'social_links' => [
+                ['platform' => 'twitter', 'value' => 'johndoe'],
+                ['platform' => 'github', 'value' => 'https://github.com/johndoe'],
+            ],
+        ]);
+
+        $links = $bio->getSocialLinks();
+
+        expect($links)->toHaveCount(2);
+        expect($links[0]['platform'])->toBe('twitter');
+        expect($links[0]['url'])->toBe('https://twitter.com/johndoe');
+        expect($links[1]['platform'])->toBe('github');
+        expect($links[1]['url'])->toBe('https://github.com/johndoe');
+    });
+
+    it('getSocialLinks includes label and icon', function () {
+        $user = User::create([
+            'name'     => 'Label Icon User',
+            'email'    => 'labelicon@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id'      => $user->id,
+            'social_links' => [
+                ['platform' => 'twitter', 'value' => 'johndoe'],
+            ],
+        ]);
+
+        $links = $bio->getSocialLinks();
+
+        expect($links[0]['label'])->toBe('Twitter / X');
+        expect($links[0]['icon'])->toBe('fab-x-twitter');
+    });
+
+    it('hasSocialLinks returns true when links exist', function () {
+        $user = User::create([
+            'name'     => 'Has Links User',
+            'email'    => 'haslinks@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id'      => $user->id,
+            'social_links' => [
+                ['platform' => 'twitter', 'value' => 'johndoe'],
+            ],
+        ]);
+
+        expect($bio->hasSocialLinks())->toBeTrue();
+    });
+
+    it('hasSocialLinks returns false when no links exist', function () {
+        $user = User::create([
+            'name'     => 'No Links User',
+            'email'    => 'nolinks@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id'      => $user->id,
+            'social_links' => [],
+        ]);
+
+        expect($bio->hasSocialLinks())->toBeFalse();
+    });
+
+    it('hasSocialLinks returns false when links have empty values', function () {
+        $user = User::create([
+            'name'     => 'Empty Values User',
+            'email'    => 'emptyvalues@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id'      => $user->id,
+            'social_links' => [
+                ['platform' => 'twitter', 'value' => ''],
+            ],
+        ]);
+
+        expect($bio->hasSocialLinks())->toBeFalse();
+    });
+
+    it('getSocialLink works with new format', function () {
+        $user = User::create([
+            'name'     => 'GetLink New Format',
+            'email'    => 'getlinknew@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id'      => $user->id,
+            'social_links' => [
+                ['platform' => 'twitter', 'value' => 'johndoe'],
+                ['platform' => 'github', 'value' => 'johndoe'],
+            ],
+        ]);
+
+        expect($bio->getSocialLink('twitter'))->toBe('https://twitter.com/johndoe');
+        expect($bio->getSocialLink('github'))->toBe('https://github.com/johndoe');
+        expect($bio->getSocialLink('linkedin'))->toBeNull();
+    });
+
+    it('getSocialLinks handles legacy format', function () {
+        $user = User::create([
+            'name'     => 'Legacy Format User',
+            'email'    => 'legacy@example.com',
+            'password' => 'password',
+        ]);
+
+        $bio = UserBio::create([
+            'user_id'      => $user->id,
+            'social_links' => [
+                'twitter' => 'https://twitter.com/johndoe',
+                'github'  => 'https://github.com/johndoe',
+            ],
+        ]);
+
+        $links = $bio->getSocialLinks();
+
+        expect($links)->toHaveCount(2);
+        expect($links[0]['platform'])->toBe('twitter');
+        expect($links[0]['url'])->toBe('https://twitter.com/johndoe');
+    });
+
+});
+
 describe('HasBio Trait', function () {
 
     it('user has bio relationship', function () {
