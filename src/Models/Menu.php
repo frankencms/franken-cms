@@ -131,4 +131,52 @@ class Menu extends Model
 
         return $itemData;
     }
+
+    /**
+     * Duplicate this menu with all its items
+     *
+     * @param  string  $newName  The name for the duplicated menu
+     * @param  string  $newSlug  The slug for the duplicated menu
+     * @return self The newly created menu
+     */
+    public function duplicateWithItems(string $newName, string $newSlug): self
+    {
+        // Create the new menu
+        $newMenu = static::create([
+            'name'      => $newName,
+            'slug'      => $newSlug,
+            'is_active' => $this->is_active,
+        ]);
+
+        // Get all menu items for this menu, ordered by parent_id to ensure parents are processed first
+        $items = $this->allMenuItems()
+            ->orderByRaw('parent_id IS NOT NULL, parent_id')
+            ->orderBy('sort_order')
+            ->get();
+
+        // Map old item IDs to new item IDs for parent relationship mapping
+        $idMap = [];
+
+        foreach ($items as $item) {
+            $newItem = MenuItem::create([
+                'menu_id'          => $newMenu->id,
+                'parent_id'        => $item->parent_id ? ($idMap[$item->parent_id] ?? null) : null,
+                'label'            => $item->label,
+                'url'              => $item->url,
+                'route_name'       => $item->route_name,
+                'route_parameters' => $item->route_parameters,
+                'linkable_type'    => $item->linkable_type,
+                'linkable_id'      => $item->linkable_id,
+                'target'           => $item->target,
+                'additional_data'  => $item->additional_data,
+                'sort_order'       => $item->sort_order,
+                'is_active'        => $item->is_active,
+            ]);
+
+            // Store mapping of old ID to new ID
+            $idMap[$item->id] = $newItem->id;
+        }
+
+        return $newMenu;
+    }
 }
