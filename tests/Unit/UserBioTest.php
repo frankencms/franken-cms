@@ -171,7 +171,7 @@ describe('UserBio Social Links (New Format)', function () {
         $links = $bio->getSocialLinks();
 
         expect($links[0]['label'])->toBe('Twitter / X');
-        expect($links[0]['icon'])->toBe('fab-x-twitter');
+        expect($links[0]['icon'])->toBe('lucide-twitter');
     });
 
     it('hasSocialLinks returns true when links exist', function () {

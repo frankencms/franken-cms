@@ -205,16 +205,23 @@ Add or override platforms in `config/franken-cms.php`:
 
 ### Icon Support
 
-Social link icons use the [Blade Icons](https://blade-ui-kit.com/blade-icons) ecosystem. The default configuration uses Font Awesome brand icons (`fab-*`). To enable icons:
+Social link icons use the [Blade Icons](https://blade-ui-kit.com/blade-icons) ecosystem. The default configuration uses Lucide icons (`lucide-*`). To enable icons:
 
-1. Install a Blade Icons package:
+1. Install the Lucide Blade Icons package:
    ```bash
-   composer require owenvoke/blade-fontawesome
+   composer require mallardduck/blade-lucide-icons
    ```
 
-2. Icons will automatically render in the `<x-social-link>` component.
-
-If an icon package is not installed, links will display with a generic link icon fallback.
+2. Use the icon in your template:
+   ```blade
+   @frankenSocialLinks($authorBio)
+       <a href="{{ $socialLink['url'] }}">
+           @if($socialLink['icon'])
+               <x-dynamic-component :component="$socialLink['icon']" class="size-5" />
+           @endif
+       </a>
+   @endFrankenSocialLinks
+   ```
 
 ## UserBio Model Methods
 
@@ -386,7 +393,7 @@ The `@frankenSocialLinks` directive iterates over a user bio's social links, giv
 | `value` | string | Original value entered (username or full URL) |
 | `url` | string | Resolved full URL |
 | `label` | string | Human-readable platform name (e.g., 'Twitter / X') |
-| `icon` | string\|null | Blade Icons component name (e.g., 'fab-x-twitter') |
+| `icon` | string\|null | Blade Icons component name (e.g., 'lucide-twitter') |
 
 **Example with custom styling:**
 
@@ -405,13 +412,13 @@ The `@frankenSocialLinks` directive iterates over a user bio's social links, giv
 @endFrankenSocialLinks
 ```
 
-**Example with Blade Icons (if installed):**
+**Example with Lucide icons:**
 
 ```blade
 @frankenSocialLinks($authorBio)
     <a href="{{ $socialLink['url'] }}" target="_blank" rel="noopener noreferrer">
         @if($socialLink['icon'])
-            <x-dynamic-component :component="'icon-' . $socialLink['icon']" class="size-5" />
+            <x-dynamic-component :component="$socialLink['icon']" class="size-5" />
         @endif
         <span class="sr-only">{{ $socialLink['label'] }}</span>
     </a>

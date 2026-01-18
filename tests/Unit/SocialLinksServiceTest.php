@@ -69,7 +69,7 @@ describe('SocialLinksService', function () {
             expect($twitter)->toBeArray();
             expect($twitter['label'])->toBe('Twitter / X');
             expect($twitter['url_pattern'])->toBe('https://twitter.com/{username}');
-            expect($twitter['icon'])->toBe('fab-x-twitter');
+            expect($twitter['icon'])->toBe('lucide-twitter');
         });
 
         it('returns null for invalid platform', function () {
@@ -149,13 +149,13 @@ describe('SocialLinksService', function () {
         it('returns icon for valid platform', function () {
             $icon = $this->service->getIcon('twitter');
 
-            expect($icon)->toBe('fab-x-twitter');
+            expect($icon)->toBe('lucide-twitter');
         });
 
         it('returns icon for github', function () {
             $icon = $this->service->getIcon('github');
 
-            expect($icon)->toBe('fab-github');
+            expect($icon)->toBe('lucide-github');
         });
 
         it('returns null for invalid platform', function () {

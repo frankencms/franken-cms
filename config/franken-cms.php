@@ -80,11 +80,14 @@ return [
     | The defaults (Twitter, GitHub, LinkedIn, etc.) are provided by
     | SocialLinksService if this config key is not set.
     |
+    | Default icons use Lucide (lucide-*). Install with:
+    |   composer require mallardduck/blade-lucide-icons
+    |
     | Example custom platform:
     |   'myplatform' => [
     |       'label' => 'My Platform',
     |       'url_pattern' => 'https://myplatform.com/u/{username}',
-    |       'icon' => 'heroicon-o-link',  // Any Blade Icons component
+    |       'icon' => 'lucide-link',  // Any Blade Icons component
     |       'placeholder' => 'username or URL',
     |   ],
     |
