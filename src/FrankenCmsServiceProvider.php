@@ -33,6 +33,7 @@ use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Providers\SeoServiceProvider;
 use FrankenCms\Registries\FieldTypeRegistry;
 use FrankenCms\Registries\SettingsTabRegistry;
+use FrankenCms\Services\AiModelService;
 use FrankenCms\Services\AiService;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
 use FrankenCms\Services\BladeFormDirectiveRegistry;
@@ -155,6 +156,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         if (class_exists(Prism::class)) {
             $this->app->singleton(PromptManager::class);
             $this->app->singleton(AiService::class);
+            $this->app->singleton(AiModelService::class);
         }
 
         // Register SVG Icons

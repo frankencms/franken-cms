@@ -2,16 +2,21 @@
 
 namespace FrankenCms\SettingsTabs;
 
+use Exception;
+use Filament\Actions\Action;
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Services\AiFeatureDetector;
+use FrankenCms\Services\AiModelService;
 use FrankenCms\Settings\AiSettings;
 
 class AiSettingsTabProvider implements SettingsTabProviderInterface
@@ -86,12 +91,27 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                                         Select::make('model')
                                             ->label('Model')
-                                            ->options(fn ($get) => $this->getModelsForProvider($get('provider')))
+                                            ->options(fn ($get) => $this->getModelsForProvider($get('provider'), $get('api_key')))
                                             ->default('gpt-4o')
                                             ->required()
-                                            ->helperText('Choose the AI model to use for generation')
+                                            ->searchable()
+                                            ->helperText(fn ($get) => $this->getModelHelperText($get('provider')))
                                             ->visible(fn ($get) => $get('enabled'))
                                             ->columnSpan(1),
+
+                                        Actions::make([
+                                            Action::make('refresh_models')
+                                                ->label('Refresh Models')
+                                                ->icon('heroicon-o-arrow-path')
+                                                ->color('gray')
+                                                ->size('sm')
+                                                ->action(function ($get, $set, $livewire) {
+                                                    $this->refreshModels($get('provider'), $get('api_key'), $livewire);
+                                                })
+                                                ->visible(fn ($get) => $get('enabled') && ! empty($get('api_key'))),
+                                        ])
+                                            ->visible(fn ($get) => $get('enabled'))
+                                            ->columnSpanFull(),
 
                                     ])
                                     ->columns(2),
@@ -271,21 +291,75 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
     }
 
     /**
-     * Get available models for a provider from config
+     * Get available models for a provider
+     * Uses dynamic fetching when API key is available, falls back to config
      */
-    protected function getModelsForProvider(?string $provider): array
+    protected function getModelsForProvider(?string $provider, ?string $apiKey = null): array
     {
         if (! $provider) {
             return [];
         }
 
-        $models = config("franken-cms.ai_providers.{$provider}.models", []);
+        // Use AiModelService for dynamic model fetching
+        $modelService = app(AiModelService::class);
 
-        // If no models found for this provider, return default
-        if (empty($models)) {
-            return ['gpt-5-chat-latest' => 'GPT-5 (Recommended)'];
+        return $modelService->getModelsForProvider($provider, $apiKey);
+    }
+
+    /**
+     * Get helper text for the model field
+     */
+    protected function getModelHelperText(?string $provider): string
+    {
+        if (! $provider) {
+            return 'Choose the AI model to use for generation';
         }
 
-        return $models;
+        $modelService = app(AiModelService::class);
+
+        if ($modelService->hasCachedModels($provider)) {
+            return 'Models loaded from ' . ucfirst($provider) . ' API (cached)';
+        }
+
+        return 'Enter API key and click "Refresh Models" to load available models';
+    }
+
+    /**
+     * Refresh models from provider API
+     */
+    protected function refreshModels(?string $provider, ?string $apiKey, $livewire): void
+    {
+        if (! $provider || ! $apiKey) {
+            Notification::make()
+                ->title('Missing Information')
+                ->body('Please select a provider and enter an API key first.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        try {
+            $modelService = app(AiModelService::class);
+            $models = $modelService->refreshModels($provider, $apiKey);
+
+            $count = count($models);
+
+            Notification::make()
+                ->title('Models Refreshed')
+                ->body("Successfully loaded {$count} models from " . ucfirst($provider) . '.')
+                ->success()
+                ->send();
+
+            // Force Livewire to re-render the form to show new model options
+            $livewire->dispatch('$refresh');
+
+        } catch (Exception $e) {
+            Notification::make()
+                ->title('Failed to Refresh Models')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 }
