@@ -61,7 +61,7 @@ return [
 
     'user_bio' => [
         // Profile image shape: 'circle' or 'square'
-        'image_shape' => env('CMS_BIO_IMAGE_SHAPE', 'square'),
+        'image_shape' => env('CMS_BIO_IMAGE_SHAPE', 'circle'),
     ],
 
     /*

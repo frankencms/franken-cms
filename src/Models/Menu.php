@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class Menu extends Model
 {
@@ -89,7 +90,9 @@ class Menu extends Model
             ->with([
                 'children',
                 'linkable' => function ($morphTo) {
-                    // Eager load parent hierarchy for Page models to avoid lazy loading
+                    // Eager load parent hierarchy for Page models to avoid lazy loading.
+                    // Limited to 3 levels deep which covers typical site structures.
+                    // Deeper nesting would require recursive loading or a different approach.
                     $morphTo->morphWith([
                         Page::class => ['parent', 'parent.parent', 'parent.parent.parent'],
                     ]);
@@ -141,42 +144,44 @@ class Menu extends Model
      */
     public function duplicateWithItems(string $newName, string $newSlug): self
     {
-        // Create the new menu
-        $newMenu = static::create([
-            'name'      => $newName,
-            'slug'      => $newSlug,
-            'is_active' => $this->is_active,
-        ]);
-
-        // Get all menu items for this menu, ordered by parent_id to ensure parents are processed first
-        $items = $this->allMenuItems()
-            ->orderByRaw('parent_id IS NOT NULL, parent_id')
-            ->orderBy('sort_order')
-            ->get();
-
-        // Map old item IDs to new item IDs for parent relationship mapping
-        $idMap = [];
-
-        foreach ($items as $item) {
-            $newItem = MenuItem::create([
-                'menu_id'          => $newMenu->id,
-                'parent_id'        => $item->parent_id ? ($idMap[$item->parent_id] ?? null) : null,
-                'label'            => $item->label,
-                'url'              => $item->url,
-                'route_name'       => $item->route_name,
-                'route_parameters' => $item->route_parameters,
-                'linkable_type'    => $item->linkable_type,
-                'linkable_id'      => $item->linkable_id,
-                'target'           => $item->target,
-                'additional_data'  => $item->additional_data,
-                'sort_order'       => $item->sort_order,
-                'is_active'        => $item->is_active,
+        return DB::transaction(function () use ($newName, $newSlug) {
+            // Create the new menu
+            $newMenu = static::create([
+                'name'      => $newName,
+                'slug'      => $newSlug,
+                'is_active' => $this->is_active,
             ]);
 
-            // Store mapping of old ID to new ID
-            $idMap[$item->id] = $newItem->id;
-        }
+            // Get all menu items for this menu, ordered by parent_id to ensure parents are processed first
+            $items = $this->allMenuItems()
+                ->orderByRaw('parent_id IS NOT NULL, parent_id')
+                ->orderBy('sort_order')
+                ->get();
 
-        return $newMenu;
+            // Map old item IDs to new item IDs for parent relationship mapping
+            $idMap = [];
+
+            foreach ($items as $item) {
+                $newItem = MenuItem::create([
+                    'menu_id'          => $newMenu->id,
+                    'parent_id'        => $item->parent_id ? ($idMap[$item->parent_id] ?? null) : null,
+                    'label'            => $item->label,
+                    'url'              => $item->url,
+                    'route_name'       => $item->route_name,
+                    'route_parameters' => $item->route_parameters,
+                    'linkable_type'    => $item->linkable_type,
+                    'linkable_id'      => $item->linkable_id,
+                    'target'           => $item->target,
+                    'additional_data'  => $item->additional_data,
+                    'sort_order'       => $item->sort_order,
+                    'is_active'        => $item->is_active,
+                ]);
+
+                // Store mapping of old ID to new ID
+                $idMap[$item->id] = $newItem->id;
+            }
+
+            return $newMenu;
+        });
     }
 }
