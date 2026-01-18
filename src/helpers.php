@@ -4,53 +4,22 @@ use FrankenCms\Helpers\TemplateHelpers;
 use FrankenCms\Services\FaviconGenerator;
 use Illuminate\Support\Facades\View;
 
-if (! function_exists('_renderCmsField')) {
+if (! function_exists('_renderFrankenField')) {
     /**
-     * Internal: Render a CMS field value from the current page (called by blade directive)
+     * Internal: Render a field value from the current page (called by blade directives)
      *
      * @param  string  $fieldName  The field name (supports dot notation)
      * @param  string  $fieldType  The field type (text, textarea, repeater, etc.)
      * @param  array  $options  Additional options (not used for rendering, only for admin)
      * @return mixed The rendered field value
      */
-    function _renderCmsField(string $fieldName, string $fieldType = 'text', array $options = []): mixed
+    function _renderFrankenField(string $fieldName, string $fieldType = 'text', array $options = []): mixed
     {
-        return TemplateHelpers::cmsField($fieldName, $fieldType, $options);
+        return TemplateHelpers::renderField($fieldName, $fieldType, $options);
     }
 }
 
-if (! function_exists('cmsField')) {
-    /**
-     * Retrieve a CMS field value from the $cmsFields collection
-     *
-     * Supports both camelCase and dot notation:
-     * - cmsField('heroTitle')
-     * - cmsField('hero.title')
-     *
-     * @param  string  $fieldName  The field name (camelCase or dot notation)
-     * @return mixed The field value or null if not found
-     */
-    function cmsField(string $fieldName): mixed
-    {
-        // Get the cmsFields collection from view data
-        $cmsFields = View::shared('cmsFields') ?? collect();
-
-        // Try camelCase version first
-        $camelCaseName = cmsFieldVariableName($fieldName);
-        if ($cmsFields->has($camelCaseName)) {
-            return $cmsFields->get($camelCaseName);
-        }
-
-        // Try original name as fallback
-        if ($cmsFields->has($fieldName)) {
-            return $cmsFields->get($fieldName);
-        }
-
-        return null;
-    }
-}
-
-if (! function_exists('cmsFieldVariableName')) {
+if (! function_exists('frankenFieldVariableName')) {
     /**
      * Generate a variable name from a field name
      *
@@ -61,7 +30,7 @@ if (! function_exists('cmsFieldVariableName')) {
      * @param  string  $fieldName  The field name (supports dot notation)
      * @return string The variable name (camelCase)
      */
-    function cmsFieldVariableName(string $fieldName): string
+    function frankenFieldVariableName(string $fieldName): string
     {
         // Replace dots with spaces, then split on spaces, underscores, and hyphens
         $normalized = str_replace('.', ' ', $fieldName);
@@ -229,7 +198,7 @@ if (! function_exists('frankenField')) {
 
         if ($frankenFields && $frankenFields instanceof \Illuminate\Support\Collection) {
             // Try camelCase version first (e.g., 'hero.tags' -> 'heroTags')
-            $camelCaseName = cmsFieldVariableName($fieldName);
+            $camelCaseName = frankenFieldVariableName($fieldName);
             if ($frankenFields->has($camelCaseName)) {
                 return $frankenFields->get($camelCaseName);
             }

@@ -15,18 +15,18 @@ FrankenCMS provides a powerful image field system that integrates with Spatie Me
 
 ### Basic Image Field
 
-Add an image field to your template using the `@cmsField()` directive:
+Add an image field to your template using the `@frankenMediaImage` directive:
 
 ```blade
 {{-- resources/views/theme/page-landing.blade.php --}}
 
-@cmsField('hero_image', 'media_image', [
+@frankenMediaImage('hero_image', [
     'label' => 'Hero Image',
     'collection' => 'hero_image',
 ])
 
 <div class="hero">
-    {{ cmsField('hero_image') }}
+    {{ frankenField('hero_image') }}
 </div>
 ```
 
@@ -36,22 +36,22 @@ Add an image field to your template using the `@cmsField()` directive:
 
 ```blade
 {{-- Renders: <img src="..." alt="..." width="..." height="..." loading="lazy" style="object-fit: cover; object-position: 50% 50%;"> --}}
-{!! @cmsField('hero_image', 'media_image', [
+@frankenMediaImage('hero_image', [
     'collection' => 'hero_image',
     'format' => 'img', // Default format
-]) !!}
+])
 ```
 
 #### `<figure>` with Caption
 
 ```blade
 {{-- Renders a <figure> with <figcaption> if caption is set --}}
-{!! @cmsField('team_photo', 'media_image', [
+@frankenMediaImage('team_photo', [
     'collection' => 'team_photo',
     'format' => 'figure',
     'show_caption' => true,
     'show_attribution' => true,
-]) !!}
+])
 
 {{-- Output: --}}
 <figure>
@@ -66,7 +66,7 @@ Add an image field to your template using the `@cmsField()` directive:
 #### `<picture>` Element for Responsive Images
 
 ```blade
-{!! @cmsField('banner', 'media_image', [
+@frankenMediaImage('banner', [
     'collection' => 'banner',
     'format' => 'picture',
     'sources' => [
@@ -79,16 +79,16 @@ Add an image field to your template using the `@cmsField()` directive:
             'media' => '(max-width: 768px)',
         ],
     ],
-]) !!}
+])
 ```
 
 #### Custom CSS Classes
 
 ```blade
-{!! @cmsField('profile_image', 'media_image', [
+@frankenMediaImage('profile_image', [
     'collection' => 'profile_image',
     'class' => 'rounded-full shadow-xl mx-auto',
-]) !!}
+])
 ```
 
 ## Defining Fields in Templates
@@ -96,7 +96,7 @@ Add an image field to your template using the `@cmsField()` directive:
 ### Standard Image Field
 
 ```blade
-@cmsField('hero_image', 'media_image', [
+@frankenMediaImage('hero_image', [
     'label' => 'Hero Background',
     'description' => 'Main hero section background image',
     'collection' => 'hero_image',
@@ -108,17 +108,17 @@ Add an image field to your template using the `@cmsField()` directive:
 ### Multiple Images on Same Page
 
 ```blade
-@cmsField('header_logo', 'media_image', [
+@frankenMediaImage('header_logo', [
     'label' => 'Header Logo',
     'collection' => 'header_logo',
 ])
 
-@cmsField('hero_background', 'media_image', [
+@frankenMediaImage('hero_background', [
     'label' => 'Hero Background',
     'collection' => 'hero_background',
 ])
 
-@cmsField('about_image', 'media_image', [
+@frankenMediaImage('about_image', [
     'label' => 'About Section Image',
     'collection' => 'about_image',
 ])
@@ -258,11 +258,11 @@ protected function mutateFormDataBeforeFill(array $data): array
 ### Using Tailwind CSS
 
 ```blade
-{!! @cmsField('hero', 'media_image', [
+@frankenMediaImage('hero', [
     'collection' => 'hero',
     'format' => 'figure',
     'class' => 'w-full h-[500px] object-cover rounded-lg shadow-2xl',
-]) !!}
+])
 ```
 
 ### Custom Styling with CSS Classes
@@ -290,7 +290,7 @@ This ensures the important part of the image stays visible when cropped.
 Always encourage editors to fill in the **Alt Text** field:
 
 ```blade
-@cmsField('product_image', 'media_image', [
+@frankenMediaImage('product_image', [
     'label' => 'Product Image',
     'collection' => 'product',
     'description' => 'Please add descriptive alt text for accessibility',
@@ -303,15 +303,14 @@ Use lazy loading for below-the-fold images:
 
 ```blade
 {{-- Lazy loading is ON by default --}}
-{!! @cmsField('gallery_image', 'media_image', [
+@frankenMediaImage('gallery_image', [
     'collection' => 'gallery',
-]) !!}
+])
 
-{{-- Disable for above-the-fold images --}}
-{!! @cmsField('hero', 'media_image', [
+{{-- Disable for above-the-fold images via the admin UI lazy_loading toggle --}}
+@frankenMediaImage('hero', [
     'collection' => 'hero',
-    // Set lazy_loading to false in admin UI
-]) !!}
+])
 ```
 
 ### Collections
@@ -319,13 +318,13 @@ Use lazy loading for below-the-fold images:
 Use unique collection names for each field to avoid conflicts:
 
 ```blade
-{{-- Good ✅ --}}
-@cmsField('hero_background', 'media_image', ['collection' => 'hero_background'])
-@cmsField('about_photo', 'media_image', ['collection' => 'about_photo'])
+{{-- Good --}}
+@frankenMediaImage('hero_background', ['collection' => 'hero_background'])
+@frankenMediaImage('about_photo', ['collection' => 'about_photo'])
 
-{{-- Bad ❌ --}}
-@cmsField('hero_background', 'media_image', ['collection' => 'images'])
-@cmsField('about_photo', 'media_image', ['collection' => 'images'])
+{{-- Bad - will cause conflicts --}}
+@frankenMediaImage('hero_background', ['collection' => 'images'])
+@frankenMediaImage('about_photo', ['collection' => 'images'])
 ```
 
 ## Example: Complete Landing Page
@@ -333,31 +332,19 @@ Use unique collection names for each field to avoid conflicts:
 ```blade
 {{-- resources/views/theme/page-landing.blade.php --}}
 
-@cmsField('hero_background', 'media_image', [
-    'label' => 'Hero Background',
-    'collection' => 'hero_background',
-])
-
-@cmsField('about_image', 'media_image', [
-    'label' => 'About Section Image',
-    'collection' => 'about_image',
-])
-
-@cmsField('team_photo', 'media_image', [
-    'label' => 'Team Photo',
-    'collection' => 'team_photo',
-])
-
 <x-theme::layouts.main>
     {{-- Hero Section --}}
     <section class="hero relative h-screen">
-        {!! @cmsField('hero_background', 'media_image', [
+        @frankenMediaImage('hero_background', [
+            'label' => 'Hero Background',
             'collection' => 'hero_background',
             'class' => 'absolute inset-0 w-full h-full object-cover',
-        ]) !!}
+        ])
 
         <div class="relative z-10 container mx-auto">
-            <h1 class="text-6xl font-bold">{{ cmsField('hero.title') }}</h1>
+            <h1 class="text-6xl font-bold">
+                @frankenText('hero.title', ['label' => 'Hero Title'])
+            </h1>
         </div>
     </section>
 
@@ -365,31 +352,33 @@ Use unique collection names for each field to avoid conflicts:
     <section class="about py-20">
         <div class="container mx-auto grid md:grid-cols-2 gap-12">
             <div>
-                <h2>{{ cmsField('about.title') }}</h2>
-                <p>{{ cmsField('about.text') }}</p>
+                <h2>@frankenText('about.title', ['label' => 'About Title'])</h2>
+                <p>@frankenTextarea('about.text', ['label' => 'About Text'])</p>
             </div>
 
-            {!! @cmsField('about_image', 'media_image', [
+            @frankenMediaImage('about_image', [
+                'label' => 'About Section Image',
                 'collection' => 'about_image',
                 'format' => 'figure',
                 'show_caption' => true,
                 'class' => 'rounded-lg shadow-xl',
-            ]) !!}
+            ])
         </div>
     </section>
 
     {{-- Team Section --}}
     <section class="team py-20 bg-gray-100">
         <div class="container mx-auto">
-            <h2>{{ cmsField('team.title') }}</h2>
+            <h2>@frankenText('team.title', ['label' => 'Team Title'])</h2>
 
-            {!! @cmsField('team_photo', 'media_image', [
+            @frankenMediaImage('team_photo', [
+                'label' => 'Team Photo',
                 'collection' => 'team_photo',
                 'format' => 'figure',
                 'show_caption' => true,
                 'show_attribution' => true,
                 'class' => 'max-w-4xl mx-auto',
-            ]) !!}
+            ])
         </div>
     </section>
 </x-theme::layouts.main>

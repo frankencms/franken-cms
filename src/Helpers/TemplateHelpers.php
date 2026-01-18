@@ -91,14 +91,14 @@ final class TemplateHelpers
     }
 
     /**
-     * Render a CMS field value from the current page
+     * Render a field value from the current page
      *
      * @param  string  $fieldName  The field name (supports dot notation)
      * @param  string  $fieldType  The field type (text, textarea, repeater, etc.)
      * @param  array  $options  Additional options (not used for rendering, only for admin)
      * @return mixed The rendered field value
      */
-    public static function cmsField(string $fieldName, string $fieldType = 'text', array $options = []): mixed
+    public static function renderField(string $fieldName, string $fieldType = 'text', array $options = []): mixed
     {
         $renderer = app(TemplateFieldRenderer::class);
         $currentPage = app(CurrentPageService::class)->getPage();

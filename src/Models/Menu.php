@@ -86,7 +86,15 @@ class Menu extends Model
     {
         $items = $this->allMenuItems()
             ->where('is_active', true)
-            ->with('children')
+            ->with([
+                'children',
+                'linkable' => function ($morphTo) {
+                    // Eager load parent hierarchy for Page models to avoid lazy loading
+                    $morphTo->morphWith([
+                        Page::class => ['parent', 'parent.parent', 'parent.parent.parent'],
+                    ]);
+                },
+            ])
             ->get()
             ->keyBy('id');
 

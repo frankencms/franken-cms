@@ -14,7 +14,7 @@ class DirectiveRenderer
                 $__fParams = _parseFieldExpression($expression);
                 $__fName = $__fParams['name'];
                 $__fOpts = $__fParams['options'];
-                $__fVar = cmsFieldVariableName($__fName);
+                $__fVar = frankenFieldVariableName($__fName);
 
                 if (!isset($frankenFields)) {
                     $frankenFields = collect();
@@ -22,7 +22,7 @@ class DirectiveRenderer
                 }
 
                 if (!$frankenFields->has($__fVar)) {
-                    $__fValue = _renderCmsField($__fName, '{$fieldType}', $__fOpts);
+                    $__fValue = _renderFrankenField($__fName, '{$fieldType}', $__fOpts);
                     $frankenFields[$__fVar] = $__fValue;
                     view()->share('frankenFields', $frankenFields);
                 } else {
@@ -45,7 +45,7 @@ PHP;
                 $__fParams = _parseFieldExpression($expression);
                 $__fName = $__fParams['name'];
                 $__fOpts = $__fParams['options'];
-                $__fVar = cmsFieldVariableName($__fName);
+                $__fVar = frankenFieldVariableName($__fName);
                 $__showPlaceholder = $__fParams['placeholder'] ?? true;
 
                 if (!isset($frankenFields)) {
@@ -54,7 +54,7 @@ PHP;
                 }
 
                 if (!$frankenFields->has($__fVar)) {
-                    $__fValue = _renderCmsField($__fName, '{$fieldType}', $__fOpts);
+                    $__fValue = _renderFrankenField($__fName, '{$fieldType}', $__fOpts);
                     $frankenFields[$__fVar] = $__fValue;
                     view()->share('frankenFields', $frankenFields);
                 } else {
@@ -93,7 +93,7 @@ PHP;
                 $__rName = $__repeaterExpression[0] ?? '';
                 $__rOpts = $__repeaterExpression[1] ?? [];
                 $__showPlaceholder = $__repeaterExpression[2] ?? true;
-                $__rVar = cmsFieldVariableName($__rName);
+                $__rVar = frankenFieldVariableName($__rName);
 
                 if (!isset($frankenFields)) {
                     $frankenFields = collect();
@@ -101,7 +101,7 @@ PHP;
                 }
 
                 if (!$frankenFields->has($__rVar)) {
-                    $__rValue = _renderCmsField($__rName, 'repeater', $__rOpts);
+                    $__rValue = _renderFrankenField($__rName, 'repeater', $__rOpts);
                     $frankenFields[$__rVar] = $__rValue;
                     view()->share('frankenFields', $frankenFields);
                 } else {
@@ -146,7 +146,7 @@ PHP;
                 $__tName = $__tagsExpression[0] ?? '';
                 $__tOpts = $__tagsExpression[1] ?? [];
                 $__showPlaceholder = $__tagsExpression[2] ?? true;
-                $__tVar = cmsFieldVariableName($__tName);
+                $__tVar = frankenFieldVariableName($__tName);
 
                 if (!isset($frankenFields)) {
                     $frankenFields = collect();
@@ -154,7 +154,7 @@ PHP;
                 }
 
                 if (!$frankenFields->has($__tVar)) {
-                    $__tValue = _renderCmsField($__tName, 'tags', $__tOpts);
+                    $__tValue = _renderFrankenField($__tName, 'tags', $__tOpts);
                     $frankenFields[$__tVar] = $__tValue;
                     view()->share('frankenFields', $frankenFields);
                 } else {

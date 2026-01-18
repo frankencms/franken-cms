@@ -64,12 +64,12 @@ class FrankenFieldComposer
             $options = $field['options'] ?? [];
 
             // Generate the camelCase key
-            $varName = cmsFieldVariableName($fieldName);
+            $varName = frankenFieldVariableName($fieldName);
 
             // Only populate if not already set
             if (! $frankenFields->has($varName)) {
                 // Render the field value
-                $value = _renderCmsField($fieldName, $fieldType, $options);
+                $value = _renderFrankenField($fieldName, $fieldType, $options);
                 $frankenFields[$varName] = $value;
             }
         }

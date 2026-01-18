@@ -39,7 +39,7 @@
 
             <div class="relative z-10 container mx-auto px-4">
                 <div class="mx-auto max-w-5xl text-center">
-                    @frakenImage(
+                    @frankenImage(
                         'hero.image',
 
                         [

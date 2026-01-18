@@ -12,7 +12,7 @@ class MediaImageFieldRenderer implements FieldRendererInterface
     /**
      * Render the media image field for display in templates
      *
-     * @param  mixed  $value  The field configuration array from @cmsField
+     * @param  mixed  $value  The field configuration array from @frankenMediaImage
      * @param  string|null  $fieldName  The field name (for placeholder generation)
      * @return HtmlString The rendered HTML
      */

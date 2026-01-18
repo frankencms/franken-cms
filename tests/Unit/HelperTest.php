@@ -147,55 +147,29 @@ describe('setting() helper function', function () {
 
 });
 
-describe('cmsField() helper function', function () {
-
-    it('returns null when no cmsFields are shared', function () {
-        expect(cmsField('testField'))->toBeNull();
-    });
-
-    it('can retrieve a shared cmsField', function () {
-        View::share('cmsFields', collect([
-            'heroTitle'    => 'Welcome to our site',
-            'heroSubtitle' => 'We are awesome',
-        ]));
-
-        expect(cmsField('heroTitle'))->toBe('Welcome to our site');
-        expect(cmsField('heroSubtitle'))->toBe('We are awesome');
-    });
-
-    it('returns null for non-existent field', function () {
-        View::share('cmsFields', collect([
-            'heroTitle' => 'Welcome',
-        ]));
-
-        expect(cmsField('nonExistent'))->toBeNull();
-    });
-
-});
-
-describe('cmsFieldVariableName() helper function', function () {
+describe('frankenFieldVariableName() helper function', function () {
 
     it('converts dot notation to camelCase', function () {
-        expect(cmsFieldVariableName('hero.title'))->toBe('heroTitle');
-        expect(cmsFieldVariableName('features.items'))->toBe('featuresItems');
+        expect(frankenFieldVariableName('hero.title'))->toBe('heroTitle');
+        expect(frankenFieldVariableName('features.items'))->toBe('featuresItems');
     });
 
     it('converts snake_case to camelCase', function () {
-        expect(cmsFieldVariableName('hero.cta_buttons'))->toBe('heroCtaButtons');
-        expect(cmsFieldVariableName('section.background_color'))->toBe('sectionBackgroundColor');
+        expect(frankenFieldVariableName('hero.cta_buttons'))->toBe('heroCtaButtons');
+        expect(frankenFieldVariableName('section.background_color'))->toBe('sectionBackgroundColor');
     });
 
     it('converts kebab-case to camelCase', function () {
-        expect(cmsFieldVariableName('hero.button-text'))->toBe('heroButtonText');
+        expect(frankenFieldVariableName('hero.button-text'))->toBe('heroButtonText');
     });
 
     it('handles simple field names', function () {
-        expect(cmsFieldVariableName('title'))->toBe('title');
-        expect(cmsFieldVariableName('content'))->toBe('content');
+        expect(frankenFieldVariableName('title'))->toBe('title');
+        expect(frankenFieldVariableName('content'))->toBe('content');
     });
 
     it('handles multiple levels', function () {
-        expect(cmsFieldVariableName('section.hero.main_title'))->toBe('sectionHeroMainTitle');
+        expect(frankenFieldVariableName('section.hero.main_title'))->toBe('sectionHeroMainTitle');
     });
 
 });
@@ -302,39 +276,6 @@ describe('aspect_ratio() helper function', function () {
     it('handles cinema ratios', function () {
         // 2.39:1 anamorphic
         expect(aspect_ratio(2390, 1000, true))->toBe('2.39:1');
-    });
-
-});
-
-describe('cmsField() helper fallback behavior', function () {
-
-    it('falls back to original field name when camelCase not found', function () {
-        View::share('cmsFields', collect([
-            'hero.title' => 'Original Name Value',
-        ]));
-
-        expect(cmsField('hero.title'))->toBe('Original Name Value');
-    });
-
-    it('prefers camelCase over original name', function () {
-        View::share('cmsFields', collect([
-            'heroTitle'  => 'CamelCase Value',
-            'hero.title' => 'Original Name Value',
-        ]));
-
-        expect(cmsField('hero.title'))->toBe('CamelCase Value');
-    });
-
-    it('handles empty collection gracefully', function () {
-        View::share('cmsFields', collect());
-
-        expect(cmsField('anyField'))->toBeNull();
-    });
-
-    it('handles non-collection shared value', function () {
-        View::share('cmsFields', null);
-
-        expect(cmsField('anyField'))->toBeNull();
     });
 
 });

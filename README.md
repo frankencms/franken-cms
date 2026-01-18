@@ -94,11 +94,11 @@ Franken CMS features a powerful dynamic settings system that allows both the cor
 
 ### Template Field System
 
-Franken CMS provides a powerful `@cmsField` directive that allows you to define editable fields directly in your Blade templates. All fields are automatically collected into a `$cmsFields` collection that's available throughout your template.
+Franken CMS provides typed Blade directives (`@frankenText`, `@frankenTextarea`, `@frankenRepeater`, etc.) that allow you to define editable fields directly in your Blade templates. All fields are automatically collected into a `$frankenFields` collection that's available throughout your template.
 
 **Key Features:**
 - **Pre-populated Collection**: All fields are available from the start of template rendering
-- **Multiple Access Methods**: Use `$cmsFields['heroTitle']`, `$cmsFields->get('heroTitle')`, or `cmsField('heroTitle')` helper
+- **Multiple Access Methods**: Use `$frankenFields['heroTitle']`, `$frankenFields->get('heroTitle')`, or `frankenField('heroTitle')` helper
 - **Smart Caching**: Configurable in-memory caching with automatic invalidation on file changes
 - **Zero Duplicate Rendering**: Fields render once and are reused throughout the template
 - **Octane/FrankenPHP Compatible**: Works safely in persistent worker environments
@@ -137,39 +137,37 @@ $page = $currentPage->getCurrentPage();
 ### Using Template Fields
 
 ```blade
-{{-- Define fields in your Blade templates --}}
+{{-- Define fields in your Blade templates using typed directives --}}
 <h1>
-    @cmsField('hero.title', 'text', [
+    @frankenText('hero.title', [
         'label' => 'Hero Title',
         'default' => 'Welcome to my site',
         'maxLength' => 100
     ])
 </h1>
 
-{{-- Access fields anywhere in the template (before or after definition) --}}
-<meta property="og:title" content="{{ cmsField('hero.title') }}">
+{{-- Access fields anywhere in the template using the helper --}}
+<meta property="og:title" content="{{ frankenField('hero.title') }}">
 
-{{-- Use repeater fields --}}
-@cmsField('features.items', 'repeater', [
+{{-- Use repeater fields with block syntax --}}
+@frankenRepeater('features.items', [
     'label' => 'Features',
     'schema' => [
         ['name' => 'title', 'type' => 'text', 'label' => 'Title'],
         ['name' => 'description', 'type' => 'textarea', 'label' => 'Description']
     ]
 ])
-
-@foreach ($cmsFields['featuresItems'] ?? [] as $feature)
     <div>
-        <h3>{{ $feature['custom_fields']['title'] }}</h3>
-        <p>{{ $feature['custom_fields']['description'] }}</p>
+        <h3>{{ $franken->title }}</h3>
+        <p>{{ $franken->description }}</p>
     </div>
-@endforeach
+@endFrankenRepeater
 ```
 
 **Access Methods:**
-- `$cmsFields['heroTitle']` - Direct array access
-- `$cmsFields->get('heroTitle')` - Collection method
-- `cmsField('heroTitle')` or `cmsField('hero.title')` - Helper function (supports both camelCase and dot notation)
+- `$frankenFields['heroTitle']` - Direct array access
+- `$frankenFields->get('heroTitle')` - Collection method
+- `frankenField('heroTitle')` or `frankenField('hero.title')` - Helper function (supports both camelCase and dot notation)
 
 ### Adding Custom Settings Tab
 
