@@ -125,6 +125,7 @@
                     @php
                         $authorBio = $post->author->bio;
                         $bioImage = $authorBio->getFirstMedia('bio-image');
+                        $bioImageShape = config('franken-cms.user_bio.image_shape', 'circle');
                     @endphp
                     <div class="mx-auto mt-12 max-w-4xl">
                         <div class="rounded-lg border border-emerald-700/30 bg-emerald-950/20 p-6">
@@ -135,12 +136,12 @@
                                         <img
                                             src="{{ $bioImage->hasGeneratedConversion('bio-thumb') ? $bioImage->getUrl('bio-thumb') : $bioImage->getUrl() }}"
                                             alt="{{ $bioImage->getCustomProperty('alt') ?? $post->author->name }}"
-                                            class="size-16 rounded-full object-cover ring-2 ring-emerald-700/30"
+                                            class="size-16 object-cover ring-2 ring-emerald-700/30 {{ $bioImageShape === 'circle' ? 'rounded-full' : 'rounded-lg' }}"
                                             loading="lazy"
                                         />
                                     @else
                                         <div
-                                            class="flex size-16 items-center justify-center rounded-full bg-emerald-900/50 text-2xl font-bold text-lime-300 ring-2 ring-emerald-700/30"
+                                            class="flex size-16 items-center justify-center bg-emerald-900/50 text-2xl font-bold text-lime-300 ring-2 ring-emerald-700/30 {{ $bioImageShape === 'circle' ? 'rounded-full' : 'rounded-lg' }}"
                                         >
                                             {{ strtoupper(substr($post->author->name, 0, 1)) }}
                                         </div>

@@ -52,6 +52,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User Bio Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration options for the user bio system including profile images.
+    |
+    */
+
+    'user_bio' => [
+        // Profile image shape: 'circle' or 'square'
+        'image_shape' => env('CMS_BIO_IMAGE_SHAPE', 'square'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | CMS Field Parsing Cache
     |--------------------------------------------------------------------------
     |

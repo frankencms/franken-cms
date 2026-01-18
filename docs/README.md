@@ -17,6 +17,9 @@ Welcome to the Franken CMS documentation! This directory contains comprehensive 
 |----------|-------------|----------|
 | [Dynamic Settings Technical Reference](DYNAMIC_SETTINGS_TABS.md) | Complete technical documentation for the settings system | Advanced Developers |
 | [Content Management](CONTENT_MANAGEMENT.md) | Working with posts, pages, taxonomies | Developers |
+| [User Bio System](USER_BIO.md) | Author profiles, avatars, and social links | Developers |
+| [Media Image Fields](MEDIA_IMAGE_FIELDS.md) | Image fields with metadata in templates | Developers |
+| [Breadcrumbs](BREADCRUMBS.md) | Navigation breadcrumb system | Developers |
 | [Extending Franken CMS](EXTENDING.md) | Creating packages and extensions | Package Developers |
 | [API Reference](API.md) | Complete API documentation | Developers |
 
@@ -33,6 +36,8 @@ Welcome to the Franken CMS documentation! This directory contains comprehensive 
 ### I want to...
 
 - **Add custom settings to my site** → [Dynamic Settings Guide](DYNAMIC_SETTINGS_GUIDE.md)
+- **Display author bios on posts** → [User Bio System](USER_BIO.md)
+- **Add image fields to templates** → [Media Image Fields](MEDIA_IMAGE_FIELDS.md)
 - **Create a package that extends Franken CMS** → [Extending Franken CMS](EXTENDING.md)
 - **Understand how the settings system works** → [Technical Reference](DYNAMIC_SETTINGS_TABS.md)
 - **See example code** → [Examples Directory](../examples/)
