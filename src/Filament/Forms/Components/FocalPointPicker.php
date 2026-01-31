@@ -7,6 +7,7 @@ use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Throwable;
 
 class FocalPointPicker extends Field
 {
@@ -20,7 +21,7 @@ class FocalPointPicker extends Field
 
     public function imageField(string $field): static
     {
-        return $this->image(function (Get $get) use ($field) {
+        return $this->image(image: function (Get $get) use ($field) {
             // First, check if we're editing an existing record with media
             // This takes priority over temporary uploads to show the actual saved image
             if ($this->collection) {
@@ -45,7 +46,14 @@ class FocalPointPicker extends Field
 
             // Handle temporary uploaded files (TemporaryUploadedFile objects)
             if ($imageState instanceof TemporaryUploadedFile) {
-                return $imageState->temporaryUrl();
+
+                try {
+                    return $imageState->temporaryUrl();
+                } catch (Throwable) {
+                    // Fall back to the preview-file route if temporaryUrl() fails
+                    // (e.g., when metadata file doesn't exist on S3/R2)
+                    return "/livewire/preview-file/{$imageState->getFilename()}";
+                }
             }
 
             // Handle UUID strings for Livewire temporary uploads
