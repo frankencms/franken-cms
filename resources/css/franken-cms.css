@@ -1,0 +1,26 @@
+/* Enhanced Image Styles */
+.fi-fo-rich-editor .ProseMirror figure[data-type="enhanced-image"] {
+    @apply my-6 mx-0 max-w-full;
+}
+
+.fi-fo-rich-editor .ProseMirror figure[data-type="enhanced-image"] img {
+    @apply w-full h-auto rounded-lg shadow-sm;
+    object-fit: cover;
+}
+
+.fi-fo-rich-editor .ProseMirror figure[data-type="enhanced-image"] .enhanced-image-caption {
+    @apply mt-2 text-sm text-gray-600 dark:text-gray-400 italic text-center;
+}
+
+.fi-fo-rich-editor .ProseMirror figure[data-type="enhanced-image"] .enhanced-image-attribution {
+    @apply mt-1 text-xs text-gray-500 dark:text-gray-500 text-right;
+}
+
+.fi-fo-rich-editor .ProseMirror figure[data-type="enhanced-image"] .enhanced-image-attribution:before {
+    content: "📷 ";
+}
+
+/* Editor-specific styles */
+.fi-fo-rich-editor .ProseMirror figure[data-type="enhanced-image"].ProseMirror-selectednode {
+    @apply ring-2 ring-primary-500 rounded-lg;
+}

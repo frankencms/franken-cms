@@ -1,0 +1,19 @@
+{
+    "name": "franken-cms",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node bin/build.js --dev",
+        "build": "node bin/build.js",
+        "build-css": "postcss resources/css/franken-cms.css -o resources/dist/franken-cms.css"
+    },
+    "devDependencies": {
+        "@awcodes/filament-plugin-purge": "^1.1.2",
+        "@tiptap/core": "^3.15.3",
+        "cssnano": "^6.1.2",
+        "esbuild": "^0.25.12",
+        "postcss": "^8.5.6",
+        "postcss-cli": "^10.1.0",
+        "postcss-nesting": "^13.0.2"
+    }
+}

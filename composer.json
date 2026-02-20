@@ -1,0 +1,91 @@
+{
+    "name": "frankencms/franken-cms",
+    "description": "Franken CMS is a Wordpress alternative powered by Laravel and FilamentPHP",
+    "keywords": [
+        "FrankenCMS",
+        "laravel",
+        "franken-cms",
+        "cms",
+        "filamentphp",
+        "wordpress"
+    ],
+    "homepage": "https://github.com/frankencms/franken-cms",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mike Wall",
+            "email": "daikazu@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "diglactic/laravel-breadcrumbs": "^10.0",
+        "filament/filament": "^v5.0.0",
+        "filament/spatie-laravel-media-library-plugin": "^v5.0.0",
+        "filament/spatie-laravel-settings-plugin": "^v5.0.0",
+        "illuminate/contracts": "^12.0",
+        "illuminate/support": "^12.0",
+        "league/html-to-markdown": "^5.1.1",
+        "mallardduck/blade-lucide-icons": "^1.26",
+        "romanzipp/laravel-seo": "^2.9",
+        "spatie/laravel-medialibrary": "^11.17.8",
+        "spatie/laravel-package-tools": "^1.92.7",
+        "spatie/laravel-sitemap": "^7.3.8"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.8.1",
+        "laravel/pint": "^v1.27.0",
+        "nunomaduro/collision": "v8.8.3",
+        "orchestra/testbench": "^v10.9.0",
+        "pestphp/pest": "v4.3.1",
+        "pestphp/pest-plugin-arch": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "pestphp/pest-plugin-livewire": "^4.1",
+        "phpstan/extension-installer": "^1.4.3",
+        "phpstan/phpstan-deprecation-rules": "^2.0.3",
+        "phpstan/phpstan-phpunit": "^2.0.11",
+        "rector/rector": "^2.3.1",
+        "tightenco/duster": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "FrankenCms\\": "src/",
+            "FrankenCms\\Database\\Factories\\": "database/factories/",
+            "FrankenCms\\Database\\Seeders\\": "database/seeders/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FrankenCms\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@composer run prepare",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "FrankenCms\\FrankenCmsServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
