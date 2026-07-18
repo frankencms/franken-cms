@@ -35,7 +35,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                     ->description('Igor requires the laravel/ai SDK to be installed.')
                     ->visible(fn () => ! AiFeatureDetector::isInstalled())
                     ->schema([
-                        TextEntry::make('prism_not_installed')
+                        TextEntry::make('ai_sdk_not_installed')
                             ->label('')
                             ->markdown()
                             ->state(<<<'MD'
@@ -43,7 +43,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                             To enable Igor, run:
                             ```
-                            composer require prism-php/prism
+                            composer require laravel/ai
                             ```
 
                             After installation, refresh this page to configure Igor.
