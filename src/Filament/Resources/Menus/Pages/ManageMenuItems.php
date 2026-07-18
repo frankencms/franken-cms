@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use FrankenCms\Filament\Resources\Menus\MenuResource;
 use FrankenCms\Filament\Resources\Menus\Schemas\MenuItems;
+use FrankenCms\Models\Post;
 use Illuminate\Contracts\Support\Htmlable;
 
 /**
@@ -135,10 +136,10 @@ class ManageMenuItems extends Page implements HasSchemas
                     $result['linkable_id'] = (int) $id;
                 }
             } elseif ($type === 'post') {
-                $post = \FrankenCms\Models\Post::find($id);
+                $post = Post::find($id);
                 if ($post) {
                     $result['url'] = $post->url;
-                    $result['linkable_type'] = \FrankenCms\Models\Post::class;
+                    $result['linkable_type'] = Post::class;
                     $result['linkable_id'] = (int) $id;
                 }
             }

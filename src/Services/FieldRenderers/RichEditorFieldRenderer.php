@@ -6,6 +6,8 @@ use Exception;
 use FrankenCms\Contracts\FieldRendererInterface;
 use Illuminate\Support\HtmlString;
 use Tiptap\Editor;
+use Tiptap\Extensions\StarterKit;
+use Tiptap\Nodes\Image;
 
 class RichEditorFieldRenderer implements FieldRendererInterface
 {
@@ -36,8 +38,8 @@ class RichEditorFieldRenderer implements FieldRendererInterface
             $editor = new Editor([
                 'content'    => $value,
                 'extensions' => [
-                    new \Tiptap\Extensions\StarterKit,
-                    new \Tiptap\Nodes\Image,
+                    new StarterKit,
+                    new Image,
                 ],
             ]);
 

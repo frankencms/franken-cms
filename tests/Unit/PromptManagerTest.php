@@ -2,6 +2,7 @@
 
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Settings\AiSettings;
+use Spatie\LaravelSettings\Settings;
 
 /**
  * Create a mock AiSettings with proper Spatie initialization.
@@ -10,7 +11,7 @@ function createAiSettingsMock(array $overrides = []): AiSettings
 {
     $settings = Mockery::mock(AiSettings::class)->makePartial();
 
-    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection = new ReflectionProperty(Settings::class, 'loaded');
     $reflection->setAccessible(true);
     $reflection->setValue($settings, true);
 

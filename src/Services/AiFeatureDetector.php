@@ -5,6 +5,7 @@ namespace FrankenCms\Services;
 use Exception;
 use FrankenCms\Settings\AiSettings;
 use Illuminate\Support\Str;
+use Laravel\Ai\Ai;
 
 class AiFeatureDetector
 {
@@ -33,7 +34,7 @@ class AiFeatureDetector
      */
     public static function isInstalled(): bool
     {
-        return class_exists(\Laravel\Ai\Ai::class);
+        return class_exists(Ai::class);
     }
 
     /**

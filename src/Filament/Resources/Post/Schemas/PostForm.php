@@ -34,11 +34,14 @@ use FrankenCms\Filament\Resources\Concerns\HasSeoFields;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Helpers\TemplateHelpers;
 use FrankenCms\Models\Post;
+use FrankenCms\Models\Taxonomy;
+use FrankenCms\Models\Term;
 use FrankenCms\Models\UserBio;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -260,7 +263,7 @@ class PostForm
                                                 TextInput::make('name')
                                                     ->required()
                                                     ->live(onBlur: true)
-                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                                                 TextInput::make('slug')
                                                     ->required()
                                                     ->unique('terms', 'slug', ignoreRecord: true),
@@ -268,8 +271,8 @@ class PostForm
                                                     ->rows(2),
                                             ])
                                             ->createOptionUsing(function (array $data) {
-                                                $taxonomy = \FrankenCms\Models\Taxonomy::where('name', 'category')->first();
-                                                $term = \FrankenCms\Models\Term::create([
+                                                $taxonomy = Taxonomy::where('name', 'category')->first();
+                                                $term = Term::create([
                                                     ...$data,
                                                     'taxonomy_id' => $taxonomy->id,
                                                 ]);
@@ -291,7 +294,7 @@ class PostForm
                                                 TextInput::make('name')
                                                     ->required()
                                                     ->live(onBlur: true)
-                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                                                 TextInput::make('slug')
                                                     ->required()
                                                     ->unique('terms', 'slug', ignoreRecord: true),
@@ -299,8 +302,8 @@ class PostForm
                                                     ->rows(2),
                                             ])
                                             ->createOptionUsing(function (array $data) {
-                                                $taxonomy = \FrankenCms\Models\Taxonomy::where('name', 'tag')->first();
-                                                $term = \FrankenCms\Models\Term::create([
+                                                $taxonomy = Taxonomy::where('name', 'tag')->first();
+                                                $term = Term::create([
                                                     ...$data,
                                                     'taxonomy_id' => $taxonomy->id,
                                                 ]);

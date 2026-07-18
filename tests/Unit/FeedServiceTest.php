@@ -6,6 +6,7 @@ use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\ReadingSettings;
 use FrankenCms\Tests\Support\User;
 use Illuminate\Support\Facades\Cache;
+use Spatie\LaravelSettings\Settings;
 
 /**
  * Create a mock ReadingSettings with proper initialization.
@@ -14,7 +15,7 @@ function createReadingSettingsMock(): ReadingSettings
 {
     $settings = Mockery::mock(ReadingSettings::class)->makePartial();
 
-    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection = new ReflectionProperty(Settings::class, 'loaded');
     $reflection->setAccessible(true);
     $reflection->setValue($settings, true);
 
@@ -35,7 +36,7 @@ function createGeneralSettingsMock(): GeneralSettings
 {
     $settings = Mockery::mock(GeneralSettings::class)->makePartial();
 
-    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection = new ReflectionProperty(Settings::class, 'loaded');
     $reflection->setAccessible(true);
     $reflection->setValue($settings, true);
 

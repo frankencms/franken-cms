@@ -3,6 +3,7 @@
 namespace FrankenCms\Services;
 
 use Diglactic\Breadcrumbs\Breadcrumbs;
+use Diglactic\Breadcrumbs\Manager;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 use FrankenCms\Models\Taxonomy;
@@ -150,7 +151,7 @@ class BreadcrumbService
      */
     protected function isBreadcrumbRegistered(string $name): bool
     {
-        $manager = app(\Diglactic\Breadcrumbs\Manager::class);
+        $manager = app(Manager::class);
         $reflection = new ReflectionClass($manager);
         $callbacksProperty = $reflection->getProperty('callbacks');
         $callbacksProperty->setAccessible(true);

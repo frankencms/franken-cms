@@ -6,6 +6,7 @@ namespace FrankenCms\Services;
 
 use FrankenCms\Models\Post;
 use FrankenCms\Models\SiteSettingsMedia;
+use FrankenCms\Settings\ReadingSettings;
 use FrankenCms\Settings\SeoSettings;
 
 class SeoService
@@ -68,7 +69,7 @@ class SeoService
 
         // Check if this is the home page - always use root URL
         if ($post) {
-            $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+            $readingSettings = app(ReadingSettings::class);
             if ($readingSettings->home_page && $post->post_slug === $readingSettings->home_page) {
                 return url('/');
             }
@@ -86,7 +87,7 @@ class SeoService
 
         // Add trailing slash for blog listing page and pages with children
         if ($post) {
-            $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+            $readingSettings = app(ReadingSettings::class);
             $shouldAddTrailingSlash = false;
 
             // Check if this is the blog listing page
@@ -189,7 +190,7 @@ class SeoService
      */
     public function getTwitterImage(?Post $post = null): ?string
     {
-        $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
+        $seoSettings = app(SeoSettings::class);
 
         // Use the clean accessor method
         if ($post) {

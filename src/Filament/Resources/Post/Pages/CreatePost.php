@@ -6,6 +6,7 @@ use Filament\Resources\Pages\CreateRecord;
 use FrankenCms\Filament\Resources\Post\PostResource;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
+use Spatie\MediaLibrary\Conversions\FileManipulator;
 
 class CreatePost extends CreateRecord
 {
@@ -130,7 +131,7 @@ class CreatePost extends CreateRecord
         // The conversions are generated before this method runs, so if user set a custom focal point, regenerate
         // Only regenerate thumb, featured, and listing - NOT og/twitter (SEO images don't use focal points)
         if ($newFocalPoint !== '50% 50%') {
-            app(\Spatie\MediaLibrary\Conversions\FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
+            app(FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
         }
     }
 }

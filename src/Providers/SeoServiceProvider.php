@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Providers;
 
 use FrankenCms\Services\SeoService;
+use FrankenCms\Settings\SeoSettings;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use romanzipp\Seo\Builders\StructBuilder;
@@ -19,7 +20,7 @@ class SeoServiceProvider extends ServiceProvider
     {
         // Register the SeoService singleton
         $this->app->singleton(SeoService::class, function ($app) {
-            return new SeoService($app->make(\FrankenCms\Settings\SeoSettings::class));
+            return new SeoService($app->make(SeoSettings::class));
         });
     }
 

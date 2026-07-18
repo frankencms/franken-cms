@@ -5,6 +5,7 @@ use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 use FrankenCms\Models\Taxonomy;
 use FrankenCms\Models\Term;
+use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Support\Facades\DB;
 
@@ -200,10 +201,10 @@ test('breadcrumbs component renders correctly', function () {
     ]);
 
     // Set current page
-    app(\FrankenCms\Services\CurrentPageService::class)->setPage($page);
+    app(CurrentPageService::class)->setPage($page);
 
-    $component = new \FrankenCms\View\Components\Breadcrumbs(
-        app(\FrankenCms\Services\CurrentPageService::class)
+    $component = new FrankenCms\View\Components\Breadcrumbs(
+        app(CurrentPageService::class)
     );
 
     $view = $component->render();

@@ -7,6 +7,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
+use Spatie\LaravelSettings\Settings;
 use YourPackage\Settings\YourPackageSettings;
 
 /**
@@ -82,7 +83,7 @@ class ExamplePackageSettingsTabProvider implements SettingsTabProviderInterface
 /**
  * Example Settings class that would accompany the tab provider above
  */
-class YourPackageSettings extends \Spatie\LaravelSettings\Settings
+class YourPackageSettings extends Settings
 {
     public ?string $api_key = null;
     public string $api_endpoint = 'https://api.yourservice.com';

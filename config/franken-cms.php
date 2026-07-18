@@ -1,6 +1,7 @@
 <?php
 
 // config for Franken CMS/FrankenCms
+use App\Models\User;
 use Filament\Forms\Components\RichEditor\TextColor;
 
 return [
@@ -11,7 +12,7 @@ return [
     'theme_folder' => 'theme',
 
     'models' => [
-        'user' => \App\Models\User::class,
+        'user' => User::class,
 
     ],
 

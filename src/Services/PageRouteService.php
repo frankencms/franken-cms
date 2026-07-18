@@ -5,6 +5,7 @@ namespace FrankenCms\Services;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
+use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
@@ -55,7 +56,7 @@ class PageRouteService
             $post = Post::withoutGlobalScopes()->findOrFail($page['id']);
 
             // Check if this page is the homepage - redirect to root
-            $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+            $readingSettings = app(ReadingSettings::class);
             if ($readingSettings->home_page && $post->post_slug === $readingSettings->home_page) {
                 return redirect('/');
             }

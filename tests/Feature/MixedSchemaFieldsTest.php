@@ -56,7 +56,7 @@ it('throws exception if array definition missing name', function () {
         'type'  => 'text',
         'label' => 'Missing Name',
     ]);
-})->throws(\InvalidArgumentException::class, 'Field definition array must have a "name" key');
+})->throws(InvalidArgumentException::class, 'Field definition array must have a "name" key');
 
 it('defaults to text type if not specified', function () {
     $builder = app(FilamentFieldSchemaBuilder::class);

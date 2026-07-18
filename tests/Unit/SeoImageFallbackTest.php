@@ -2,6 +2,7 @@
 
 use FrankenCms\Models\Post;
 use FrankenCms\Models\SiteSettingsMedia;
+use FrankenCms\Settings\SeoSettings;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 describe('Post → seoOgImage fallback chain', function () {
@@ -86,9 +87,9 @@ describe('Post → seoTwitterImage fallback chain', function () {
         $post = Mockery::mock(Post::class)->makePartial();
 
         // Twitter summary disabled globally
-        $seoSettings = new \FrankenCms\Settings\SeoSettings;
+        $seoSettings = new SeoSettings;
         $seoSettings->use_twitter_summary_card = false;
-        app()->instance(\FrankenCms\Settings\SeoSettings::class, $seoSettings);
+        app()->instance(SeoSettings::class, $seoSettings);
 
         // getMeta returns null (no per-post override), falls back to global (false)
         $post->shouldReceive('getMeta')->with('seo_use_twitter_summary', false)->andReturn(false);

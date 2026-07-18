@@ -7,6 +7,8 @@ namespace FrankenCms\Http\Middleware;
 use Closure;
 use Exception;
 use FrankenCms\Enums\PostStatus;
+use FrankenCms\Models\Page;
+use FrankenCms\Models\Taxonomy;
 use FrankenCms\Services\ContentResolver;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Settings\ReadingSettings;
@@ -57,7 +59,7 @@ class SetCurrentPage
 
                 if (count($segments) === 1) {
                     // Simple single-level page
-                    $page = \FrankenCms\Models\Page::where('post_slug', $path)
+                    $page = Page::where('post_slug', $path)
                         ->where('post_status', PostStatus::PUBLISH)
                         ->first();
                 } else {
@@ -85,7 +87,7 @@ class SetCurrentPage
         }
 
         try {
-            $homePage = \FrankenCms\Models\Page::where('post_slug', $homePageSlug)
+            $homePage = Page::where('post_slug', $homePageSlug)
                 ->where('post_status', PostStatus::PUBLISH)
                 ->first();
 
@@ -106,7 +108,7 @@ class SetCurrentPage
         }
 
         try {
-            $blogPage = \FrankenCms\Models\Page::where('post_slug', $blogPageSlug)
+            $blogPage = Page::where('post_slug', $blogPageSlug)
                 ->where('post_status', PostStatus::PUBLISH)
                 ->first();
 
@@ -138,7 +140,7 @@ class SetCurrentPage
 
         [$taxonomyName, $slug] = $parts;
 
-        $taxonomy = \FrankenCms\Models\Taxonomy::where('name', $taxonomyName)->first();
+        $taxonomy = Taxonomy::where('name', $taxonomyName)->first();
 
         return $taxonomy !== null;
     }
@@ -146,13 +148,13 @@ class SetCurrentPage
     /**
      * Resolve a hierarchical page by traversing the path segments
      */
-    private function resolveHierarchicalPage(array $segments): ?\FrankenCms\Models\Page
+    private function resolveHierarchicalPage(array $segments): ?Page
     {
         $currentParentId = null;
         $currentPage = null;
 
         foreach ($segments as $slug) {
-            $query = \FrankenCms\Models\Page::withoutGlobalScopes()
+            $query = Page::withoutGlobalScopes()
                 ->where('post_slug', $slug)
                 ->where('post_status', PostStatus::PUBLISH);
 

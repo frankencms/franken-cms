@@ -9,8 +9,12 @@ use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use FrankenCms\Casts\PostContentCast;
 use FrankenCms\Database\Factories\PostFactory;
 use FrankenCms\Enums\PostStatus;
+use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
 use FrankenCms\Models\Scopes\PostScope;
+use FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer;
 use FrankenCms\Settings\GeneralSettings;
+use FrankenCms\Settings\MediaSettings;
+use FrankenCms\Settings\SeoSettings;
 use FrankenCms\Traits\HasMeta;
 use FrankenCms\Traits\HasPermalinkUrl;
 use FrankenCms\Traits\HasTerms;
@@ -26,6 +30,7 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property ?int $post_author_id
@@ -242,7 +247,7 @@ class Post extends Model implements HasMedia, HasRichContent
      * Get ancestors optimized for breadcrumbs using recursive CTE
      * Loads only required columns in a single query
      *
-     * @return \Illuminate\Support\Collection Collection of objects with id, post_slug, post_title, parent_id
+     * @return Collection Collection of objects with id, post_slug, post_title, parent_id
      */
     public function getBreadcrumbAncestors(): Collection
     {
@@ -291,7 +296,7 @@ class Post extends Model implements HasMedia, HasRichContent
                     ->mediaName(fn (TemporaryUploadedFile $file): string => Str::random() . '_' . $file->getClientOriginalName())
             )
             ->plugins([
-                \FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin::make(),
+                EnhancedImagePlugin::make(),
             ]);
     }
 
@@ -300,7 +305,7 @@ class Post extends Model implements HasMedia, HasRichContent
      */
     public function getMediaModel(): string
     {
-        return config('media-library.media_model', \Spatie\MediaLibrary\MediaCollections\Models\Media::class);
+        return config('media-library.media_model', Media::class);
     }
 
     /**
@@ -327,10 +332,10 @@ class Post extends Model implements HasMedia, HasRichContent
     /**
      * Register media conversions
      */
-    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
-        $mediaSettings = app(\FrankenCms\Settings\MediaSettings::class);
-        $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
+        $mediaSettings = app(MediaSettings::class);
+        $seoSettings = app(SeoSettings::class);
 
         // Get focal point from media custom properties (if available)
         $focalPoint = $media?->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]) ?? ['x' => 50, 'y' => 50];
@@ -461,7 +466,7 @@ class Post extends Model implements HasMedia, HasRichContent
 
         // Post-process to add enhanced image attributes from JSON
         if ($attribute === 'post_content' && ! empty($content)) {
-            $fieldRenderer = app(\FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer::class);
+            $fieldRenderer = app(RichEditorFieldRenderer::class);
             $html = $fieldRenderer->processEnhancedImages($html, $content);
         }
 
@@ -472,7 +477,7 @@ class Post extends Model implements HasMedia, HasRichContent
      * Get the SEO OpenGraph image for this post
      * Checks post-specific image first, then featured image, then site default
      */
-    public function seoOgImage(): ?\Spatie\MediaLibrary\MediaCollections\Models\Media
+    public function seoOgImage(): ?Media
     {
         // Check for post-specific OG image
         if ($this->hasMedia('seo-og')) {
@@ -498,9 +503,9 @@ class Post extends Model implements HasMedia, HasRichContent
      * Checks post-specific image first, then falls back to featured image, then site default
      * Respects both per-post and global use_twitter_summary_card settings
      */
-    public function seoTwitterImage(): ?\Spatie\MediaLibrary\MediaCollections\Models\Media
+    public function seoTwitterImage(): ?Media
     {
-        $seoSettings = app(\FrankenCms\Settings\SeoSettings::class);
+        $seoSettings = app(SeoSettings::class);
 
         // Check per-post setting first, then fall back to global setting
         $useTwitterSummary = $this->getMeta('seo_use_twitter_summary', $seoSettings->use_twitter_summary_card);
