@@ -116,7 +116,7 @@ class AiService
      */
     public function testConnection(): bool
     {
-        if (! AiFeatureDetector::isPrismInstalled()) {
+        if (! AiFeatureDetector::isInstalled()) {
             return false;
         }
 

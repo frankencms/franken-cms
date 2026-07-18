@@ -21,6 +21,11 @@ return [
 
     ],
 
+    'ai' => [
+        // Ollama has no API key; opt in explicitly to expose it as a provider.
+        'enable_ollama' => env('CMS_AI_ENABLE_OLLAMA', false),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Menu Configuration
