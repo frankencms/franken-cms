@@ -2,10 +2,14 @@
 
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Services\AiService;
+use Laravel\Ai\Files\LocalImage;
+use Laravel\Ai\Files\RemoteImage;
 
 beforeEach(function () {
     $this->promptManager = new PromptManager;
     $this->service = new AiService($this->promptManager);
+    $this->buildImageAttachments = fn (?string $imageUrl, ?string $imagePath) => (new ReflectionMethod(AiService::class, 'buildImageAttachments'))
+        ->invoke($this->service, $imageUrl, $imagePath);
 });
 
 describe('generate', function () {
@@ -27,5 +31,42 @@ describe('testConnection', function () {
 describe('constructor', function () {
     test('accepts PromptManager dependency', function () {
         expect(new AiService($this->promptManager))->toBeInstanceOf(AiService::class);
+    });
+});
+
+describe('buildImageAttachments', function () {
+    test('returns a RemoteImage when a URL is given outside the local environment', function () {
+        $this->app['env'] = 'production';
+
+        $attachments = ($this->buildImageAttachments)('https://example.com/photo.jpg', null);
+
+        expect($attachments)->toHaveCount(1)
+            ->and($attachments[0])->toBeInstanceOf(RemoteImage::class);
+    });
+
+    test('returns a LocalImage when an existing image path is given', function () {
+        $imagePath = tempnam(sys_get_temp_dir(), 'franken-ai-test-') . '.png';
+        file_put_contents($imagePath, 'fake-image-bytes');
+
+        try {
+            $attachments = ($this->buildImageAttachments)(null, $imagePath);
+
+            expect($attachments)->toHaveCount(1)
+                ->and($attachments[0])->toBeInstanceOf(LocalImage::class);
+        } finally {
+            unlink($imagePath);
+        }
+    });
+
+    test('returns an empty array when both URL and path are null', function () {
+        $attachments = ($this->buildImageAttachments)(null, null);
+
+        expect($attachments)->toBe([]);
+    });
+
+    test('returns an empty array when the image path does not exist', function () {
+        $attachments = ($this->buildImageAttachments)(null, '/nonexistent/path/to/image.png');
+
+        expect($attachments)->toBe([]);
     });
 });
