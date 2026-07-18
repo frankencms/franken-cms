@@ -34,6 +34,10 @@ class AiModelService
             return $cached;
         }
 
+        if (! $this->hasApiAccess($provider)) {
+            return $this->getCuratedModels($provider);
+        }
+
         try {
             $models = $this->fetchModelsFromApi($provider);
             if (! empty($models)) {
@@ -49,10 +53,16 @@ class AiModelService
     }
 
     /**
-     * Force refresh models from API
+     * Force refresh models from API.
+     * Returns the curated fallback (uncached) when no key is configured, so
+     * a stale cached result can never linger once credentials are added.
      */
     public function refreshModels(string $provider): array
     {
+        if (! $this->hasApiAccess($provider)) {
+            return $this->getCuratedModels($provider);
+        }
+
         $cacheKey = self::CACHE_PREFIX . $provider;
 
         $models = $this->fetchModelsFromApi($provider);
@@ -72,6 +82,15 @@ class AiModelService
     protected function resolveKey(string $provider): ?string
     {
         return config("ai.providers.{$provider}.key");
+    }
+
+    /**
+     * Whether the provider has credentials to call its live API.
+     * Ollama needs no key, so it always has API access.
+     */
+    protected function hasApiAccess(string $provider): bool
+    {
+        return $provider === 'ollama' || ! empty($this->resolveKey($provider));
     }
 
     /**
@@ -134,23 +153,19 @@ class AiModelService
 
     /**
      * Fetch models from provider API.
-     * Skips the API call and returns the curated fallback list when no key
-     * is configured (Ollama needs no key, so it always fetches live).
+     * Only called once hasApiAccess() confirms a key is configured (or the
+     * provider is Ollama, which needs none).
      */
     protected function fetchModelsFromApi(string $provider): array
     {
-        $apiKey = $this->resolveKey($provider);
-
-        if (empty($apiKey) && $provider !== 'ollama') {
-            return $this->getCuratedModels($provider);
-        }
+        $apiKey = $this->resolveKey($provider) ?? '';
 
         return match ($provider) {
-            'openai'    => $this->fetchOpenAiModels($apiKey ?? ''),
-            'anthropic' => $this->fetchAnthropicModels($apiKey ?? ''),
+            'openai'    => $this->fetchOpenAiModels($apiKey),
+            'anthropic' => $this->fetchAnthropicModels($apiKey),
             'ollama'    => $this->fetchOllamaModels(),
-            'gemini'    => $this->fetchGeminiModels($apiKey ?? ''),
-            default     => $this->fetchOpenAiCompatibleModels($provider, $apiKey ?? ''),
+            'gemini'    => $this->fetchGeminiModels($apiKey),
+            default     => $this->fetchOpenAiCompatibleModels($provider, $apiKey),
         };
     }
 
@@ -287,7 +302,7 @@ class AiModelService
     protected function fetchGeminiModels(string $apiKey): array
     {
         $baseUrl = $this->getProviderUrl('gemini');
-        $url = $baseUrl . '?key=' . $apiKey;
+        $url = rtrim($baseUrl, '/') . '/models?key=' . $apiKey;
 
         $response = Http::get($url);
 

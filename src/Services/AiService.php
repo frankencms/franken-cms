@@ -28,6 +28,12 @@ class AiService
             throw new Exception('AI features are not available. Install laravel/ai, set a provider API key in your .env, and enable Igor in settings.');
         }
 
+        $settings = app(AiSettings::class);
+
+        if (! array_key_exists($settings->provider, AiFeatureDetector::configuredProviders())) {
+            throw new Exception("The selected AI provider [{$settings->provider}] is not configured. Set its API key in your .env or choose a configured provider in settings.");
+        }
+
         $promptConfig = $this->promptManager->getPrompt($actionKey);
 
         $imageUrl = $context['image_url'] ?? null;
@@ -40,8 +46,6 @@ class AiService
             $promptConfig['prompt'],
             $context
         );
-
-        $settings = app(AiSettings::class);
 
         $agent = new CmsAgent(
             maxTokens: $promptConfig['max_tokens'] ?? 500,

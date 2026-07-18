@@ -13,7 +13,7 @@ beforeEach(function () {
     config()->set('ai.providers.openai.url', 'https://api.openai.com/v1');
     config()->set('ai.providers.anthropic.url', 'https://api.anthropic.com/v1');
     config()->set('ai.providers.ollama.url', 'http://localhost:11434');
-    config()->set('ai.providers.gemini.url', 'https://generativelanguage.googleapis.com/v1beta/models');
+    config()->set('ai.providers.gemini.url', 'https://generativelanguage.googleapis.com/v1beta/');
     config()->set('ai.providers.openrouter.url', 'https://openrouter.ai/api/v1');
     config()->set('ai.providers.groq.url', 'https://api.groq.com/openai/v1');
 
@@ -376,6 +376,8 @@ describe('fetchGeminiModels', function () {
         expect($result)->toHaveCount(2);
         expect($result)->toHaveKey('gemini-2.0-flash');
         expect($result['gemini-2.0-flash'])->toBe('Gemini 2.0 Flash');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://generativelanguage.googleapis.com/v1beta/models?key=test-key');
     });
 
     test('strips models/ prefix from Gemini model names', function () {
@@ -542,6 +544,22 @@ describe('clearCache', function () {
         expect(Cache::has('franken_cms:ai_models:openai'))->toBeFalse();
         expect(Cache::has('franken_cms:ai_models:anthropic'))->toBeFalse();
         expect(Cache::has('franken_cms:ai_models:ollama'))->toBeFalse();
+    });
+});
+
+describe('curated fallback caching', function () {
+    test('does not cache the curated fallback list when no key is configured', function () {
+        Http::fake();
+
+        $first = $this->service->getModelsForProvider('openai');
+        expect(Cache::has('franken_cms:ai_models:openai'))->toBeFalse();
+
+        $second = $this->service->getModelsForProvider('openai');
+
+        expect($first)->toBeArray()->not->toBeEmpty();
+        expect($second)->toBe($first);
+        expect($this->service->hasCachedModels('openai'))->toBeFalse();
+        Http::assertNothingSent();
     });
 });
 

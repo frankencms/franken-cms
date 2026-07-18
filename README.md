@@ -70,7 +70,7 @@ CMS_AI_ENABLE_OLLAMA=true
 
 ### Enable Igor
 
-With the SDK installed and at least one provider configured, go to **CMS Settings → AI (Igor)** in the Filament admin panel and toggle Igor on. AI features activate only when all three are true: the SDK is installed, a provider has credentials, and the toggle is enabled.
+With the SDK installed and at least one provider configured, go to **CMS Settings → Igor** in the Filament admin panel and toggle Igor on. AI features activate only when all three are true: the SDK is installed, a provider has credentials, and the toggle is enabled.
 
 > **Note:** API keys are no longer stored in the database. If you're upgrading from an older Franken CMS version, remove any stale `cms_ai.api_key` row from your settings table (or run `php artisan migrate:fresh`) and set the key in `.env` instead.
 

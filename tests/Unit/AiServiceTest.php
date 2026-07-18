@@ -2,6 +2,7 @@
 
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Services\AiService;
+use FrankenCms\Settings\AiSettings;
 use Laravel\Ai\Files\LocalImage;
 use Laravel\Ai\Files\RemoteImage;
 
@@ -18,6 +19,19 @@ describe('generate', function () {
 
         $this->service->generate('generate_seo_title', ['title' => 'Test']);
     })->throws(Exception::class, 'AI features are not available');
+
+    test('throws exception when the stored provider is not configured', function () {
+        config()->set('ai.providers', [
+            'anthropic' => ['driver' => 'anthropic', 'key' => 'sk-ant-test'],
+        ]);
+
+        $settings = app(AiSettings::class);
+        $settings->enabled = true;
+        $settings->provider = 'openai';
+        $settings->save();
+
+        $this->service->generate('generate_seo_title', ['title' => 'Test']);
+    })->throws(Exception::class, 'not configured');
 });
 
 describe('testConnection', function () {
