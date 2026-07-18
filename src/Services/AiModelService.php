@@ -25,7 +25,7 @@ class AiModelService
      * Get available models for a provider
      * Uses cache if available, fetches from API otherwise
      */
-    public function getModelsForProvider(string $provider, ?string $apiKey = null): array
+    public function getModelsForProvider(string $provider): array
     {
         $cacheKey = self::CACHE_PREFIX . $provider;
         $cached = Cache::get($cacheKey);
@@ -34,17 +34,15 @@ class AiModelService
             return $cached;
         }
 
-        if ($apiKey || $provider === 'ollama') {
-            try {
-                $models = $this->fetchModelsFromApi($provider, $apiKey ?? '');
-                if (! empty($models)) {
-                    Cache::put($cacheKey, $models, self::CACHE_TTL);
+        try {
+            $models = $this->fetchModelsFromApi($provider);
+            if (! empty($models)) {
+                Cache::put($cacheKey, $models, self::CACHE_TTL);
 
-                    return $models;
-                }
-            } catch (Exception $e) {
-                Log::warning("Failed to fetch models for {$provider}: " . $e->getMessage());
+                return $models;
             }
+        } catch (Exception $e) {
+            Log::warning("Failed to fetch models for {$provider}: " . $e->getMessage());
         }
 
         return [];
@@ -53,11 +51,11 @@ class AiModelService
     /**
      * Force refresh models from API
      */
-    public function refreshModels(string $provider, string $apiKey): array
+    public function refreshModels(string $provider): array
     {
         $cacheKey = self::CACHE_PREFIX . $provider;
 
-        $models = $this->fetchModelsFromApi($provider, $apiKey);
+        $models = $this->fetchModelsFromApi($provider);
 
         if (! empty($models)) {
             Cache::put($cacheKey, $models, self::CACHE_TTL);
@@ -66,6 +64,40 @@ class AiModelService
         }
 
         return [];
+    }
+
+    /**
+     * Resolve the configured API key for a provider from config/ai.php
+     */
+    protected function resolveKey(string $provider): ?string
+    {
+        return config("ai.providers.{$provider}.key");
+    }
+
+    /**
+     * Curated fallback model list shown when no API key is configured yet,
+     * so provider/model selection stays usable before the user finishes setup.
+     */
+    protected function getCuratedModels(string $provider): array
+    {
+        return match ($provider) {
+            'openai' => [
+                'gpt-4o'      => 'GPT-4o',
+                'gpt-4o-mini' => 'GPT-4o Mini',
+                'gpt-4.1'     => 'GPT-4.1',
+                'o3-mini'     => 'O3 Mini',
+            ],
+            'anthropic' => [
+                'claude-opus-4-5'   => 'Claude Opus 4.5',
+                'claude-sonnet-4-5' => 'Claude Sonnet 4.5',
+                'claude-haiku-4-5'  => 'Claude Haiku 4.5',
+            ],
+            'gemini' => [
+                'gemini-2.5-pro'   => 'Gemini 2.5 Pro',
+                'gemini-2.5-flash' => 'Gemini 2.5 Flash',
+            ],
+            default => [],
+        };
     }
 
     /**
@@ -101,16 +133,24 @@ class AiModelService
     }
 
     /**
-     * Fetch models from provider API
+     * Fetch models from provider API.
+     * Skips the API call and returns the curated fallback list when no key
+     * is configured (Ollama needs no key, so it always fetches live).
      */
-    protected function fetchModelsFromApi(string $provider, string $apiKey): array
+    protected function fetchModelsFromApi(string $provider): array
     {
+        $apiKey = $this->resolveKey($provider);
+
+        if (empty($apiKey) && $provider !== 'ollama') {
+            return $this->getCuratedModels($provider);
+        }
+
         return match ($provider) {
-            'openai'    => $this->fetchOpenAiModels($apiKey),
-            'anthropic' => $this->fetchAnthropicModels($apiKey),
+            'openai'    => $this->fetchOpenAiModels($apiKey ?? ''),
+            'anthropic' => $this->fetchAnthropicModels($apiKey ?? ''),
             'ollama'    => $this->fetchOllamaModels(),
-            'gemini'    => $this->fetchGeminiModels($apiKey),
-            default     => $this->fetchOpenAiCompatibleModels($provider, $apiKey),
+            'gemini'    => $this->fetchGeminiModels($apiKey ?? ''),
+            default     => $this->fetchOpenAiCompatibleModels($provider, $apiKey ?? ''),
         };
     }
 

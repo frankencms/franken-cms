@@ -331,7 +331,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
         try {
             $modelService = app(AiModelService::class);
-            $models = $modelService->refreshModels($provider, '');
+            $models = $modelService->refreshModels($provider);
 
             $count = count($models);
 
