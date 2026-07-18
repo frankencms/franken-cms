@@ -111,7 +111,7 @@ class AiModelService
             return;
         }
 
-        foreach (array_keys(config('prism.providers', [])) as $key) {
+        foreach (array_keys(config('ai.providers', [])) as $key) {
             Cache::forget(self::CACHE_PREFIX . $key);
         }
     }
@@ -125,11 +125,11 @@ class AiModelService
     }
 
     /**
-     * Get the base URL for a provider from Prism config
+     * Get the base URL for a provider from config/ai.php
      */
     protected function getProviderUrl(string $provider): string
     {
-        return config("prism.providers.{$provider}.url", '');
+        return config("ai.providers.{$provider}.url", '');
     }
 
     /**

@@ -9,13 +9,13 @@ beforeEach(function () {
     $this->service->clearCache();
     Cache::flush();
 
-    // Provider base URLs still resolve via Prism config until that is purged separately.
-    config()->set('prism.providers.openai.url', 'https://api.openai.com/v1');
-    config()->set('prism.providers.anthropic.url', 'https://api.anthropic.com/v1');
-    config()->set('prism.providers.ollama.url', 'http://localhost:11434');
-    config()->set('prism.providers.gemini.url', 'https://generativelanguage.googleapis.com/v1beta/models');
-    config()->set('prism.providers.openrouter.url', 'https://openrouter.ai/api/v1');
-    config()->set('prism.providers.groq.url', 'https://api.groq.com/openai/v1');
+    // Provider base URLs resolve via config/ai.php.
+    config()->set('ai.providers.openai.url', 'https://api.openai.com/v1');
+    config()->set('ai.providers.anthropic.url', 'https://api.anthropic.com/v1');
+    config()->set('ai.providers.ollama.url', 'http://localhost:11434');
+    config()->set('ai.providers.gemini.url', 'https://generativelanguage.googleapis.com/v1beta/models');
+    config()->set('ai.providers.openrouter.url', 'https://openrouter.ai/api/v1');
+    config()->set('ai.providers.groq.url', 'https://api.groq.com/openai/v1');
 
     // Provider keys now resolve from config/ai.php; default to unset.
     config()->set('ai.providers.openai.key', null);
@@ -472,7 +472,7 @@ describe('fetchOpenAiCompatibleModels', function () {
 
     test('returns empty array when provider has no URL configured', function () {
         config()->set('ai.providers.unknown.key', 'test-key');
-        config()->set('prism.providers.unknown', []);
+        config()->set('ai.providers.unknown.url', '');
 
         $result = $this->service->refreshModels('unknown');
 
