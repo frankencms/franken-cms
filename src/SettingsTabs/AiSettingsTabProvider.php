@@ -30,10 +30,10 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
             ->statePath($group)
             ->schema([
 
-                // Check if Prism is installed
+                // Check if laravel/ai is installed
                 Section::make('Installation Required')
-                    ->description('Igor requires the Prism PHP package to be installed.')
-                    ->visible(fn () => ! AiFeatureDetector::isPrismInstalled())
+                    ->description('Igor requires the laravel/ai SDK to be installed.')
+                    ->visible(fn () => ! AiFeatureDetector::isInstalled())
                     ->schema([
                         TextEntry::make('prism_not_installed')
                             ->label('')
@@ -52,7 +52,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                 // Nested tabs for Provider and Prompts
                 Tabs::make('igor-tabs')
-                    ->visible(fn () => AiFeatureDetector::isPrismInstalled())
+                    ->visible(fn () => AiFeatureDetector::isInstalled())
                     ->tabs([
 
                         // Provider Configuration Tab
