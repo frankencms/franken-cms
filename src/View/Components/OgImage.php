@@ -13,11 +13,11 @@ class OgImage extends Component
 {
     public function render(): View | string
     {
-        if (! OgImageFeature::isEnabled()) {
+        $post = app(CurrentPageService::class)->getPage();
+
+        if (! OgImageFeature::resolvesFor($post)) {
             return '';
         }
-
-        $post = app(CurrentPageService::class)->getPage();
 
         if ($template = OgImageFeature::templateFor($post)) {
             return view('franken-cms::components.og-image', [

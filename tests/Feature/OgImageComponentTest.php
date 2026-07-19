@@ -96,3 +96,12 @@ test('renders nothing when there is no current page and no site default', functi
 
     expect(trim(Blade::render('<x-franken-og-image />')))->toBe('');
 });
+
+test('renders nothing for a summary-card post even with a mapped template', function () {
+    config()->set('franken-cms.og_image.templates', ['post' => 'test-fixtures::og-post']);
+    $post = Post::factory()->create();
+    $post->setMeta('seo_use_twitter_summary', true);
+    app(CurrentPageService::class)->setPage($post);
+
+    expect(trim(Blade::render('<x-franken-og-image />')))->toBe('');
+});
