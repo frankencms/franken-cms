@@ -119,7 +119,7 @@ The `franken-cms:install` command will also offer to install and wire it up for 
 
 ### Map templates
 
-Templates are mapped by post type in `config/franken-cms.php`:
+Templates are mapped by post type in `config/franken-cms.php`. **Publish the config if you haven't** (`php artisan vendor:publish --tag=franken-cms-config`) — the mappings ship commented out, so generation stays off until you enable them:
 
 ```php
 'og_image' => [
@@ -132,6 +132,13 @@ Templates are mapped by post type in `config/franken-cms.php`:
 
 Each template is a plain Blade view rendered on a 1200×630 canvas and receives `$post` — do not wrap it in `<x-og-image>` yourself, Franken CMS's component handles that.
 
+The example theme ships two ready-made designs in `theme/og-templates/`:
+
+- **`post.blade.php` — the "specimen card":** category + specimen-number chip, gradient display title, author ⌁ date ⌁ read-time metadata, and the featured image seamed in with a lightning-bolt edge and suture stitches.
+- **`page.blade.php` — the "dossier card":** the calmer sibling — page-path chip, site tagline, and a gradient bolt watermark when the page has no featured image.
+
+Both are fully self-contained (fonts and CSS live inside the template, no asset rebuild needed), scale the title to its length, honor each image's focal point, and degrade gracefully when data is missing — edit them freely, or use them as a reference for your own. Preview any page's card by appending `?ogimage` to its URL; the image URL contains a content hash, so design changes bust caches automatically.
+
 ### Add the component
 
 Drop `<x-franken-og-image />` into your theme layout before `</body>` (the example theme ships with it already in place).
@@ -142,12 +149,21 @@ For each page, an image is resolved in this order: mapped template → per-post 
 
 ### Rendering environment
 
-Image generation needs Chrome and Node available on the server. If that's not an option, set the following in `.env` to render via Cloudflare's Browser Rendering API instead:
+Image generation needs Chrome and Node available on the server:
+
+```bash
+npm install puppeteer
+npx puppeteer browsers install chrome
+```
+
+If that's not an option, set the following in `.env` to render via Cloudflare's Browser Rendering API instead:
 
 ```env
 CLOUDFLARE_API_TOKEN=
 CLOUDFLARE_ACCOUNT_ID=
 ```
+
+> **Cloudflare needs a publicly reachable URL.** Its browser runs in Cloudflare's cloud and fetches your page to screenshot it, so it cannot see local domains like `https://myapp.test` — screenshots fail with a network error. Use the local Chrome driver for local development (leave the `CLOUDFLARE_*` vars unset there) and enable Cloudflare in deployed environments.
 
 ### Hand-coded pages
 

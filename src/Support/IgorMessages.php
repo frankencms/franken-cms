@@ -247,9 +247,11 @@ ASCII,
     {
         return <<<'TEXT'
 Next steps for OG images:
-   Map templates in config/franken-cms.php → og_image.templates
+   Publish the config (php artisan vendor:publish --tag=franken-cms-config) and uncomment og_image.templates — the example theme ships designed templates in theme/og-templates/
    Add <x-franken-og-image /> to your theme layout (already present if you installed the example theme)
-   For Chrome-less hosts, set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in your .env
+   Local rendering needs Chrome: npm install puppeteer && npx puppeteer browsers install chrome
+   For production hosts without Chrome, set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (requires a publicly reachable site URL — Cloudflare cannot fetch local .test domains)
+   Preview any page's card by appending ?ogimage to its URL
 TEXT;
     }
 }
