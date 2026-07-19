@@ -94,6 +94,43 @@ class AiModelService
     }
 
     /**
+     * Curated image-generation models per provider. Provider model-list APIs
+     * don't flag image capability, so this list is maintained by hand; the
+     * first entry per provider matches the laravel/ai SDK's default.
+     *
+     * @return array<string, string> model id => label
+     */
+    public function imageModelsForProvider(string $provider): array
+    {
+        return match ($provider) {
+            'openai' => [
+                'gpt-image-2' => 'GPT Image 2',
+                'gpt-image-1' => 'GPT Image 1',
+                'dall-e-3'    => 'DALL·E 3',
+            ],
+            'gemini' => [
+                'gemini-3.1-flash-image-preview' => 'Gemini 3.1 Flash Image (Preview)',
+                'gemini-2.5-flash-image'         => 'Gemini 2.5 Flash Image',
+            ],
+            'azure' => [
+                'gpt-image-1' => 'GPT Image 1 (deployment)',
+            ],
+            'bedrock' => [
+                'amazon.nova-canvas-v1:0' => 'Amazon Nova Canvas',
+            ],
+            'xai' => [
+                'grok-imagine-image' => 'Grok Imagine',
+                'grok-2-image'       => 'Grok 2 Image',
+            ],
+            'openrouter' => [
+                'google/gemini-3.1-flash-image-preview' => 'Gemini 3.1 Flash Image (Preview)',
+                'openai/gpt-image-1'                    => 'GPT Image 1',
+            ],
+            default => [],
+        };
+    }
+
+    /**
      * Curated fallback model list shown when no API key is configured yet,
      * so provider/model selection stays usable before the user finishes setup.
      */

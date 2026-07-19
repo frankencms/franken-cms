@@ -7,7 +7,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -301,12 +300,16 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                                     ->placeholder('SDK default (config/ai.php)')
                                                     ->nullable()
                                                     ->live()
+                                                    ->afterStateUpdated(fn ($set) => $set('featured_image_model', null))
                                                     ->visible(fn ($get) => $get('featured_image_enabled'))
                                                     ->columnSpan(1),
 
-                                                TextInput::make('featured_image_model')
+                                                Select::make('featured_image_model')
                                                     ->label('Image Model')
-                                                    ->helperText('Leave empty for the provider default')
+                                                    ->options(fn ($get) => app(AiModelService::class)->imageModelsForProvider($get('featured_image_provider') ?? ''))
+                                                    ->placeholder('Provider default')
+                                                    ->nullable()
+                                                    ->helperText('Leave empty for the provider default model')
                                                     ->visible(fn ($get) => $get('featured_image_enabled') && filled($get('featured_image_provider')))
                                                     ->columnSpanFull(),
                                             ])

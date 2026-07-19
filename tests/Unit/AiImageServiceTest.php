@@ -5,6 +5,7 @@ use FrankenCms\Settings\AiSettings;
 use FrankenCms\Settings\MediaSettings;
 use Laravel\Ai\Image;
 use Laravel\Ai\Prompts\ImagePrompt;
+use Laravel\Ai\Providers\OpenAiProvider;
 
 beforeEach(function () {
     config()->set('ai.providers', ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]);
@@ -58,7 +59,7 @@ describe('provider fallback', function () {
 
         $this->service->generate('a mountain');
 
-        Image::assertGenerated(fn ($prompt) => $prompt->provider instanceof \Laravel\Ai\Providers\OpenAiProvider);
+        Image::assertGenerated(fn ($prompt) => $prompt->provider instanceof OpenAiProvider);
     });
 
     test('fallbackProvider defers to the SDK default when it is configured', function () {

@@ -574,3 +574,28 @@ describe('hasCachedModels', function () {
         expect($this->service->hasCachedModels('openai'))->toBeTrue();
     });
 });
+
+describe('imageModelsForProvider', function () {
+    test('every image-capable provider has a curated list whose first entry is the SDK default', function () {
+        $sdkDefaults = [
+            'openai'     => 'gpt-image-2',
+            'gemini'     => 'gemini-3.1-flash-image-preview',
+            'azure'      => 'gpt-image-1',
+            'bedrock'    => 'amazon.nova-canvas-v1:0',
+            'xai'        => 'grok-imagine-image',
+            'openrouter' => 'google/gemini-3.1-flash-image-preview',
+        ];
+
+        foreach ($sdkDefaults as $provider => $default) {
+            $models = $this->service->imageModelsForProvider($provider);
+
+            expect($models)->not->toBeEmpty()
+                ->and(array_key_first($models))->toBe($default);
+        }
+    });
+
+    test('returns an empty list for unknown providers', function () {
+        expect($this->service->imageModelsForProvider('anthropic'))->toBe([])
+            ->and($this->service->imageModelsForProvider(''))->toBe([]);
+    });
+});
