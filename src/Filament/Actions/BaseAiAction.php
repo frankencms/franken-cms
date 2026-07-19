@@ -6,6 +6,7 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use FrankenCms\Services\AiFeatureDetector;
 use FrankenCms\Services\AiService;
 
@@ -67,7 +68,7 @@ abstract class BaseAiAction extends Action
             ->tooltip('Generate content with AI')
             ->visible(fn () => AiFeatureDetector::isAvailable())
             ->requiresConfirmation(false)
-            ->action(function (Get $get, $livewire) {
+            ->action(function (Get $get, Set $set, $livewire) {
                 try {
                     $aiService = app(AiService::class);
 
@@ -79,9 +80,11 @@ abstract class BaseAiAction extends Action
                     // Get character count
                     $characterCount = mb_strlen($generatedText);
 
-                    // Update the field
+                    // Update the field through the schema state pipeline so
+                    // dependent afterStateUpdated hooks run (e.g. the slug
+                    // deriving from the title)
                     $fieldName = $this->getFieldName();
-                    $livewire->data[$fieldName] = $generatedText;
+                    $set($fieldName, $generatedText, shouldCallUpdatedHooks: true);
 
                     // Dispatch Alpine events to update character count displays
                     $this->dispatchCharacterCountEvent($livewire, $fieldName, $characterCount);
