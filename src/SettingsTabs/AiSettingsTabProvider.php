@@ -6,7 +6,6 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -30,12 +29,12 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
             ->statePath($group)
             ->schema([
 
-                // Check if Prism is installed
+                // Check if laravel/ai is installed
                 Section::make('Installation Required')
-                    ->description('Igor requires the Prism PHP package to be installed.')
-                    ->visible(fn () => ! AiFeatureDetector::isPrismInstalled())
+                    ->description('Igor requires the laravel/ai SDK to be installed.')
+                    ->visible(fn () => ! AiFeatureDetector::isInstalled())
                     ->schema([
-                        TextEntry::make('prism_not_installed')
+                        TextEntry::make('ai_sdk_not_installed')
                             ->label('')
                             ->markdown()
                             ->state(<<<'MD'
@@ -43,7 +42,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                             To enable Igor, run:
                             ```
-                            composer require prism-php/prism
+                            composer require laravel/ai
                             ```
 
                             After installation, refresh this page to configure Igor.
@@ -52,7 +51,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                 // Nested tabs for Provider and Prompts
                 Tabs::make('igor-tabs')
-                    ->visible(fn () => AiFeatureDetector::isPrismInstalled())
+                    ->visible(fn () => AiFeatureDetector::isInstalled())
                     ->tabs([
 
                         // Provider Configuration Tab
@@ -71,49 +70,35 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                             ->live()
                                             ->columnSpanFull(),
 
+                                        TextEntry::make('ai_setup_notice')
+                                            ->label('')
+                                            ->markdown()
+                                            ->state(
+                                                '**No AI provider configured.** Add an API key to your `.env` '
+                                                . '(e.g. `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `GEMINI_API_KEY`) '
+                                                . 'and publish `config/ai.php` if you need to customize providers. '
+                                                . 'Keys are no longer stored in the database.'
+                                            )
+                                            ->visible(fn () => empty(AiFeatureDetector::configuredProviders()))
+                                            ->columnSpanFull(),
+
                                         Select::make('provider')
                                             ->label('AI Provider')
-                                            ->options(fn () => $this->getProviderOptions())
+                                            ->options(fn () => AiFeatureDetector::configuredProviders())
                                             ->default('openai')
                                             ->required()
                                             ->live()
-                                            ->visible(fn ($get) => $get('enabled'))
-                                            ->columnSpan(1),
-
-                                        TextInput::make('api_key')
-                                            ->label('API Key')
-                                            ->password()
-                                            ->helperText(function ($state) {
-                                                if (! $state) {
-                                                    return 'Your API key will be encrypted and stored securely';
-                                                }
-
-                                                $key = is_string($state) ? $state : '';
-                                                $len = strlen($key);
-
-                                                if ($len <= 8) {
-                                                    return 'Current key: ****';
-                                                }
-
-                                                return sprintf(
-                                                    'Current key: %s...%s',
-                                                    substr($key, 0, 4),
-                                                    substr($key, -4)
-                                                );
-                                            })
-                                            ->dehydrateStateUsing(fn ($state) => $state ?: app(AiSettings::class)->api_key)
-                                            ->required(fn ($get) => $get('provider') !== 'ollama')
-                                            ->visible(fn ($get) => $get('enabled') && $get('provider') !== 'ollama')
+                                            ->visible(fn ($get) => $get('enabled') && ! empty(AiFeatureDetector::configuredProviders()))
                                             ->columnSpan(1),
 
                                         Select::make('model')
                                             ->label('Model')
-                                            ->options(fn ($get) => $this->getModelsForProvider($get('provider'), $get('api_key')))
+                                            ->options(fn ($get) => $this->getModelsForProvider($get('provider')))
                                             ->required()
                                             ->searchable()
-                                            ->placeholder('Enter API key and click "Refresh Models"')
+                                            ->placeholder('Click "Refresh Models"')
                                             ->helperText(fn ($get) => $this->getModelHelperText($get('provider')))
-                                            ->visible(fn ($get) => $get('enabled'))
+                                            ->visible(fn ($get) => $get('enabled') && ! empty(AiFeatureDetector::configuredProviders()))
                                             ->columnSpan(1),
 
                                         Actions::make([
@@ -123,9 +108,9 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                                 ->color('gray')
                                                 ->size('sm')
                                                 ->action(function ($get, $set, $livewire) {
-                                                    $this->refreshModels($get('provider'), $get('api_key'), $livewire);
+                                                    $this->refreshModels($get('provider'), $livewire);
                                                 })
-                                                ->visible(fn ($get) => $get('enabled') && (! empty($get('api_key')) || $get('provider') === 'ollama')),
+                                                ->visible(fn ($get) => $get('enabled') && array_key_exists($get('provider'), AiFeatureDetector::configuredProviders())),
                                         ])
                                             ->visible(fn ($get) => $get('enabled'))
                                             ->columnSpanFull(),
@@ -296,35 +281,10 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
     }
 
     /**
-     * Get provider options from Prism config, filtered to text-capable providers
-     */
-    protected function getProviderOptions(): array
-    {
-        $excludedProviders = ['elevenlabs', 'voyageai'];
-
-        $labels = [
-            'openai'     => 'OpenAI',
-            'anthropic'  => 'Anthropic',
-            'ollama'     => 'Ollama (Local)',
-            'gemini'     => 'Google Gemini',
-            'openrouter' => 'OpenRouter',
-            'mistral'    => 'Mistral',
-            'groq'       => 'Groq',
-            'xai'        => 'xAI (Grok)',
-            'deepseek'   => 'DeepSeek',
-        ];
-
-        return collect(config('prism.providers', []))
-            ->except($excludedProviders)
-            ->mapWithKeys(fn ($config, $key) => [$key => $labels[$key] ?? ucfirst($key)])
-            ->toArray();
-    }
-
-    /**
      * Get available models for a provider
-     * Uses dynamic fetching when API key is available, falls back to config
+     * Uses dynamic fetching when cached, falls back to config
      */
-    protected function getModelsForProvider(?string $provider, ?string $apiKey = null): array
+    protected function getModelsForProvider(?string $provider): array
     {
         if (! $provider) {
             return [];
@@ -333,7 +293,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
         // Use AiModelService for dynamic model fetching
         $modelService = app(AiModelService::class);
 
-        return $modelService->getModelsForProvider($provider, $apiKey);
+        return $modelService->getModelsForProvider($provider);
     }
 
     /**
@@ -351,18 +311,18 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
             return 'Models loaded from ' . ucfirst($provider) . ' API (cached)';
         }
 
-        return 'Enter API key and click "Refresh Models" to load available models';
+        return 'Click "Refresh Models" to load available models';
     }
 
     /**
      * Refresh models from provider API
      */
-    protected function refreshModels(?string $provider, ?string $apiKey, $livewire): void
+    protected function refreshModels(?string $provider, $livewire): void
     {
-        if (! $provider || (! $apiKey && $provider !== 'ollama')) {
+        if (! $provider || ! array_key_exists($provider, AiFeatureDetector::configuredProviders())) {
             Notification::make()
                 ->title('Missing Information')
-                ->body('Please select a provider and enter an API key first.')
+                ->body('Please select a configured provider first.')
                 ->warning()
                 ->send();
 
@@ -371,7 +331,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
         try {
             $modelService = app(AiModelService::class);
-            $models = $modelService->refreshModels($provider, $apiKey);
+            $models = $modelService->refreshModels($provider);
 
             $count = count($models);
 

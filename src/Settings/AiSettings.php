@@ -2,7 +2,6 @@
 
 namespace FrankenCms\Settings;
 
-use FrankenCms\SettingsCasts\EncryptedSettingsCast;
 use Spatie\LaravelSettings\Settings;
 
 class AiSettings extends Settings
@@ -11,8 +10,6 @@ class AiSettings extends Settings
     public bool $enabled = false;
 
     public string $provider = 'openai';
-
-    public ?string $api_key = null;
 
     public string $model = 'gpt-4o';
 
@@ -54,15 +51,5 @@ class AiSettings extends Settings
     public static function group(): string
     {
         return 'franken_cms_ai';
-    }
-
-    /**
-     * Define encrypted fields
-     */
-    public static function casts(): array
-    {
-        return [
-            'api_key' => EncryptedSettingsCast::class,
-        ];
     }
 }

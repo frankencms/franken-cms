@@ -8,7 +8,7 @@ it('catches QueryException during route registration', function () {
     // Simulate a QueryException (e.g., table doesn't exist during fresh install)
     Cache::shouldReceive('remember')
         ->once()
-        ->andThrow(new QueryException('default', 'select * from posts', [], new \Exception('table not found')));
+        ->andThrow(new QueryException('default', 'select * from posts', [], new Exception('table not found')));
 
     $service = new PageRouteService;
 

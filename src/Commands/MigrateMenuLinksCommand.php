@@ -7,6 +7,7 @@ namespace FrankenCms\Commands;
 use FrankenCms\Models\MenuItem;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
+use FrankenCms\Services\MenuService;
 use Illuminate\Console\Command;
 
 class MigrateMenuLinksCommand extends Command
@@ -81,7 +82,7 @@ class MigrateMenuLinksCommand extends Command
 
         // Clear all menu caches
         $this->info('Clearing menu caches...');
-        app(\FrankenCms\Services\MenuService::class)->clearAllMenuCaches();
+        app(MenuService::class)->clearAllMenuCaches();
 
         return self::SUCCESS;
     }

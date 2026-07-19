@@ -2,9 +2,23 @@
 
 namespace FrankenCms\Tests;
 
+use Filament\Actions\ActionsServiceProvider;
+use Filament\FilamentServiceProvider;
+use Filament\Forms\FormsServiceProvider;
+use Filament\Infolists\InfolistsServiceProvider;
+use Filament\Notifications\NotificationsServiceProvider;
+use Filament\Support\SupportServiceProvider;
+use Filament\Tables\TablesServiceProvider;
+use Filament\Widgets\WidgetsServiceProvider;
 use FrankenCms\FrankenCmsServiceProvider;
+use FrankenCms\Tests\Support\TestPanelProvider;
+use FrankenCms\Tests\Support\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Spatie\LaravelSettings\LaravelSettingsServiceProvider;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Sitemap\SitemapServiceProvider;
 
 class TestCase extends Orchestra
 {
@@ -30,10 +44,10 @@ class TestCase extends Orchestra
         config()->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
 
         // Configure FrankenCMS user model for tests
-        config()->set('franken-cms.models.user', \FrankenCms\Tests\Support\User::class);
+        config()->set('franken-cms.models.user', User::class);
 
         // Configure Spatie Media Library for tests
-        config()->set('media-library.media_model', \Spatie\MediaLibrary\MediaCollections\Models\Media::class);
+        config()->set('media-library.media_model', Media::class);
         config()->set('media-library.disk_name', 'public');
         config()->set('media-library.max_file_size', 1024 * 1024 * 10); // 10MB
     }
@@ -53,19 +67,19 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            \Livewire\LivewireServiceProvider::class,
-            \Filament\FilamentServiceProvider::class,
-            \Filament\Actions\ActionsServiceProvider::class,
-            \Filament\Forms\FormsServiceProvider::class,
-            \Filament\Infolists\InfolistsServiceProvider::class,
-            \Filament\Notifications\NotificationsServiceProvider::class,
-            \Filament\Support\SupportServiceProvider::class,
-            \Filament\Tables\TablesServiceProvider::class,
-            \Filament\Widgets\WidgetsServiceProvider::class,
-            \Spatie\LaravelSettings\LaravelSettingsServiceProvider::class,
-            \Spatie\Sitemap\SitemapServiceProvider::class,
+            LivewireServiceProvider::class,
+            FilamentServiceProvider::class,
+            ActionsServiceProvider::class,
+            FormsServiceProvider::class,
+            InfolistsServiceProvider::class,
+            NotificationsServiceProvider::class,
+            SupportServiceProvider::class,
+            TablesServiceProvider::class,
+            WidgetsServiceProvider::class,
+            LaravelSettingsServiceProvider::class,
+            SitemapServiceProvider::class,
             FrankenCmsServiceProvider::class,
-            \FrankenCms\Tests\Support\TestPanelProvider::class,
+            TestPanelProvider::class,
         ];
     }
 }

@@ -7,6 +7,8 @@ use FrankenCms\Settings\SitemapSettings;
 use FrankenCms\Tests\Support\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Spatie\LaravelSettings\Settings;
+use Spatie\Sitemap\Sitemap;
 
 /**
  * Create a mock SitemapSettings with proper initialization.
@@ -18,7 +20,7 @@ function createSettingsMock(): SitemapSettings
 
     // Set the 'loaded' property to true to prevent the load() method from being called
     // The property is in the parent Spatie\LaravelSettings\Settings class
-    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection = new ReflectionProperty(Settings::class, 'loaded');
     $reflection->setAccessible(true);
     $reflection->setValue($settings, true);
 
@@ -529,7 +531,7 @@ describe('Caching behavior', function () {
 
         // Verify we can retrieve from cache
         $cached = Cache::get('sitemap_post');
-        expect($cached)->toBeInstanceOf(\Spatie\Sitemap\Sitemap::class);
+        expect($cached)->toBeInstanceOf(Sitemap::class);
     });
 
     test('clearCache allows fresh generation', function () {

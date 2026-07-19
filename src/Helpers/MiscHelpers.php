@@ -2,13 +2,13 @@
 
 namespace FrankenCms\Helpers;
 
+use FrankenCms\Services\AiFeatureDetector;
+
 class MiscHelpers
 {
-    public static function is_prism_installed(): bool
+    public static function is_ai_installed(): bool
     {
-        // check if the prism-php/prism composer package is installed.
-        return class_exists('Prism\Prism');
-
+        return AiFeatureDetector::isInstalled();
     }
 
     public static function file_attachment_disk_name(): string

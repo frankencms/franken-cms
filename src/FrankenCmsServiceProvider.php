@@ -28,15 +28,18 @@ use FrankenCms\Models\Menu;
 use FrankenCms\Models\Post;
 use FrankenCms\Models\Taxonomy;
 use FrankenCms\Models\Term;
+use FrankenCms\Models\UserBio;
 use FrankenCms\Observers\PostObserver;
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Providers\SeoServiceProvider;
 use FrankenCms\Registries\FieldTypeRegistry;
 use FrankenCms\Registries\SettingsTabRegistry;
+use FrankenCms\Services\AiFeatureDetector;
 use FrankenCms\Services\AiModelService;
 use FrankenCms\Services\AiService;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
 use FrankenCms\Services\BladeFormDirectiveRegistry;
+use FrankenCms\Services\BreadcrumbService;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\DirectiveRenderer;
 use FrankenCms\Services\FeedService;
@@ -52,6 +55,7 @@ use FrankenCms\Services\SocialLinksService;
 use FrankenCms\Services\TemplateFieldExtractor;
 use FrankenCms\Services\TemplateFieldRenderer;
 use FrankenCms\Settings\StackSettings;
+use FrankenCms\View\Components\Breadcrumbs;
 use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
 use FrankenCms\View\Composers\FrankenFieldComposer;
@@ -60,7 +64,6 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Livewire\Livewire;
-use Prism\Prism\Prism;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spatie\LaravelSettings\Events\SettingsSaved;
@@ -152,8 +155,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register the SEO service provider
         $this->app->register(SeoServiceProvider::class);
 
-        // Register AI services (only if Prism is installed)
-        if (class_exists(Prism::class)) {
+        // Register AI services (only if the laravel/ai SDK is installed)
+        if (AiFeatureDetector::isInstalled()) {
             $this->app->singleton(PromptManager::class);
             $this->app->singleton(AiService::class);
             $this->app->singleton(AiModelService::class);
@@ -195,7 +198,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
-        Blade::component('breadcrumbs', \FrankenCms\View\Components\Breadcrumbs::class);
+        Blade::component('breadcrumbs', Breadcrumbs::class);
 
         // Register breadcrumbs
         $this->registerBreadcrumbs();
@@ -259,15 +262,15 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Only register if the model doesn't already have a bio() method (e.g. via HasBio trait)
         if (! method_exists($userModel, 'bio')) {
             $userModel::resolveRelationUsing('bio', function ($user) {
-                return $user->hasOne(\FrankenCms\Models\UserBio::class);
+                return $user->hasOne(UserBio::class);
             });
         }
     }
 
     private function registerLivewireComponents(): void
     {
-        // Register the BlogPostWizard Livewire component (only if Prism is installed)
-        if (class_exists(Prism::class)) {
+        // Register the BlogPostWizard Livewire component (only if the laravel/ai SDK is installed)
+        if (AiFeatureDetector::isInstalled()) {
             Livewire::component(
                 'blog-post-wizard',
                 BlogPostWizard::class
@@ -526,8 +529,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
     private function registerAiModal(): void
     {
-        // Only register if Prism is installed
-        if (! class_exists(Prism::class)) {
+        // Only register if the laravel/ai SDK is installed
+        if (! AiFeatureDetector::isInstalled()) {
             return;
         }
 
@@ -546,7 +549,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         }
 
         // Register automatic CMS breadcrumbs
-        $breadcrumbService = $this->app->make(\FrankenCms\Services\BreadcrumbService::class);
+        $breadcrumbService = $this->app->make(BreadcrumbService::class);
         $breadcrumbService->registerBreadcrumbs();
 
         // Note: User-defined breadcrumbs from routes/breadcrumbs.php are automatically

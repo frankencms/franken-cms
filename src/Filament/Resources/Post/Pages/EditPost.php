@@ -8,6 +8,7 @@ use FrankenCms\Filament\Resources\Post\PostResource;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Services\TemplateFieldExtractor;
+use Spatie\MediaLibrary\Conversions\FileManipulator;
 
 class EditPost extends EditRecord
 {
@@ -278,7 +279,7 @@ class EditPost extends EditRecord
         // Regenerate featured image conversions if focal point changed
         // Only regenerate thumb, featured, and listing - NOT og/twitter (SEO images don't use focal points)
         if ($existingFocalPoint !== $newFocalPoint) {
-            app(\Spatie\MediaLibrary\Conversions\FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
+            app(FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
         }
     }
 

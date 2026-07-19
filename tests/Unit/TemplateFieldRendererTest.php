@@ -1,5 +1,6 @@
 <?php
 
+use FrankenCms\Contracts\FieldRendererInterface;
 use FrankenCms\Services\FieldRenderers\TextFieldRenderer;
 use FrankenCms\Services\TemplateFieldRenderer;
 use Illuminate\Support\Collection;
@@ -70,7 +71,7 @@ it('handles null values gracefully', function () {
 it('can register custom renderers', function () {
     $renderer = app(TemplateFieldRenderer::class);
 
-    $customRenderer = new class implements \FrankenCms\Contracts\FieldRendererInterface
+    $customRenderer = new class implements FieldRendererInterface
     {
         public function render(mixed $value, ?string $fieldName = null): mixed
         {

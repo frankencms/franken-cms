@@ -4,6 +4,7 @@ namespace FrankenCms\Livewire;
 
 use Exception;
 use FrankenCms\Services\AiService;
+use Illuminate\Support\Str;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -150,7 +151,7 @@ class BlogPostWizard extends Component
     {
         if ($this->generatedContent) {
             // Convert markdown to HTML for RichEditor
-            $htmlContent = \Illuminate\Support\Str::markdown($this->generatedContent);
+            $htmlContent = Str::markdown($this->generatedContent);
 
             // Dispatch event globally - the EditPost page will listen for it
             $this->dispatch(

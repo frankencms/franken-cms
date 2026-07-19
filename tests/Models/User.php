@@ -2,6 +2,7 @@
 
 namespace FrankenCms\Tests\Models;
 
+use FrankenCms\Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -22,6 +23,6 @@ class User extends Authenticatable
 
     protected static function newFactory()
     {
-        return \FrankenCms\Database\Factories\UserFactory::new();
+        return UserFactory::new();
     }
 }

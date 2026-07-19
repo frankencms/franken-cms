@@ -6,7 +6,7 @@ use Filament\Support\Contracts\HasDescription;
 use Filament\Support\Contracts\HasLabel;
 use Override;
 
-enum PermalinkTags: string implements HasDescription, hasLabel
+enum PermalinkTags: string implements HasDescription, HasLabel
 {
     case YEAR = '%year%';
     case MONTHNUM = '%monthnum%';

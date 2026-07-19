@@ -9,7 +9,6 @@ return new class extends SettingsMigration
     {
         $this->migrator->add('franken_cms_ai.enabled', false);
         $this->migrator->add('franken_cms_ai.provider', 'openai');
-        $this->migrator->add('franken_cms_ai.api_key', null);
         $this->migrator->add('franken_cms_ai.model', 'gpt-4o');
 
         // SEO Title Generator Prompt

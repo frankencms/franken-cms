@@ -1,6 +1,7 @@
 <?php
 
 // config for Franken CMS/FrankenCms
+use App\Models\User;
 use Filament\Forms\Components\RichEditor\TextColor;
 
 return [
@@ -11,7 +12,7 @@ return [
     'theme_folder' => 'theme',
 
     'models' => [
-        'user' => \App\Models\User::class,
+        'user' => User::class,
 
     ],
 
@@ -19,6 +20,11 @@ return [
 
     'settings' => [
 
+    ],
+
+    'ai' => [
+        // Ollama has no API key; opt in explicitly to expose it as a provider.
+        'enable_ollama' => env('CMS_AI_ENABLE_OLLAMA', false),
     ],
 
     /*

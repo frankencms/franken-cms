@@ -9,6 +9,7 @@ use Diglactic\Breadcrumbs\Breadcrumbs;
 use Exception;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\SeoService;
+use FrankenCms\Settings\ReadingSettings;
 use FrankenCms\Settings\SeoSettings;
 use Illuminate\Http\Request;
 use romanzipp\Seo\Structs\Link as LinkMeta;
@@ -281,7 +282,7 @@ class AddSeoDefaults
             return;
         }
 
-        $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+        $readingSettings = app(ReadingSettings::class);
         if ($readingSettings->home_page === $post->post_slug) {
             return;
         }

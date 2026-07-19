@@ -4,34 +4,56 @@ namespace FrankenCms\Services;
 
 use Exception;
 use FrankenCms\Settings\AiSettings;
+use Illuminate\Support\Str;
+use Laravel\Ai\Ai;
 
 class AiFeatureDetector
 {
     /**
-     * Check if AI features are available
+     * Check if AI features are available (installed, configured, and enabled)
      */
     public static function isAvailable(): bool
     {
-        // Check if Prism is installed
-        if (! self::isPrismInstalled()) {
+        if (! self::isInstalled()) {
             return false;
         }
 
-        // Check if enabled in settings
-        try {
-            $settings = app(AiSettings::class);
+        if (empty(self::configuredProviders())) {
+            return false;
+        }
 
-            return $settings->enabled && ! empty($settings->api_key);
-        } catch (Exception $e) {
+        try {
+            return app(AiSettings::class)->enabled;
+        } catch (Exception) {
             return false;
         }
     }
 
     /**
-     * Check if Prism PHP package is installed
+     * Check if the laravel/ai SDK is installed
      */
-    public static function isPrismInstalled(): bool
+    public static function isInstalled(): bool
     {
-        return app()->providerIsLoaded('Prism\\Prism\\PrismServiceProvider');
+        return class_exists(Ai::class);
+    }
+
+    /**
+     * Providers from config/ai.php that have credentials configured.
+     * Ollama needs no key, so it is opt-in via franken-cms.ai.enable_ollama.
+     *
+     * @return array<string, string> provider name => display label
+     */
+    public static function configuredProviders(): array
+    {
+        return collect(config('ai.providers', []))
+            ->filter(function (array $provider, string $name) {
+                if (($provider['driver'] ?? null) === 'ollama') {
+                    return (bool) config('franken-cms.ai.enable_ollama', false);
+                }
+
+                return ! empty($provider['key']);
+            })
+            ->mapWithKeys(fn (array $provider, string $name) => [$name => Str::title($name)])
+            ->all();
     }
 }

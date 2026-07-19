@@ -2,10 +2,12 @@
 
 use FrankenCms\Models\Post;
 use FrankenCms\Services\ContentResolver;
+use FrankenCms\Settings\ReadingSettings;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 beforeEach(function () {
     // Set required settings
-    $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+    $readingSettings = app(ReadingSettings::class);
     $readingSettings->post_page = 'blog';
     $readingSettings->save();
 });
@@ -20,7 +22,7 @@ it('resolvePost does not return draft posts', function () {
     $resolver = app(ContentResolver::class);
 
     $resolver->resolvePost('draft-post');
-})->throws(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+})->throws(NotFoundHttpException::class);
 
 it('resolvePost does not return future-scheduled posts', function () {
     Post::withoutGlobalScopes()->insert([
@@ -32,7 +34,7 @@ it('resolvePost does not return future-scheduled posts', function () {
     $resolver = app(ContentResolver::class);
 
     $resolver->resolvePost('future-post');
-})->throws(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+})->throws(NotFoundHttpException::class);
 
 it('resolvePost returns published posts with past date', function () {
     Post::withoutGlobalScopes()->insert([

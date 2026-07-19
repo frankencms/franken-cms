@@ -2,6 +2,7 @@
 
 use FrankenCms\Models\UserBio;
 use FrankenCms\Tests\Support\User;
+use Spatie\MediaLibrary\HasMedia;
 
 describe('UserBio Model', function () {
 
@@ -411,7 +412,7 @@ describe('UserBio Media', function () {
             'title'   => 'Writer',
         ]);
 
-        expect($bio)->toBeInstanceOf(\Spatie\MediaLibrary\HasMedia::class);
+        expect($bio)->toBeInstanceOf(HasMedia::class);
         expect($bio->hasMedia('bio-image'))->toBeFalse();
     });
 

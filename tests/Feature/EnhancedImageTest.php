@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Filament\Actions\Action;
+use Filament\Forms\Components\RichEditor\RichEditorTool;
 use FrankenCms\Filament\Plugins\RichEditor\EnhancedImagePlugin;
 
 it('enhanced image plugin exists and is properly configured', function () {
@@ -24,7 +26,7 @@ it('enhanced image plugin provides editor tools', function () {
 
     expect($tools)->toBeArray()
         ->and($tools)->not->toBeEmpty()
-        ->and($tools[0])->toBeInstanceOf(\Filament\Forms\Components\RichEditor\RichEditorTool::class);
+        ->and($tools[0])->toBeInstanceOf(RichEditorTool::class);
 });
 
 it('enhanced image plugin provides editor actions', function () {
@@ -33,5 +35,5 @@ it('enhanced image plugin provides editor actions', function () {
 
     expect($actions)->toBeArray()
         ->and($actions)->not->toBeEmpty()
-        ->and($actions[0])->toBeInstanceOf(\Filament\Actions\Action::class);
+        ->and($actions[0])->toBeInstanceOf(Action::class);
 });
