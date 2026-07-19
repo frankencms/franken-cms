@@ -107,4 +107,14 @@ describe('isImageAvailable', function () {
 
         expect(AiFeatureDetector::isImageAvailable())->toBeTrue();
     });
+
+    test('is false when the featured image feature is disabled in settings', function () {
+        config()->set('ai.providers', ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]);
+        $settings = app(AiSettings::class);
+        $settings->enabled = true;
+        $settings->featured_image_enabled = false;
+        $settings->save();
+
+        expect(AiFeatureDetector::isImageAvailable())->toBeFalse();
+    });
 });

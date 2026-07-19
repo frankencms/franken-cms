@@ -84,6 +84,14 @@ class AiFeatureDetector
      */
     public static function isImageAvailable(): bool
     {
-        return self::isAvailable() && ! empty(self::imageCapableProviders());
+        if (! self::isAvailable()) {
+            return false;
+        }
+
+        if (! app(AiSettings::class)->featured_image_enabled) {
+            return false;
+        }
+
+        return ! empty(self::imageCapableProviders());
     }
 }
