@@ -104,30 +104,34 @@ class AiService
     }
 
     /**
-     * Test provider connection
+     * Probe a provider/model pair with a tiny prompt, throwing with the
+     * provider's actual reason on failure. Defaults to the saved text
+     * engine settings when no pair is given.
+     *
+     * @throws Exception
      */
-    public function testConnection(): bool
+    public function verifyTextModel(?string $provider = null, ?string $model = null): void
     {
         if (! AiFeatureDetector::isInstalled()) {
-            return false;
+            throw new Exception('The laravel/ai SDK is not installed.');
         }
 
-        try {
-            $settings = app(AiSettings::class);
+        $settings = app(AiSettings::class);
+        $provider ??= $settings->text_provider;
+        $model ??= $settings->text_model;
 
-            if (! array_key_exists($settings->text_provider, AiFeatureDetector::configuredProviders())) {
-                return false;
-            }
+        if (! array_key_exists($provider, AiFeatureDetector::configuredProviders())) {
+            throw new Exception("Provider [{$provider}] is not configured. Set its API key in your .env.");
+        }
 
-            $response = (new CmsAgent(maxTokens: 10))->prompt(
-                'Respond with only the word "OK"',
-                provider: $settings->text_provider,
-                model: $settings->text_model,
-            );
+        $response = (new CmsAgent(maxTokens: 2000))->prompt(
+            'Respond with only the word "OK"',
+            provider: $provider,
+            model: $model,
+        );
 
-            return ! empty($response->text);
-        } catch (Exception) {
-            return false;
+        if (trim($response->text) === '') {
+            throw new Exception('The model responded but returned no content.');
         }
     }
 

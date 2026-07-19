@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Services\AiFeatureDetector;
 use FrankenCms\Services\AiModelService;
+use FrankenCms\Services\AiService;
 use FrankenCms\Settings\AiSettings;
 
 class AiSettingsTabProvider implements SettingsTabProviderInterface
@@ -113,6 +114,31 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                                             $this->refreshModels($get('text_provider'), $livewire);
                                                         })
                                                         ->visible(fn ($get) => array_key_exists($get('text_provider'), AiFeatureDetector::configuredProviders())),
+
+                                                    Action::make('test_model')
+                                                        ->label('Test Model')
+                                                        ->icon('heroicon-o-bolt')
+                                                        ->color('gray')
+                                                        ->size('sm')
+                                                        ->action(function ($get) {
+                                                            try {
+                                                                app(AiService::class)->verifyTextModel($get('text_provider'), $get('text_model'));
+
+                                                                Notification::make()
+                                                                    ->title('Model responded ✓')
+                                                                    ->body("Your key can use [{$get('text_model')}]. It's alive!")
+                                                                    ->success()
+                                                                    ->send();
+                                                            } catch (Exception $e) {
+                                                                Notification::make()
+                                                                    ->title('Model test failed')
+                                                                    ->body($e->getMessage())
+                                                                    ->danger()
+                                                                    ->persistent()
+                                                                    ->send();
+                                                            }
+                                                        })
+                                                        ->visible(fn ($get) => filled($get('text_model')) && array_key_exists($get('text_provider'), AiFeatureDetector::configuredProviders())),
                                                 ])
                                                     ->columnSpanFull(),
                                             ])

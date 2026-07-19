@@ -35,11 +35,27 @@ describe('generate', function () {
     })->throws(Exception::class, 'not configured');
 });
 
-describe('testConnection', function () {
-    test('returns false when no provider is configured', function () {
+describe('verifyTextModel', function () {
+    test('throws when the provider is not configured', function () {
         config()->set('ai.providers', []);
 
-        expect($this->service->testConnection())->toBeFalse();
+        $this->service->verifyTextModel('openai', 'gpt-4o');
+    })->throws(Exception::class, 'not configured');
+
+    test('throws when the model responds with no content', function () {
+        config()->set('ai.providers', ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]);
+        CmsAgent::fake(['']);
+
+        $this->service->verifyTextModel('openai', 'gpt-4o');
+    })->throws(Exception::class, 'no content');
+
+    test('passes silently when the model responds', function () {
+        config()->set('ai.providers', ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]);
+        CmsAgent::fake(['OK']);
+
+        $this->service->verifyTextModel('openai', 'gpt-4o');
+
+        expect(true)->toBeTrue();
     });
 });
 
