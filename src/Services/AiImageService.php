@@ -75,4 +75,41 @@ class AiImageService
 
         return in_array($ratio, self::SUPPORTED_ASPECTS, true) ? $ratio : '16:9';
     }
+
+    /**
+     * Probe a provider/model pair by generating one minimal image, throwing
+     * with the provider's actual reason on failure. Defaults to the saved
+     * image engine settings (including the auto-fallback provider).
+     * Note: a successful probe generates one small billable image.
+     *
+     * @throws Exception
+     */
+    public function verifyImageModel(?string $provider = null, ?string $model = null): void
+    {
+        if (! AiFeatureDetector::isInstalled()) {
+            throw new Exception('The laravel/ai SDK is not installed.');
+        }
+
+        $selected = $provider ?? app(AiSettings::class)->image_provider;
+
+        if ($selected && ! array_key_exists($selected, AiFeatureDetector::imageCapableProviders())) {
+            throw new Exception("Image provider [{$selected}] is not configured. Set its API key in your .env.");
+        }
+
+        if (! $selected && empty(AiFeatureDetector::imageCapableProviders())) {
+            throw new Exception('No image-capable provider is configured. Add e.g. OPENAI_API_KEY to your .env.');
+        }
+
+        $response = Image::of('A single small blue circle on a plain white background.')
+            ->size('1:1')
+            ->quality('low')
+            ->generate(
+                provider: $selected ?? $this->fallbackProvider(),
+                model: $selected ? $model : null,
+            );
+
+        if (trim($response->firstImage()->image) === '') {
+            throw new Exception('The model responded but returned no image data.');
+        }
+    }
 }

@@ -17,6 +17,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Services\AiFeatureDetector;
+use FrankenCms\Services\AiImageService;
 use FrankenCms\Services\AiModelService;
 use FrankenCms\Services\AiService;
 use FrankenCms\Settings\AiSettings;
@@ -184,6 +185,40 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                                     ])
                                                     ->default('medium')
                                                     ->columnSpan(1),
+
+                                                Actions::make([
+                                                    Action::make('test_image_model')
+                                                        ->label('Test Model')
+                                                        ->icon('heroicon-o-bolt')
+                                                        ->color('gray')
+                                                        ->size('sm')
+                                                        ->requiresConfirmation()
+                                                        ->modalHeading('Test image generation?')
+                                                        ->modalDescription('This generates one small low-quality image with the selected provider/model — your provider will charge for it (typically a cent or two).')
+                                                        ->modalSubmitActionLabel('Generate test image')
+                                                        ->action(function ($get) {
+                                                            try {
+                                                                app(AiImageService::class)->verifyImageModel($get('image_provider'), $get('image_model'));
+
+                                                                $label = $get('image_provider') ? "[{$get('image_provider')}]" : 'the auto-selected provider';
+
+                                                                Notification::make()
+                                                                    ->title('Image model responded ✓')
+                                                                    ->body("Your key can generate images with {$label}. It's alive!")
+                                                                    ->success()
+                                                                    ->send();
+                                                            } catch (Exception $e) {
+                                                                Notification::make()
+                                                                    ->title('Image model test failed')
+                                                                    ->body($e->getMessage())
+                                                                    ->danger()
+                                                                    ->persistent()
+                                                                    ->send();
+                                                            }
+                                                        })
+                                                        ->visible(fn () => ! empty(AiFeatureDetector::imageCapableProviders())),
+                                                ])
+                                                    ->columnSpanFull(),
                                             ])
                                             ->columns(2)
                                             ->visible(fn ($get) => $get('enabled') && ! empty(AiFeatureDetector::configuredProviders())),

@@ -91,3 +91,29 @@ describe('aspectSize', function () {
         }
     });
 });
+
+describe('verifyImageModel', function () {
+    test('throws when the selected provider is not configured', function () {
+        $this->service->verifyImageModel('gemini', null);
+    })->throws(Exception::class, 'not configured');
+
+    test('throws when no image-capable provider exists and none is selected', function () {
+        config()->set('ai.providers', ['anthropic' => ['driver' => 'anthropic', 'key' => 'sk-test']]);
+
+        $this->service->verifyImageModel(null, null);
+    })->throws(Exception::class, 'No image-capable provider');
+
+    test('probes with a minimal low-quality square image', function () {
+        Image::fake();
+
+        $this->service->verifyImageModel('openai', 'gpt-image-1');
+
+        Image::assertGenerated(fn ($prompt) => $prompt->size === '1:1' && $prompt->quality === 'low');
+    });
+
+    test('throws when the model returns no image data', function () {
+        Image::fake(['']);
+
+        $this->service->verifyImageModel('openai', null);
+    })->throws(Exception::class, 'no image data');
+});
