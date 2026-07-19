@@ -10,6 +10,12 @@ use Laravel\Ai\Ai;
 class AiFeatureDetector
 {
     /**
+     * Providers whose laravel/ai gateway supports image generation
+     * (classes implementing Laravel\Ai\Contracts\Providers\ImageProvider)
+     */
+    protected const IMAGE_CAPABLE_DRIVERS = ['openai', 'gemini', 'azure', 'bedrock', 'xai', 'openrouter'];
+
+    /**
      * Check if AI features are available (installed, configured, and enabled)
      */
     public static function isAvailable(): bool
@@ -55,5 +61,29 @@ class AiFeatureDetector
             })
             ->mapWithKeys(fn (array $provider, string $name) => [$name => Str::title($name)])
             ->all();
+    }
+
+    /**
+     * Configured providers that support image generation
+     *
+     * @return array<string, string> provider name => display label
+     */
+    public static function imageCapableProviders(): array
+    {
+        return collect(self::configuredProviders())
+            ->filter(function (string $label, string $name) {
+                $driver = config("ai.providers.{$name}.driver", $name);
+
+                return in_array($driver, self::IMAGE_CAPABLE_DRIVERS, true);
+            })
+            ->all();
+    }
+
+    /**
+     * Check if featured image generation is available
+     */
+    public static function isImageAvailable(): bool
+    {
+        return self::isAvailable() && ! empty(self::imageCapableProviders());
     }
 }
