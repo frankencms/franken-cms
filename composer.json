@@ -47,10 +47,12 @@
         "phpstan/phpstan-deprecation-rules": "^2.0.3",
         "phpstan/phpstan-phpunit": "^2.0.11",
         "rector/rector": "^2.3.1",
+        "spatie/laravel-og-image": "^1.0",
         "tightenco/duster": "^3.3"
     },
     "suggest": {
-        "laravel/ai": "Required for AI content generation features (^0.x)"
+        "laravel/ai": "Required for AI content generation features (^0.x)",
+        "spatie/laravel-og-image": "Recommended for automatic Open Graph image generation from Blade templates"
     },
     "autoload": {
         "psr-4": {
