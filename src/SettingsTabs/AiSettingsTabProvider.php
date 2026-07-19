@@ -144,6 +144,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                                     ->columnSpanFull(),
                                             ])
                                             ->columns(2)
+                                            ->columnSpanFull()
                                             ->visible(fn ($get) => $get('enabled') && ! empty(AiFeatureDetector::configuredProviders())),
 
                                         Fieldset::make('Image Generation')
@@ -220,7 +221,8 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                                 ])
                                                     ->columnSpanFull(),
                                             ])
-                                            ->columns(2)
+                                            ->columns(3)
+                                            ->columnSpanFull()
                                             ->visible(fn ($get) => $get('enabled') && ! empty(AiFeatureDetector::configuredProviders())),
 
                                     ])
