@@ -18,6 +18,8 @@ use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Spatie\LaravelSettings\LaravelSettingsServiceProvider;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\MediaLibrary\MediaLibraryServiceProvider;
+use Spatie\OgImage\OgImageServiceProvider;
 use Spatie\Sitemap\SitemapServiceProvider;
 
 class TestCase extends Orchestra
@@ -50,6 +52,9 @@ class TestCase extends Orchestra
         config()->set('media-library.media_model', Media::class);
         config()->set('media-library.disk_name', 'public');
         config()->set('media-library.max_file_size', 1024 * 1024 * 10); // 10MB
+
+        // Fixture views used by feature tests (e.g. OG image template mapping)
+        $app['view']->addNamespace('test-fixtures', __DIR__ . '/fixtures/views');
     }
 
     /**
@@ -78,6 +83,8 @@ class TestCase extends Orchestra
             WidgetsServiceProvider::class,
             LaravelSettingsServiceProvider::class,
             SitemapServiceProvider::class,
+            MediaLibraryServiceProvider::class,
+            OgImageServiceProvider::class,
             FrankenCmsServiceProvider::class,
             TestPanelProvider::class,
         ];

@@ -59,6 +59,7 @@ use FrankenCms\Settings\StackSettings;
 use FrankenCms\View\Components\Breadcrumbs;
 use FrankenCms\View\Components\CmsField;
 use FrankenCms\View\Components\CmsPost;
+use FrankenCms\View\Components\OgImage as OgImageComponent;
 use FrankenCms\View\Composers\FrankenFieldComposer;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\Blade;
@@ -201,6 +202,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         Blade::component('cms-field', CmsField::class);
         Blade::component('cms-post', CmsPost::class);
         Blade::component('breadcrumbs', Breadcrumbs::class);
+        Blade::component('franken-og-image', OgImageComponent::class);
 
         // Register breadcrumbs
         $this->registerBreadcrumbs();
