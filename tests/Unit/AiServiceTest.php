@@ -126,3 +126,41 @@ describe('generation results', function () {
         $this->service->generate('blog_post_title', ['title' => '', 'content' => 'coffee']);
     })->throws(Exception::class, 'returned no content');
 });
+
+describe('streaming', function () {
+    beforeEach(function () {
+        config()->set('ai.providers', ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]);
+        $settings = app(AiSettings::class);
+        $settings->enabled = true;
+        $settings->text_provider = 'openai';
+        $settings->text_model = 'gpt-4o';
+        $settings->save();
+    });
+
+    test('streams chunks through the callback and returns the full text', function () {
+        CmsAgent::fake(['This is a streamed blog post about brewing better coffee at home.']);
+
+        $chunks = [];
+        $result = $this->service->generate(
+            'generate_blog_post',
+            ['title' => 'Coffee', 'focus' => 'brewing', 'audience' => 'beginners', 'content' => ''],
+            function (string $chunk) use (&$chunks) {
+                $chunks[] = $chunk;
+            }
+        );
+
+        expect($result)->toBe('This is a streamed blog post about brewing better coffee at home.')
+            ->and(trim(implode('', $chunks)))->toBe($result)
+            ->and($chunks)->not->toBeEmpty();
+    });
+
+    test('an empty streamed response throws instead of returning silently', function () {
+        CmsAgent::fake(['']);
+
+        $this->service->generate(
+            'generate_blog_post',
+            ['title'           => 'Coffee', 'focus' => '', 'audience' => '', 'content' => ''],
+            fn (string $chunk) => null
+        );
+    })->throws(Exception::class, 'returned no content');
+});
