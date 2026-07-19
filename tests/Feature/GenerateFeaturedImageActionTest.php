@@ -1,10 +1,13 @@
 <?php
 
 use FrankenCms\Filament\Actions\GenerateFeaturedImageAction;
+use FrankenCms\Filament\Resources\Post\Pages\CreatePost;
+use FrankenCms\Filament\Resources\Post\Pages\EditPost;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\AiSettings;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Ai\Image;
+use Livewire\Livewire;
 
 // A valid 1x1 transparent PNG, base64-encoded. Needed because the media
 // library synchronously runs image conversions (queue driver is "sync" in
@@ -32,7 +35,7 @@ test('fills the prompt template from post data', function () {
 });
 
 test('unknown placeholders are stripped', function () {
-    $prompt = GenerateFeaturedImageAction::fillPromptTemplate('About: {title} {nonsense}', ['title' => 'X']);
+    $prompt = GenerateFeaturedImageAction::fillPromptTemplate('About: {title} {nonsense} {Title2}', ['title' => 'X']);
 
     expect($prompt)->toBe('About: X');
 });
@@ -71,4 +74,27 @@ test('replaces an existing featured image', function () {
     GenerateFeaturedImageAction::generateAndAttach($post, 'second image');
 
     expect($post->refresh()->getMedia('featured'))->toHaveCount(1);
+});
+
+test('the edit page hint action generates and attaches the featured image', function () {
+    Image::fake([TINY_PNG_BASE64]);
+
+    $post = Post::factory()->create();
+
+    Livewire::test(EditPost::class, ['record' => $post->getRouteKey()])
+        ->callFormComponentAction('featured_image', 'generate_featured_image', data: ['prompt' => 'an alpine lake'])
+        ->assertHasNoFormComponentActionErrors();
+
+    expect($post->refresh()->hasMedia('featured'))->toBeTrue();
+    Image::assertGenerated(fn ($prompt) => str_contains($prompt->prompt, 'an alpine lake'));
+});
+
+test('the hint action is hidden on the create page', function () {
+    // On CreatePost there is no record yet, so the action's `visible()` callback
+    // (see GenerateFeaturedImageAction::make()) returns false. Filament excludes
+    // invisible hint actions from the schema's component tree entirely (they
+    // aren't "present but hidden"), so the correct assertion is that the action
+    // cannot be resolved at all, not `assertFormComponentActionHidden()`.
+    Livewire::test(CreatePost::class)
+        ->assertFormComponentActionDoesNotExist('featured_image', 'generate_featured_image');
 });

@@ -83,7 +83,7 @@ class GenerateFeaturedImageAction
             $template = str_replace('{' . $key . '}', (string) $value, $template);
         }
 
-        return trim(preg_replace('/\{[a-z_]+\}/', '', $template));
+        return trim(preg_replace('/\{[A-Za-z0-9_]+\}/', '', $template));
     }
 
     /**
