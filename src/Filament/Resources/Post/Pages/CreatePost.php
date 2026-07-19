@@ -6,6 +6,7 @@ use Filament\Resources\Pages\CreateRecord;
 use FrankenCms\Filament\Resources\Post\PostResource;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
+use FrankenCms\Support\FocalPoint;
 use Spatie\MediaLibrary\Conversions\FileManipulator;
 
 class CreatePost extends CreateRecord
@@ -110,8 +111,7 @@ class CreatePost extends CreateRecord
         $media = $record->getFirstMedia('featured');
 
         // Get the existing focal point to check if it's different from default
-        $existingFocalPoint = $media->getCustomProperty('focal_point', '50% 50%');
-        $newFocalPoint = $this->featuredImageMetadata['focal_point'];
+        $newFocalPoint = FocalPoint::normalize($this->featuredImageMetadata['focal_point'] ?? null);
 
         // Save custom properties directly to the media item
         $media->setCustomProperty('alt', $this->featuredImageMetadata['alt']);
@@ -123,14 +123,14 @@ class CreatePost extends CreateRecord
         $media->setCustomProperty('fetchpriority', $this->featuredImageMetadata['fetchpriority']);
         $media->setCustomProperty('width', $this->featuredImageMetadata['width']);
         $media->setCustomProperty('height', $this->featuredImageMetadata['height']);
-        $media->setCustomProperty('focal_point', $newFocalPoint);
+        $media->setCustomProperty('focal_point', FocalPoint::toPercentString($newFocalPoint));
 
         $media->save();
 
         // Regenerate featured image conversions if focal point is not default "50% 50%"
         // The conversions are generated before this method runs, so if user set a custom focal point, regenerate
         // Only regenerate thumb, featured, and listing - NOT og/twitter (SEO images don't use focal points)
-        if ($newFocalPoint !== '50% 50%') {
+        if ($newFocalPoint !== ['x' => 50, 'y' => 50]) {
             app(FileManipulator::class)->createDerivedFiles($media, ['thumb', 'featured', 'listing']);
         }
     }

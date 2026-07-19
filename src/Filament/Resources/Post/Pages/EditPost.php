@@ -8,6 +8,7 @@ use FrankenCms\Filament\Resources\Post\PostResource;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Models\Post;
 use FrankenCms\Services\TemplateFieldExtractor;
+use FrankenCms\Support\FocalPoint;
 use Spatie\MediaLibrary\Conversions\FileManipulator;
 
 class EditPost extends EditRecord
@@ -107,7 +108,9 @@ class EditPost extends EditRecord
                 $data["{$identifier}_fetchpriority"] = $metadata['fetchpriority'] ?? 'none';
                 $data["{$identifier}_width"] = $metadata['width'] ?? null;
                 $data["{$identifier}_height"] = $metadata['height'] ?? null;
-                $data["{$identifier}_focal_point"] = $metadata['focal_point'] ?? '50% 50%';
+                $data["{$identifier}_focal_point"] = FocalPoint::toPercentString(
+                    FocalPoint::normalize($metadata['focal_point'] ?? null)
+                );
             }
         }
 
@@ -258,9 +261,10 @@ class EditPost extends EditRecord
 
         $media = $record->getFirstMedia('featured');
 
-        // Get the existing focal point to check if it changed
-        $existingFocalPoint = $media->getCustomProperty('focal_point', '50% 50%');
-        $newFocalPoint = $this->featuredImageMetadata['focal_point'];
+        // Get the existing focal point to check if it changed (normalize —
+        // legacy data may hold the array form)
+        $existingFocalPoint = FocalPoint::normalize($media->getCustomProperty('focal_point'));
+        $newFocalPoint = FocalPoint::normalize($this->featuredImageMetadata['focal_point'] ?? null);
 
         // Save custom properties directly to the media item
         $media->setCustomProperty('alt', $this->featuredImageMetadata['alt']);
@@ -272,7 +276,7 @@ class EditPost extends EditRecord
         $media->setCustomProperty('fetchpriority', $this->featuredImageMetadata['fetchpriority']);
         $media->setCustomProperty('width', $this->featuredImageMetadata['width']);
         $media->setCustomProperty('height', $this->featuredImageMetadata['height']);
-        $media->setCustomProperty('focal_point', $newFocalPoint);
+        $media->setCustomProperty('focal_point', FocalPoint::toPercentString($newFocalPoint));
 
         $media->save();
 

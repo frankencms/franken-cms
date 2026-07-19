@@ -41,6 +41,7 @@ use FrankenCms\Models\UserBio;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\ReadingSettings;
+use FrankenCms\Support\FocalPoint;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -405,13 +406,13 @@ class PostForm
                                                 }
 
                                                 $media = $record->getFirstMedia('featured');
-                                                $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+                                                $focalPoint = FocalPoint::normalize($media->getCustomProperty('focal_point'));
 
                                                 // Dispatch event to Alpine component with existing image
                                                 $livewire->dispatch('featuredImageUploaded', [
                                                     'imageUrl' => $media->getUrl(),
-                                                    'focalX'   => $focalPoint['x'] ?? 50,
-                                                    'focalY'   => $focalPoint['y'] ?? 50,
+                                                    'focalX'   => $focalPoint['x'],
+                                                    'focalY'   => $focalPoint['y'],
                                                 ]);
                                             }),
 
@@ -424,8 +425,9 @@ class PostForm
                                             ->afterStateHydrated(function ($component, $state, ?Post $record): void {
                                                 if ($record && $record->hasMedia('featured')) {
                                                     $media = $record->getFirstMedia('featured');
-                                                    $focalPoint = $media->getCustomProperty('focal_point', '50% 50%');
-                                                    $component->state($focalPoint);
+                                                    $component->state(FocalPoint::toPercentString(
+                                                        FocalPoint::normalize($media->getCustomProperty('focal_point'))
+                                                    ));
                                                 }
                                             }),
 

@@ -37,12 +37,7 @@
                                         $lazyLoading = $media->getCustomProperty('lazy_loading', true);
                                         $title = $media->getCustomProperty('title');
                                         $alt = $media->getCustomProperty('alt', $post->post_title);
-                                        $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
-
-                                        // Build focal point style
-                                        $focalX = $focalPoint['x'] ?? 50;
-                                        $focalY = $focalPoint['y'] ?? 50;
-                                        $objectPosition = "$focalX% $focalY%";
+                                        $objectPosition = str_replace(['object-position: ', ';'], '', \FrankenCms\Support\FocalPoint::toCss($media->getCustomProperty('focal_point')));
 
                                         $attributes = [
                                             'class' => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
@@ -69,12 +64,7 @@
                                             $lazyLoading = $defaultImage->getCustomProperty('lazy_loading', true);
                                             $title = $defaultImage->getCustomProperty('title');
                                             $alt = $defaultImage->getCustomProperty('alt', 'Default featured image');
-                                            $focalPoint = $defaultImage->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
-
-                                            // Build focal point style
-                                            $focalX = $focalPoint['x'] ?? 50;
-                                            $focalY = $focalPoint['y'] ?? 50;
-                                            $objectPosition = "$focalX% $focalY%";
+                                            $objectPosition = str_replace(['object-position: ', ';'], '', \FrankenCms\Support\FocalPoint::toCss($defaultImage->getCustomProperty('focal_point')));
 
                                             $attributes = [
                                                 'class' => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),

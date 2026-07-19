@@ -15,6 +15,7 @@ use FrankenCms\Services\FieldRenderers\RichEditorFieldRenderer;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\SeoSettings;
+use FrankenCms\Support\FocalPoint;
 use FrankenCms\Traits\HasMeta;
 use FrankenCms\Traits\HasPermalinkUrl;
 use FrankenCms\Traits\HasTerms;
@@ -337,10 +338,10 @@ class Post extends Model implements HasMedia, HasRichContent
         $mediaSettings = app(MediaSettings::class);
         $seoSettings = app(SeoSettings::class);
 
-        // Get focal point from media custom properties (if available)
-        $focalPoint = $media?->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]) ?? ['x' => 50, 'y' => 50];
-        $focalX = (int) ($focalPoint['x'] ?? 50);
-        $focalY = (int) ($focalPoint['y'] ?? 50);
+        // Get focal point from media custom properties (pickers store '94% 22%')
+        $focalPoint = FocalPoint::normalize($media?->getCustomProperty('focal_point'));
+        $focalX = $focalPoint['x'];
+        $focalY = $focalPoint['y'];
 
         // Thumbnail for admin table view (fixed 80x80)
         $this->addMediaConversion('thumb')
