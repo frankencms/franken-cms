@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Commands;
 
 use Exception;
+use FrankenCms\OgImage\OgImageFeature;
 use FrankenCms\Support\IgorMessages;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -92,6 +93,9 @@ class InstallCommand extends Command
         if ($themeInstalled) {
             $this->offerExampleContent();
         }
+
+        // Offer OG image generation setup
+        $this->offerOgImageSetup();
 
         // Success
         $this->showSuccess();
@@ -777,6 +781,56 @@ CSS;
             "   Categories & Tags\n" .
             '   Main Navigation Menu'
         );
+    }
+
+    protected function offerOgImageSetup(): void
+    {
+        if (OgImageFeature::isInstalled()) {
+            info(IgorMessages::installMessage('og_image_already_installed', 'igor'));
+
+            return;
+        }
+
+        $installOgImage = confirm(
+            label: 'Install spatie/laravel-og-image for automatic OG image generation?',
+            default: true,
+            hint: 'Recommended — needs Chrome/Node on the server, or Cloudflare credentials'
+        );
+
+        if (! $installOgImage) {
+            note('Manual OG image uploads will keep working. You can add automatic generation later with: composer require spatie/laravel-og-image');
+
+            return;
+        }
+
+        $exitCode = 1;
+
+        spin(
+            function () use (&$exitCode) {
+                exec('composer require spatie/laravel-og-image 2>&1', $output, $exitCode);
+            },
+            'Installing spatie/laravel-og-image...'
+        );
+
+        if ($exitCode !== 0) {
+            warning('Could not install spatie/laravel-og-image automatically. Please run: composer require spatie/laravel-og-image');
+
+            return;
+        }
+
+        info('spatie/laravel-og-image installed.');
+
+        spin(
+            fn () => $this->callSilently('vendor:publish', [
+                '--tag'   => 'og-image-config',
+                '--force' => true,
+            ]),
+            'Publishing OG image configuration...'
+        );
+
+        info(IgorMessages::installMessage('og_image_configured', 'igor'));
+
+        note(IgorMessages::ogImageFollowUp());
     }
 
     protected function showSuccess(): void

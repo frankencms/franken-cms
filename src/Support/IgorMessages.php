@@ -149,6 +149,26 @@ class IgorMessages
                 'igor'   => 'The panel theme is configured for our creation, Master!',
                 'doctor' => 'Now our creation will look MAGNIFICENT in the admin panel!',
             ],
+            'og_image_offer' => [
+                'igor'   => 'Master, shall Igor summon the Ogre to paint portraits of every page? 🖼️',
+                'doctor' => 'A likeness, automatically rendered! Every creation deserves its portrait!',
+            ],
+            'og_image_installing' => [
+                'igor'   => 'Fetching the image-conjuring elixir from the vault... 🧪',
+                'doctor' => 'Let the machine SEE what we have created!',
+            ],
+            'og_image_configured' => [
+                'igor'   => 'The Ogre is bound to our creation, Master! Portraits shall be painted automatically!',
+                'doctor' => 'MAGNIFICENT! Every page now bears its own likeness!',
+            ],
+            'og_image_skip' => [
+                'igor'   => 'As you wish, Master. Manual portraits will suffice for now...',
+                'doctor' => 'No matter — we may summon the Ogre again another night!',
+            ],
+            'og_image_already_installed' => [
+                'igor'   => 'Master! The Ogre already dwells within these walls!',
+                'doctor' => 'Ah, it seems that work is already complete.',
+            ],
         ];
     }
 
@@ -218,5 +238,18 @@ ASCII,
 ASCII,
             default => '',
         };
+    }
+
+    /**
+     * Follow-up instructions printed after spatie/laravel-og-image is installed
+     */
+    public static function ogImageFollowUp(): string
+    {
+        return <<<'TEXT'
+Next steps for OG images:
+   Map templates in config/franken-cms.php → og_image.templates
+   Add <x-franken-og-image /> to your theme layout (already present if you installed the example theme)
+   For Chrome-less hosts, set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in your .env
+TEXT;
     }
 }
