@@ -9,9 +9,9 @@ class AiSettings extends Settings
     // Provider Configuration
     public bool $enabled = false;
 
-    public string $provider = 'openai';
+    public string $text_provider = 'openai';
 
-    public string $model = 'gpt-4o';
+    public string $text_model = 'gpt-4o';
 
     // SEO Title Generator Prompt
     public bool $seo_title_enabled = true;
@@ -48,16 +48,17 @@ class AiSettings extends Settings
 
     public string $blog_post_title_prompt = '';
 
+    // Image Generation Engine (shared by all image features)
+    public string $image_quality = 'medium';
+
+    public ?string $image_provider = null;
+
+    public ?string $image_model = null;
+
     // Featured Image Generation
     public bool $featured_image_enabled = true;
 
     public string $featured_image_prompt = '';
-
-    public string $featured_image_quality = 'medium';
-
-    public ?string $featured_image_provider = null;
-
-    public ?string $featured_image_model = null;
 
     public static function group(): string
     {

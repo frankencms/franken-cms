@@ -28,7 +28,7 @@ class AiImageService
 
         $settings = app(AiSettings::class);
 
-        $selected = $settings->featured_image_provider;
+        $selected = $settings->image_provider;
 
         if ($selected && ! array_key_exists($selected, AiFeatureDetector::imageCapableProviders())) {
             throw new Exception("The selected image provider [{$selected}] is not configured. Update the AI settings or set its API key in your .env.");
@@ -39,10 +39,10 @@ class AiImageService
         try {
             return Image::of($prompt)
                 ->size($this->aspectSize())
-                ->quality($settings->featured_image_quality)
+                ->quality($settings->image_quality)
                 ->generate(
                     provider: $provider,
-                    model: $selected ? $settings->featured_image_model : null,
+                    model: $selected ? $settings->image_model : null,
                 );
         } catch (Exception $e) {
             throw new Exception('AI image generation failed: ' . $e->getMessage());
