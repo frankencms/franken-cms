@@ -1,6 +1,7 @@
 <?php
 
 use FrankenCms\Models\Post;
+use FrankenCms\Models\SiteSettingsMedia;
 use FrankenCms\OgImage\OgImageFeature;
 
 describe('isInstalled', function () {
@@ -66,6 +67,56 @@ describe('resolvesFor', function () {
         config()->set('franken-cms.og_image.templates', ['post' => 'franken-cms::help']);
         $post = Post::factory()->create();
         $post->setMeta('seo_use_twitter_summary', true);
+
+        expect(OgImageFeature::resolvesFor($post))->toBeFalse();
+    });
+
+    test('is true when the post has seo-og media and no template mapped', function () {
+        config()->set('franken-cms.og_image.templates', []);
+        $post = Post::factory()->create();
+        $post->media()->create([
+            'collection_name'       => 'seo-og',
+            'name'                  => 'seo-og-image',
+            'file_name'             => 'seo-og.jpg',
+            'mime_type'             => 'image/jpeg',
+            'disk'                  => 'public',
+            'size'                  => 1024,
+            'manipulations'         => [],
+            'custom_properties'     => [],
+            'generated_conversions' => [],
+            'responsive_images'     => [],
+            'order_column'          => 1,
+        ]);
+
+        expect(OgImageFeature::resolvesFor($post))->toBeTrue();
+    });
+
+    test('is true with no template and no post media when the site default og-default exists', function () {
+        config()->set('franken-cms.og_image.templates', []);
+        $post = Post::factory()->create();
+
+        $siteSettings = SiteSettingsMedia::getInstance();
+        $siteSettings->media()->create([
+            'collection_name'       => 'og-default',
+            'name'                  => 'default-og',
+            'file_name'             => 'default-og.jpg',
+            'mime_type'             => 'image/jpeg',
+            'disk'                  => 'public',
+            'size'                  => 1024,
+            'manipulations'         => [],
+            'custom_properties'     => [],
+            'generated_conversions' => [],
+            'responsive_images'     => [],
+            'order_column'          => 1,
+        ]);
+
+        expect(OgImageFeature::resolvesFor($post))->toBeTrue();
+    });
+
+    test('is false when og_image is disabled even with a template mapped', function () {
+        config()->set('franken-cms.og_image.enabled', false);
+        config()->set('franken-cms.og_image.templates', ['post' => 'franken-cms::help']);
+        $post = Post::factory()->create();
 
         expect(OgImageFeature::resolvesFor($post))->toBeFalse();
     });
