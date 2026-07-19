@@ -74,18 +74,36 @@ With the SDK installed and at least one provider configured, go to **CMS Setting
 
 > **Note:** API keys are no longer stored in the database. If you're upgrading from an older Franken CMS version, remove any stale `cms_ai.api_key` row from your settings table (or run `php artisan migrate:fresh`) and set the key in `.env` instead.
 
+### Text and image engines
+
+Text generation and image generation are configured independently in **CMS Settings → Igor → Provider**:
+
+**Text Generation** — powers SEO titles, meta descriptions, teasers, alt text, and blog post drafts.
+
+- **Provider** — any configured provider.
+- **Model** — fetched live from the provider's API; use **Refresh Models** to reload the list after adding a key.
+
+**Image Generation** — powers featured image generation (and any future image features).
+
+- **Provider** — only *image-capable* providers appear (OpenAI, Gemini, Azure, Bedrock, xAI, OpenRouter). Leave it on **Auto** and Franken CMS uses the SDK's `default_for_images` when that provider has credentials, falling back to your first configured image-capable provider otherwise — so a single `OPENAI_API_KEY` works with no selection at all.
+- **Model** — a curated list of known image models for the chosen provider; leave empty for the provider's default.
+- **Quality** — low / medium / high (applies to generated images).
+
+Both engines have a **Test Model** button that fires a minimal probe with the currently selected provider/model and reports either success or the provider's exact error. Use it whenever a model misbehaves — providers (notably OpenAI) list models in their API that your *project* may not have permission to invoke, and the only reliable way to know is a real call. The image test generates one small low-quality image, so it asks for confirmation first (your provider bills for it, typically a cent or two).
+
 ### Featured image generation
 
-Igor can also generate a post's featured image. This needs an *image-capable* provider — `OPENAI_API_KEY` or `GEMINI_API_KEY` are the easiest to set up, but Azure, Bedrock, xAI, and OpenRouter also work as long as they're configured with credentials in `config/ai.php`.
-
-Configure it in **CMS Settings → Igor → Prompts → Featured Image Generation**:
+Igor can generate a post's featured image using the image engine above. Configure the feature itself in **CMS Settings → Igor → Prompts → Featured Image Generation**:
 
 - A toggle to enable/disable the feature
 - A prompt template with `{title}` and `{excerpt}` placeholders (`{excerpt}` is filled from the post's teaser field)
-- An optional provider/model override — leave it unset to use the SDK's `default_for_images` from `config/ai.php`
-- An image quality setting (low/medium/high)
 
-Once enabled, a **Generate with AI** button appears next to the featured image upload when editing an existing post or page (it's hidden while creating a new one, since there's no record yet to attach the image to). The generated image's aspect ratio follows the featured image aspect ratio configured in Media settings (21:9 and custom ratios fall back to 16:9).
+Once enabled, a **Generate with AI** button appears next to the featured image upload when editing an existing post or page (it's hidden while creating a new one, since there's no record yet to attach the image to). The button opens a modal with the prompt pre-filled from your template, editable before generating. The generated image's aspect ratio follows the featured image aspect ratio configured in Media settings (21:9 and custom ratios fall back to 16:9), and it replaces the current featured image on success.
+
+### Troubleshooting
+
+- **"Model test failed" / 403 errors** — your provider project doesn't have access to the selected model, even though it appears in the model list. Pick another model or enable it in your provider's console (for OpenAI: project settings → limits/model access).
+- **"The model returned no content"** — usually a reasoning-family model spending its whole token budget thinking. Franken CMS allows generous headroom, but if a model consistently returns nothing, choose a non-reasoning variant for short-form generation.
 
 ## Open Graph Images
 
