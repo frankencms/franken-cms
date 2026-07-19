@@ -7,8 +7,10 @@ namespace FrankenCms\Http\Middleware;
 use Closure;
 use Diglactic\Breadcrumbs\Breadcrumbs;
 use Exception;
+use FrankenCms\OgImage\OgImageFeature;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\SeoService;
+use FrankenCms\Settings\ReadingSettings;
 use FrankenCms\Settings\SeoSettings;
 use Illuminate\Http\Request;
 use romanzipp\Seo\Structs\Link as LinkMeta;
@@ -60,11 +62,15 @@ class AddSeoDefaults
         // Include favicon tags
         $this->includeFavicons();
 
+        // When the og-image feature resolves for this page, the Spatie og-image
+        // middleware owns og:image/twitter:image/twitter:card - don't duplicate them here.
+        $ogImageHandledExternally = OgImageFeature::resolvesFor($post);
+
         // Include OpenGraph tags
-        $this->includeOpenGraph($post);
+        $this->includeOpenGraph($post, $ogImageHandledExternally);
 
         // Include Twitter tags
-        $this->includeTwitter($post);
+        $this->includeTwitter($post, $ogImageHandledExternally);
 
         // Include JSON-LD breadcrumbs
         $this->includeBreadcrumbs($post);
@@ -75,7 +81,7 @@ class AddSeoDefaults
     /**
      * Add OpenGraph meta tags
      */
-    private function includeOpenGraph($post = null): void
+    private function includeOpenGraph($post = null, bool $ogImageHandledExternally = false): void
     {
         seo()->addMany([
             OpenGraph::make()
@@ -108,8 +114,8 @@ class AddSeoDefaults
             );
         }
 
-        // Add OG image if available
-        if ($image = $this->seoService->getOgImage($post)) {
+        // Add OG image if available (unless the Spatie og-image middleware owns it)
+        if (! $ogImageHandledExternally && $image = $this->seoService->getOgImage($post)) {
             seo()->add(
                 OpenGraph::make()
                     ->property('image')
@@ -130,18 +136,22 @@ class AddSeoDefaults
     /**
      * Add Twitter meta tags
      */
-    private function includeTwitter($post = null): void
+    private function includeTwitter($post = null, bool $ogImageHandledExternally = false): void
     {
         // Check per-post setting first, then fall back to global setting
         $useTwitterSummary = $post
             ? $post->getMeta('seo_use_twitter_summary', $this->settings->use_twitter_summary_card)
             : $this->settings->use_twitter_summary_card;
 
-        seo()->add(
-            Twitter::make()
-                ->name('card')
-                ->content($useTwitterSummary ? 'summary' : 'summary_large_image')
-        );
+        // The twitter:card value is tied to the image strategy, so it's suppressed
+        // alongside twitter:image when the Spatie og-image middleware owns them.
+        if (! $ogImageHandledExternally) {
+            seo()->add(
+                Twitter::make()
+                    ->name('card')
+                    ->content($useTwitterSummary ? 'summary' : 'summary_large_image')
+            );
+        }
 
         // Add Twitter username if configured
         if ($this->settings->twitter_username && is_string($this->settings->twitter_username) && $this->settings->twitter_username !== '') {
@@ -174,8 +184,8 @@ class AddSeoDefaults
             );
         }
 
-        // Add Twitter image if available
-        if ($image = $this->seoService->getTwitterImage($post)) {
+        // Add Twitter image if available (unless the Spatie og-image middleware owns it)
+        if (! $ogImageHandledExternally && $image = $this->seoService->getTwitterImage($post)) {
             seo()->add(
                 Twitter::make()
                     ->name('image')
@@ -281,7 +291,7 @@ class AddSeoDefaults
             return;
         }
 
-        $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+        $readingSettings = app(ReadingSettings::class);
         if ($readingSettings->home_page === $post->post_slug) {
             return;
         }

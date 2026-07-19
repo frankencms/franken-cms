@@ -3,10 +3,11 @@
 namespace FrankenCms\Services;
 
 use Exception;
+use FrankenCms\Ai\CmsAgent;
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Settings\AiSettings;
-use Prism\Prism\Prism;
-use Prism\Prism\ValueObjects\Media\Image;
+use Laravel\Ai\Files\Image;
+use Laravel\Ai\Streaming\Events\TextDelta;
 
 class AiService
 {
@@ -24,120 +25,131 @@ class AiService
     public function generate(string $actionKey, array $context, ?callable $streamCallback = null): string
     {
         if (! AiFeatureDetector::isAvailable()) {
-            throw new Exception('AI features are not available. Please install prism-php/prism and configure Igor in settings.');
+            throw new Exception('AI features are not available. Install laravel/ai, set a provider API key in your .env, and enable Igor in settings.');
         }
 
-        // Get prompt configuration
+        $settings = app(AiSettings::class);
+
+        if (! array_key_exists($settings->text_provider, AiFeatureDetector::configuredProviders())) {
+            throw new Exception("The selected AI text provider [{$settings->text_provider}] is not configured. Set its API key in your .env or choose a configured provider in settings.");
+        }
+
         $promptConfig = $this->promptManager->getPrompt($actionKey);
 
-        // Check if this is a vision prompt with an image
         $imageUrl = $context['image_url'] ?? null;
         $imagePath = $context['image_path'] ?? null;
         $isVisionPrompt = ($promptConfig['supports_vision'] ?? false) && ($imageUrl || $imagePath);
 
-        // Remove image data from context so it doesn't get into the text prompt
         unset($context['image_url'], $context['image_path']);
 
-        // Format prompt with context variables
         $formattedPrompt = $this->promptManager->formatPrompt(
             $promptConfig['prompt'],
             $context
         );
 
-        // Get AI settings
-        $settings = app(AiSettings::class);
+        $agent = new CmsAgent(
+            maxTokens: $promptConfig['max_tokens'] ?? 500,
+            temperature: $promptConfig['temperature'] ?? null,
+        );
+
+        $attachments = $isVisionPrompt ? $this->buildImageAttachments($imageUrl, $imagePath) : [];
 
         try {
-            // Call Prism to generate content
-            $prismRequest = prism()
-                ->text()
-                ->using($settings->provider, $settings->model)
-                ->usingProviderConfig(['api_key' => $settings->api_key])
-                ->withMaxTokens($promptConfig['max_tokens'] ?? 500);
-
-            // Add prompt with optional image
-            if ($isVisionPrompt) {
-                // Production: Use publicly accessible URL
-                if ($imageUrl && ! app()->environment('local')) {
-                    $prismRequest->withPrompt(
-                        $formattedPrompt,
-                        [Image::fromUrl(url: $imageUrl)]
-                    );
-                }
-                // Local development: Use base64 encoding from local file
-                elseif ($imagePath && file_exists($imagePath) && app()->environment('local')) {
-                    $imageData = base64_encode(file_get_contents($imagePath));
-                    $mimeType = mime_content_type($imagePath);
-
-                    $prismRequest->withPrompt(
-                        $formattedPrompt,
-                        [Image::fromBase64(base64: $imageData, mimeType: $mimeType)]
-                    );
-                } else {
-                    // Fallback to text-only if image not accessible
-                    $prismRequest->withPrompt($formattedPrompt);
-                }
-            } else {
-                $prismRequest->withPrompt($formattedPrompt);
-            }
-
-            // Only set temperature if configured in the prompt
-            if (isset($promptConfig['temperature'])) {
-                $prismRequest->usingTemperature($promptConfig['temperature']);
-            }
-
-            // Handle streaming if callback provided
             if ($streamCallback !== null) {
                 $fullText = '';
-                $stream = $prismRequest->asStream();
+                $stream = $agent->stream(
+                    $formattedPrompt,
+                    $attachments,
+                    provider: $settings->text_provider,
+                    model: $settings->text_model,
+                );
 
                 foreach ($stream as $event) {
-                    // Only process TextDeltaEvent for content chunks
-                    if ($event instanceof \Prism\Prism\Streaming\Events\TextDeltaEvent) {
+                    if ($event instanceof TextDelta) {
                         $fullText .= $event->delta;
                         $streamCallback($event->delta);
                     }
                 }
 
-                return trim($fullText);
+                return $this->guardAgainstEmptyResult(trim($fullText));
             }
 
-            // Non-streaming generation
-            $response = $prismRequest->generate();
+            $response = $agent->prompt(
+                $formattedPrompt,
+                $attachments,
+                provider: $settings->text_provider,
+                model: $settings->text_model,
+            );
 
-            return trim($response->text);
+            return $this->guardAgainstEmptyResult(trim($response->text));
         } catch (Exception $e) {
             throw new Exception('AI generation failed: ' . $e->getMessage());
         }
     }
 
     /**
-     * Test provider connection
+     * An empty result is a failure, not a success — typically a reasoning
+     * model exhausting the token cap before producing output, or a model
+     * incompatible with the request.
+     *
+     * @throws Exception
      */
-    public function testConnection(): bool
+    protected function guardAgainstEmptyResult(string $text): string
     {
-        if (! AiFeatureDetector::isPrismInstalled()) {
-            return false;
+        if ($text === '') {
+            throw new Exception('the model returned no content. Try a different model, or check that your provider project has access to the selected one.');
         }
 
-        try {
-            $settings = app(AiSettings::class);
+        return $text;
+    }
 
-            if (empty($settings->api_key) && $settings->provider !== 'ollama') {
-                return false;
-            }
-
-            $response = prism()
-                ->text()
-                ->using($settings->provider, $settings->model)
-                ->usingProviderConfig(['api_key' => $settings->api_key])
-                ->withPrompt('Respond with only the word "OK"')
-                ->withMaxTokens(10)
-                ->generate();
-
-            return ! empty($response->text);
-        } catch (Exception $e) {
-            return false;
+    /**
+     * Probe a provider/model pair with a tiny prompt, throwing with the
+     * provider's actual reason on failure. Defaults to the saved text
+     * engine settings when no pair is given.
+     *
+     * @throws Exception
+     */
+    public function verifyTextModel(?string $provider = null, ?string $model = null): void
+    {
+        if (! AiFeatureDetector::isInstalled()) {
+            throw new Exception('The laravel/ai SDK is not installed.');
         }
+
+        $settings = app(AiSettings::class);
+        $provider ??= $settings->text_provider;
+        $model ??= $settings->text_model;
+
+        if (! array_key_exists($provider, AiFeatureDetector::configuredProviders())) {
+            throw new Exception("Provider [{$provider}] is not configured. Set its API key in your .env.");
+        }
+
+        $response = (new CmsAgent(maxTokens: 2000))->prompt(
+            'Respond with only the word "OK"',
+            provider: $provider,
+            model: $model,
+        );
+
+        if (trim($response->text) === '') {
+            throw new Exception('The model responded but returned no content.');
+        }
+    }
+
+    /**
+     * Build SDK image attachments, preferring a public URL outside local dev
+     *
+     * @return array<int, Image>
+     */
+    protected function buildImageAttachments(?string $imageUrl, ?string $imagePath): array
+    {
+        if ($imageUrl && ! app()->environment('local')) {
+            return [Image::fromUrl($imageUrl)];
+        }
+
+        if ($imagePath && file_exists($imagePath)) {
+            return [Image::fromPath($imagePath)];
+        }
+
+        return [];
     }
 }

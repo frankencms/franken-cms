@@ -66,15 +66,10 @@
                         $lazyLoading = $featuredMedia->getCustomProperty('lazy_loading', true);
                         $title = $featuredMedia->getCustomProperty('title');
                         $alt = $featuredMedia->getCustomProperty('alt');
-                        $focalPoint = $featuredMedia->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
-
-                        // Build focal point style
-                        $focalX = $focalPoint['x'] ?? 50;
-                        $focalY = $focalPoint['y'] ?? 50;
-                        $objectPosition = "object-position: $focalX% $focalY%;";
+                        $objectPosition = \FrankenCms\Support\FocalPoint::toCss($featuredMedia->getCustomProperty('focal_point'));
 
                         $attributes = [
-                            'class' => trim('h-auto w-full rounded-lg shadow-[0_0_30px_rgba(163,230,53,0.15)] ring-1 ring-emerald-500/30 ' . $cssClasses),
+                            'class' => trim('h-full w-full object-cover rounded shadow-[0_0_30px_rgba(163,230,53,0.15)] ring-1 ring-emerald-500/30 ' . $cssClasses),
                             'sizes' => '(max-width: 768px) 100vw, (max-width: 1280px) 896px, 1024px',
                             'loading' => $lazyLoading ? 'lazy' : 'eager',
                             'alt' => $alt,
@@ -82,8 +77,11 @@
                             'style' => $objectPosition,
                         ];
                     @endphp
+
                     <div class="mx-auto mb-12 max-w-4xl">
-                        {!! $featuredMedia('featured', $attributes) !!}
+                        <div class="aspect-video overflow-hidden">
+                            {!! $featuredMedia('featured', $attributes) !!}
+                        </div>
                         @if ($featuredMedia->getCustomProperty('caption'))
                             <p class="mt-2 text-center text-sm text-emerald-200/60">
                                 {{ $featuredMedia->getCustomProperty('caption') }}
@@ -127,6 +125,7 @@
                         $bioImage = $authorBio->getFirstMedia('bio-image');
                         $bioImageShape = config('franken-cms.user_bio.image_shape', 'circle');
                     @endphp
+
                     <div class="mx-auto mt-12 max-w-4xl">
                         <div class="rounded-lg border border-emerald-700/30 bg-emerald-950/20 p-6">
                             <div class="flex flex-col gap-4 md:flex-row md:items-start">
@@ -136,12 +135,12 @@
                                         <img
                                             src="{{ $bioImage->hasGeneratedConversion('bio-thumb') ? $bioImage->getUrl('bio-thumb') : $bioImage->getUrl() }}"
                                             alt="{{ $bioImage->getCustomProperty('alt') ?? $post->author->name }}"
-                                            class="size-16 object-cover ring-2 ring-emerald-700/30 {{ $bioImageShape === 'circle' ? 'rounded-full' : 'rounded-lg' }}"
+                                            class="{{ $bioImageShape === 'circle' ? 'rounded-full' : 'rounded-lg' }} size-16 object-cover ring-2 ring-emerald-700/30"
                                             loading="lazy"
                                         />
                                     @else
                                         <div
-                                            class="flex size-16 items-center justify-center bg-emerald-900/50 text-2xl font-bold text-lime-300 ring-2 ring-emerald-700/30 {{ $bioImageShape === 'circle' ? 'rounded-full' : 'rounded-lg' }}"
+                                            class="{{ $bioImageShape === 'circle' ? 'rounded-full' : 'rounded-lg' }} flex size-16 items-center justify-center bg-emerald-900/50 text-2xl font-bold text-lime-300 ring-2 ring-emerald-700/30"
                                         >
                                             {{ strtoupper(substr($post->author->name, 0, 1)) }}
                                         </div>
@@ -158,7 +157,9 @@
                                     </div>
 
                                     @if ($authorBio->bio)
-                                        <div class="prose prose-sm mb-4 text-emerald-100/90 prose-p:text-emerald-100/90 prose-a:text-lime-400 hover:prose-a:text-cyan-400 prose-strong:text-lime-300">
+                                        <div
+                                            class="prose prose-sm mb-4 text-emerald-100/90 prose-p:text-emerald-100/90 prose-a:text-lime-400 hover:prose-a:text-cyan-400 prose-strong:text-lime-300"
+                                        >
                                             {!! $authorBio->bio !!}
                                         </div>
                                     @endif
@@ -172,7 +173,12 @@
                                                 rel="noopener noreferrer"
                                                 class="inline-flex items-center gap-1 text-sm text-lime-400 transition-colors hover:text-lime-300"
                                             >
-                                                <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg
+                                                    class="size-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
                                                     <path
                                                         stroke-linecap="round"
                                                         stroke-linejoin="round"
@@ -185,28 +191,23 @@
                                         @endif
 
                                         @frankenSocialLinks($authorBio)
-                                            <a
-                                                href="{{ $socialLink['url'] }}"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="inline-flex items-center gap-1 text-sm text-lime-400 transition-colors hover:text-lime-300"
-                                                aria-label="{{ $socialLink['label'] }}"
-                                            >
-                                                <svg
-                                                    class="size-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                                                    />
-                                                </svg>
-                                                {{ $socialLink['label'] }}
-                                            </a>
+                                        <a
+                                            href="{{ $socialLink['url'] }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center gap-1 text-sm text-lime-400 transition-colors hover:text-lime-300"
+                                            aria-label="{{ $socialLink['label'] }}"
+                                        >
+                                            <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                                />
+                                            </svg>
+                                            {{ $socialLink['label'] }}
+                                        </a>
                                         @endFrankenSocialLinks
                                     </div>
                                 </div>

@@ -53,5 +53,7 @@
 
         @livewireScripts()
         @stack('scripts')
+
+        <x-franken-og-image />
     </body>
 </html>

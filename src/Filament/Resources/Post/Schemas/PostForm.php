@@ -23,6 +23,7 @@ use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Actions\GenerateAltTextAction;
 use FrankenCms\Filament\Actions\GenerateBlogPostAction;
+use FrankenCms\Filament\Actions\GenerateFeaturedImageAction;
 use FrankenCms\Filament\Actions\GenerateImageTitleAction;
 use FrankenCms\Filament\Actions\GenerateTeaserAction;
 use FrankenCms\Filament\Actions\GenerateTitleAction;
@@ -34,11 +35,15 @@ use FrankenCms\Filament\Resources\Concerns\HasSeoFields;
 use FrankenCms\Helpers\PostHelper;
 use FrankenCms\Helpers\TemplateHelpers;
 use FrankenCms\Models\Post;
+use FrankenCms\Models\Taxonomy;
+use FrankenCms\Models\Term;
 use FrankenCms\Models\UserBio;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\ReadingSettings;
+use FrankenCms\Support\FocalPoint;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -90,12 +95,8 @@ class PostForm
                                             $component->state($record->getMeta('post_teaser', ''));
                                         }
                                     })
-                                    ->dehydrated(false)
-                                    ->afterStateUpdated(function ($state, $record): void {
-                                        if ($record) {
-                                            $record->setMeta('post_teaser', $state);
-                                        }
-                                    })
+                                    // Dehydrates with the form: HasMeta::fill() routes it to
+                                    // postmeta on both create (pendingMeta) and edit
                                     ->hintAction(GenerateTeaserAction::make('generate_teaser')),
 
                                 RichEditor::make('post_content')
@@ -260,7 +261,7 @@ class PostForm
                                                 TextInput::make('name')
                                                     ->required()
                                                     ->live(onBlur: true)
-                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                                                 TextInput::make('slug')
                                                     ->required()
                                                     ->unique('terms', 'slug', ignoreRecord: true),
@@ -268,8 +269,8 @@ class PostForm
                                                     ->rows(2),
                                             ])
                                             ->createOptionUsing(function (array $data) {
-                                                $taxonomy = \FrankenCms\Models\Taxonomy::where('name', 'category')->first();
-                                                $term = \FrankenCms\Models\Term::create([
+                                                $taxonomy = Taxonomy::where('name', 'category')->first();
+                                                $term = Term::create([
                                                     ...$data,
                                                     'taxonomy_id' => $taxonomy->id,
                                                 ]);
@@ -291,7 +292,7 @@ class PostForm
                                                 TextInput::make('name')
                                                     ->required()
                                                     ->live(onBlur: true)
-                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                                                 TextInput::make('slug')
                                                     ->required()
                                                     ->unique('terms', 'slug', ignoreRecord: true),
@@ -299,8 +300,8 @@ class PostForm
                                                     ->rows(2),
                                             ])
                                             ->createOptionUsing(function (array $data) {
-                                                $taxonomy = \FrankenCms\Models\Taxonomy::where('name', 'tag')->first();
-                                                $term = \FrankenCms\Models\Term::create([
+                                                $taxonomy = Taxonomy::where('name', 'tag')->first();
+                                                $term = Term::create([
                                                     ...$data,
                                                     'taxonomy_id' => $taxonomy->id,
                                                 ]);
@@ -340,6 +341,7 @@ class PostForm
                                             ->label(__('Featured Image'))
                                             ->collection('featured')
 //                                            ->disk('public')
+                                            ->hintAction(GenerateFeaturedImageAction::make('generate_featured_image'))
                                             ->image()
                                             ->imageEditor()
                                             ->imageEditorAspectRatios(function () use ($mediaSettings) {
@@ -400,13 +402,13 @@ class PostForm
                                                 }
 
                                                 $media = $record->getFirstMedia('featured');
-                                                $focalPoint = $media->getCustomProperty('focal_point', ['x' => 50, 'y' => 50]);
+                                                $focalPoint = FocalPoint::normalize($media->getCustomProperty('focal_point'));
 
                                                 // Dispatch event to Alpine component with existing image
                                                 $livewire->dispatch('featuredImageUploaded', [
                                                     'imageUrl' => $media->getUrl(),
-                                                    'focalX'   => $focalPoint['x'] ?? 50,
-                                                    'focalY'   => $focalPoint['y'] ?? 50,
+                                                    'focalX'   => $focalPoint['x'],
+                                                    'focalY'   => $focalPoint['y'],
                                                 ]);
                                             }),
 
@@ -419,8 +421,9 @@ class PostForm
                                             ->afterStateHydrated(function ($component, $state, ?Post $record): void {
                                                 if ($record && $record->hasMedia('featured')) {
                                                     $media = $record->getFirstMedia('featured');
-                                                    $focalPoint = $media->getCustomProperty('focal_point', '50% 50%');
-                                                    $component->state($focalPoint);
+                                                    $component->state(FocalPoint::toPercentString(
+                                                        FocalPoint::normalize($media->getCustomProperty('focal_point'))
+                                                    ));
                                                 }
                                             }),
 

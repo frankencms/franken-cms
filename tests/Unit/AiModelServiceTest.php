@@ -6,15 +6,44 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $this->service = new AiModelService;
+    $this->service->clearCache();
     Cache::flush();
 
-    // Set up Prism provider URLs used by the service
-    config()->set('prism.providers.openai.url', 'https://api.openai.com/v1');
-    config()->set('prism.providers.anthropic.url', 'https://api.anthropic.com/v1');
-    config()->set('prism.providers.ollama.url', 'http://localhost:11434');
-    config()->set('prism.providers.gemini.url', 'https://generativelanguage.googleapis.com/v1beta/models');
-    config()->set('prism.providers.openrouter.url', 'https://openrouter.ai/api/v1');
-    config()->set('prism.providers.groq.url', 'https://api.groq.com/openai/v1');
+    // Provider base URLs resolve via config/ai.php.
+    config()->set('ai.providers.openai.url', 'https://api.openai.com/v1');
+    config()->set('ai.providers.anthropic.url', 'https://api.anthropic.com/v1');
+    config()->set('ai.providers.ollama.url', 'http://localhost:11434');
+    config()->set('ai.providers.gemini.url', 'https://generativelanguage.googleapis.com/v1beta/');
+    config()->set('ai.providers.openrouter.url', 'https://openrouter.ai/api/v1');
+    config()->set('ai.providers.groq.url', 'https://api.groq.com/openai/v1');
+
+    // Provider keys now resolve from config/ai.php; default to unset.
+    config()->set('ai.providers.openai.key', null);
+    config()->set('ai.providers.anthropic.key', null);
+    config()->set('ai.providers.gemini.key', null);
+    config()->set('ai.providers.openrouter.key', null);
+    config()->set('ai.providers.groq.key', null);
+});
+
+test('getModelsForProvider returns curated fallback list without an API call when no key is configured', function () {
+    config()->set('ai.providers.openai.key', null);
+    Http::fake();
+
+    $models = $this->service->getModelsForProvider('openai');
+
+    expect($models)->toBeArray()->not->toBeEmpty();
+    Http::assertNothingSent();
+});
+
+test('refreshModels fetches from provider API using the config key', function () {
+    config()->set('ai.providers.openai.key', 'sk-test');
+    Http::fake([
+        'api.openai.com/*' => Http::response(['data' => [['id' => 'gpt-4o']]]),
+    ]);
+
+    $models = $this->service->refreshModels('openai');
+
+    expect($models)->toHaveKey('gpt-4o');
 });
 
 describe('getModelsForProvider', function () {
@@ -22,12 +51,13 @@ describe('getModelsForProvider', function () {
         $cachedModels = ['gpt-4o' => 'GPT 4o', 'gpt-4o-mini' => 'GPT 4o Mini'];
         Cache::put('franken_cms:ai_models:openai', $cachedModels, 86400);
 
-        $result = $this->service->getModelsForProvider('openai', 'sk-test');
+        $result = $this->service->getModelsForProvider('openai');
 
         expect($result)->toBe($cachedModels);
     });
 
-    test('fetches from API when no cache and API key provided', function () {
+    test('fetches from API when no cache and API key configured', function () {
+        config()->set('ai.providers.openai.key', 'sk-test');
         Http::fake([
             'api.openai.com/v1/models' => Http::response([
                 'data' => [
@@ -37,24 +67,25 @@ describe('getModelsForProvider', function () {
             ]),
         ]);
 
-        $result = $this->service->getModelsForProvider('openai', 'sk-test');
+        $result = $this->service->getModelsForProvider('openai');
 
         expect($result)->not->toBeEmpty();
         expect($result)->toHaveKey('gpt-4o');
     });
 
-    test('returns empty array when no cache and no API key', function () {
+    test('returns curated fallback array when no cache and no API key', function () {
         $result = $this->service->getModelsForProvider('openai');
 
-        expect($result)->toBeEmpty();
+        expect($result)->toBeArray()->not->toBeEmpty();
     });
 
     test('returns empty array when API fails', function () {
+        config()->set('ai.providers.openai.key', 'sk-test');
         Http::fake([
             'api.openai.com/v1/models' => Http::response('Server error', 500),
         ]);
 
-        $result = $this->service->getModelsForProvider('openai', 'sk-test');
+        $result = $this->service->getModelsForProvider('openai');
 
         expect($result)->toBeEmpty();
     });
@@ -78,6 +109,7 @@ describe('getModelsForProvider', function () {
 
 describe('refreshModels', function () {
     test('fetches fresh models from OpenAI API', function () {
+        config()->set('ai.providers.openai.key', 'sk-test');
         Http::fake([
             'api.openai.com/v1/models' => Http::response([
                 'data' => [
@@ -87,13 +119,14 @@ describe('refreshModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('openai', 'sk-test');
+        $result = $this->service->refreshModels('openai');
 
         expect($result)->toHaveKey('gpt-4o');
         expect($result)->toHaveKey('o3-mini');
     });
 
     test('caches refreshed models', function () {
+        config()->set('ai.providers.openai.key', 'sk-test');
         Http::fake([
             'api.openai.com/v1/models' => Http::response([
                 'data' => [
@@ -102,32 +135,44 @@ describe('refreshModels', function () {
             ]),
         ]);
 
-        $this->service->refreshModels('openai', 'sk-test');
+        $this->service->refreshModels('openai');
 
         expect(Cache::has('franken_cms:ai_models:openai'))->toBeTrue();
     });
 
     test('throws exception on API failure', function () {
+        config()->set('ai.providers.openai.key', 'bad-key');
         Http::fake([
             'api.openai.com/v1/models' => Http::response('Unauthorized', 401),
         ]);
 
-        $this->service->refreshModels('openai', 'bad-key');
+        $this->service->refreshModels('openai');
     })->throws(Exception::class);
 
     test('returns empty array when API returns empty data', function () {
+        config()->set('ai.providers.openai.key', 'sk-test');
         Http::fake([
             'api.openai.com/v1/models' => Http::response(['data' => []]),
         ]);
 
-        $result = $this->service->refreshModels('openai', 'sk-test');
+        $result = $this->service->refreshModels('openai');
 
         expect($result)->toBeEmpty();
+    });
+
+    test('returns curated fallback array without an API call when no key is configured', function () {
+        Http::fake();
+
+        $result = $this->service->refreshModels('openai');
+
+        expect($result)->toBeArray()->not->toBeEmpty();
+        Http::assertNothingSent();
     });
 });
 
 describe('fetchOpenAiModels filtering', function () {
     test('excludes non-text-generation models', function () {
+        config()->set('ai.providers.openai.key', 'sk-test');
         Http::fake([
             'api.openai.com/v1/models' => Http::response([
                 'data' => [
@@ -141,7 +186,7 @@ describe('fetchOpenAiModels filtering', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('openai', 'sk-test');
+        $result = $this->service->refreshModels('openai');
 
         expect($result)->toHaveKey('gpt-4o');
         expect($result)->toHaveKey('o3-mini');
@@ -152,6 +197,7 @@ describe('fetchOpenAiModels filtering', function () {
     });
 
     test('excludes fine-tuned models', function () {
+        config()->set('ai.providers.openai.key', 'sk-test');
         Http::fake([
             'api.openai.com/v1/models' => Http::response([
                 'data' => [
@@ -162,7 +208,7 @@ describe('fetchOpenAiModels filtering', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('openai', 'sk-test');
+        $result = $this->service->refreshModels('openai');
 
         expect($result)->toHaveKey('gpt-4o');
         expect(array_keys($result))->toHaveCount(1);
@@ -171,6 +217,7 @@ describe('fetchOpenAiModels filtering', function () {
 
 describe('fetchAnthropicModels', function () {
     test('fetches models from Anthropic API', function () {
+        config()->set('ai.providers.anthropic.key', 'sk-ant-test');
         Http::fake([
             'api.anthropic.com/v1/models' => Http::response([
                 'data' => [
@@ -181,13 +228,14 @@ describe('fetchAnthropicModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('anthropic', 'sk-ant-test');
+        $result = $this->service->refreshModels('anthropic');
 
         expect($result)->toHaveKey('claude-sonnet-4-20250514');
         expect($result['claude-sonnet-4-20250514'])->toBe('Claude Sonnet 4');
     });
 
     test('paginates through all models', function () {
+        config()->set('ai.providers.anthropic.key', 'sk-ant-test');
         Http::fake([
             'api.anthropic.com/v1/models?after_id=*' => Http::response([
                 'data' => [
@@ -204,7 +252,7 @@ describe('fetchAnthropicModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('anthropic', 'sk-ant-test');
+        $result = $this->service->refreshModels('anthropic');
 
         expect($result)->toHaveCount(2);
         expect($result)->toHaveKey('claude-sonnet-4-20250514');
@@ -212,22 +260,25 @@ describe('fetchAnthropicModels', function () {
     });
 
     test('throws exception for invalid API key', function () {
+        config()->set('ai.providers.anthropic.key', 'bad-key');
         Http::fake([
             'api.anthropic.com/v1/models' => Http::response('Unauthorized', 401),
         ]);
 
-        $this->service->refreshModels('anthropic', 'bad-key');
+        $this->service->refreshModels('anthropic');
     })->throws(Exception::class, 'Invalid Anthropic API key');
 
     test('throws exception for non-401 API errors', function () {
+        config()->set('ai.providers.anthropic.key', 'sk-ant-test');
         Http::fake([
             'api.anthropic.com/v1/models' => Http::response('Internal Server Error', 500),
         ]);
 
-        $this->service->refreshModels('anthropic', 'sk-ant-test');
+        $this->service->refreshModels('anthropic');
     })->throws(Exception::class, 'Failed to fetch Anthropic models');
 
     test('skips non-model types', function () {
+        config()->set('ai.providers.anthropic.key', 'sk-ant-test');
         Http::fake([
             'api.anthropic.com/v1/models' => Http::response([
                 'data' => [
@@ -238,13 +289,14 @@ describe('fetchAnthropicModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('anthropic', 'sk-ant-test');
+        $result = $this->service->refreshModels('anthropic');
 
         expect($result)->toHaveCount(1);
         expect($result)->toHaveKey('claude-sonnet-4-20250514');
     });
 
     test('uses display_name from API response', function () {
+        config()->set('ai.providers.anthropic.key', 'sk-ant-test');
         Http::fake([
             'api.anthropic.com/v1/models' => Http::response([
                 'data' => [
@@ -254,7 +306,7 @@ describe('fetchAnthropicModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('anthropic', 'sk-ant-test');
+        $result = $this->service->refreshModels('anthropic');
 
         expect($result['claude-sonnet-4-20250514'])->toBe('Claude Sonnet 4');
     });
@@ -272,7 +324,7 @@ describe('fetchOllamaModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('ollama', '');
+        $result = $this->service->refreshModels('ollama');
 
         expect($result)->toHaveCount(3);
         expect($result)->toHaveKey('llama3');
@@ -285,7 +337,7 @@ describe('fetchOllamaModels', function () {
             'localhost:11434/api/tags' => Http::response('Connection refused', 500),
         ]);
 
-        $this->service->refreshModels('ollama', '');
+        $this->service->refreshModels('ollama');
     })->throws(Exception::class, 'Failed to fetch Ollama models');
 
     test('returns empty array when no models installed', function () {
@@ -293,7 +345,7 @@ describe('fetchOllamaModels', function () {
             'localhost:11434/api/tags' => Http::response(['models' => []]),
         ]);
 
-        $result = $this->service->refreshModels('ollama', '');
+        $result = $this->service->refreshModels('ollama');
 
         expect($result)->toBeEmpty();
     });
@@ -301,6 +353,7 @@ describe('fetchOllamaModels', function () {
 
 describe('fetchGeminiModels', function () {
     test('fetches models from Gemini API', function () {
+        config()->set('ai.providers.gemini.key', 'test-key');
         Http::fake([
             'generativelanguage.googleapis.com/v1beta/models*' => Http::response([
                 'models' => [
@@ -318,14 +371,17 @@ describe('fetchGeminiModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('gemini', 'test-key');
+        $result = $this->service->refreshModels('gemini');
 
         expect($result)->toHaveCount(2);
         expect($result)->toHaveKey('gemini-2.0-flash');
         expect($result['gemini-2.0-flash'])->toBe('Gemini 2.0 Flash');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://generativelanguage.googleapis.com/v1beta/models?key=test-key');
     });
 
     test('strips models/ prefix from Gemini model names', function () {
+        config()->set('ai.providers.gemini.key', 'test-key');
         Http::fake([
             'generativelanguage.googleapis.com/v1beta/models*' => Http::response([
                 'models' => [
@@ -338,13 +394,14 @@ describe('fetchGeminiModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('gemini', 'test-key');
+        $result = $this->service->refreshModels('gemini');
 
         expect($result)->toHaveKey('gemini-2.0-flash');
         expect($result)->not->toHaveKey('models/gemini-2.0-flash');
     });
 
     test('filters out non-generateContent models', function () {
+        config()->set('ai.providers.gemini.key', 'test-key');
         Http::fake([
             'generativelanguage.googleapis.com/v1beta/models*' => Http::response([
                 'models' => [
@@ -362,7 +419,7 @@ describe('fetchGeminiModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('gemini', 'test-key');
+        $result = $this->service->refreshModels('gemini');
 
         expect($result)->toHaveCount(1);
         expect($result)->toHaveKey('gemini-2.0-flash');
@@ -370,16 +427,18 @@ describe('fetchGeminiModels', function () {
     });
 
     test('throws exception on API failure', function () {
+        config()->set('ai.providers.gemini.key', 'bad-key');
         Http::fake([
             'generativelanguage.googleapis.com/v1beta/models*' => Http::response('Forbidden', 403),
         ]);
 
-        $this->service->refreshModels('gemini', 'bad-key');
+        $this->service->refreshModels('gemini');
     })->throws(Exception::class, 'Failed to fetch Gemini models');
 });
 
 describe('fetchOpenAiCompatibleModels', function () {
     test('fetches models from OpenAI-compatible API', function () {
+        config()->set('ai.providers.openrouter.key', 'test-key');
         Http::fake([
             'openrouter.ai/api/v1/models' => Http::response([
                 'data' => [
@@ -389,7 +448,7 @@ describe('fetchOpenAiCompatibleModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('openrouter', 'test-key');
+        $result = $this->service->refreshModels('openrouter');
 
         expect($result)->toHaveCount(2);
         expect($result)->toHaveKey('openai/gpt-4o');
@@ -397,6 +456,7 @@ describe('fetchOpenAiCompatibleModels', function () {
     });
 
     test('works for Groq provider', function () {
+        config()->set('ai.providers.groq.key', 'test-key');
         Http::fake([
             'api.groq.com/openai/v1/models' => Http::response([
                 'data' => [
@@ -406,31 +466,34 @@ describe('fetchOpenAiCompatibleModels', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('groq', 'test-key');
+        $result = $this->service->refreshModels('groq');
 
         expect($result)->toHaveCount(2);
         expect($result)->toHaveKey('llama-3.3-70b-versatile');
     });
 
     test('returns empty array when provider has no URL configured', function () {
-        config()->set('prism.providers.unknown', []);
+        config()->set('ai.providers.unknown.key', 'test-key');
+        config()->set('ai.providers.unknown.url', '');
 
-        $result = $this->service->refreshModels('unknown', 'test-key');
+        $result = $this->service->refreshModels('unknown');
 
         expect($result)->toBeEmpty();
     });
 
     test('throws exception on API failure', function () {
+        config()->set('ai.providers.openrouter.key', 'bad-key');
         Http::fake([
             'openrouter.ai/api/v1/models' => Http::response('Unauthorized', 401),
         ]);
 
-        $this->service->refreshModels('openrouter', 'bad-key');
+        $this->service->refreshModels('openrouter');
     })->throws(Exception::class, 'Failed to fetch openrouter models');
 });
 
 describe('formatModelId', function () {
     test('formats model IDs to human-readable labels', function () {
+        config()->set('ai.providers.openai.key', 'sk-test');
         Http::fake([
             'api.openai.com/v1/models' => Http::response([
                 'data' => [
@@ -439,12 +502,13 @@ describe('formatModelId', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('openai', 'sk-test');
+        $result = $this->service->refreshModels('openai');
 
         expect($result['gpt-4o-mini'])->toBe('Gpt 4o Mini');
     });
 
     test('strips trailing date stamps from Anthropic model IDs', function () {
+        config()->set('ai.providers.anthropic.key', 'sk-ant-test');
         Http::fake([
             'api.anthropic.com/v1/models' => Http::response([
                 'data' => [
@@ -454,7 +518,7 @@ describe('formatModelId', function () {
             ]),
         ]);
 
-        $result = $this->service->refreshModels('anthropic', 'sk-ant-test');
+        $result = $this->service->refreshModels('anthropic');
 
         // Without display_name, formatModelId should strip the date
         expect($result['claude-sonnet-4-20250514'])->toBe('Claude Sonnet 4');
@@ -483,6 +547,22 @@ describe('clearCache', function () {
     });
 });
 
+describe('curated fallback caching', function () {
+    test('does not cache the curated fallback list when no key is configured', function () {
+        Http::fake();
+
+        $first = $this->service->getModelsForProvider('openai');
+        expect(Cache::has('franken_cms:ai_models:openai'))->toBeFalse();
+
+        $second = $this->service->getModelsForProvider('openai');
+
+        expect($first)->toBeArray()->not->toBeEmpty();
+        expect($second)->toBe($first);
+        expect($this->service->hasCachedModels('openai'))->toBeFalse();
+        Http::assertNothingSent();
+    });
+});
+
 describe('hasCachedModels', function () {
     test('returns false when no cache exists', function () {
         expect($this->service->hasCachedModels('openai'))->toBeFalse();
@@ -492,5 +572,30 @@ describe('hasCachedModels', function () {
         Cache::put('franken_cms:ai_models:openai', ['model' => 'label'], 86400);
 
         expect($this->service->hasCachedModels('openai'))->toBeTrue();
+    });
+});
+
+describe('imageModelsForProvider', function () {
+    test('every image-capable provider has a curated list whose first entry is the SDK default', function () {
+        $sdkDefaults = [
+            'openai'     => 'gpt-image-2',
+            'gemini'     => 'gemini-3.1-flash-image-preview',
+            'azure'      => 'gpt-image-1',
+            'bedrock'    => 'amazon.nova-canvas-v1:0',
+            'xai'        => 'grok-imagine-image',
+            'openrouter' => 'google/gemini-3.1-flash-image-preview',
+        ];
+
+        foreach ($sdkDefaults as $provider => $default) {
+            $models = $this->service->imageModelsForProvider($provider);
+
+            expect($models)->not->toBeEmpty()
+                ->and(array_key_first($models))->toBe($default);
+        }
+    });
+
+    test('returns an empty list for unknown providers', function () {
+        expect($this->service->imageModelsForProvider('anthropic'))->toBe([])
+            ->and($this->service->imageModelsForProvider(''))->toBe([]);
     });
 });

@@ -6,17 +6,20 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Services\AiFeatureDetector;
+use FrankenCms\Services\AiImageService;
 use FrankenCms\Services\AiModelService;
+use FrankenCms\Services\AiService;
 use FrankenCms\Settings\AiSettings;
 
 class AiSettingsTabProvider implements SettingsTabProviderInterface
@@ -30,12 +33,12 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
             ->statePath($group)
             ->schema([
 
-                // Check if Prism is installed
+                // Check if laravel/ai is installed
                 Section::make('Installation Required')
-                    ->description('Igor requires the Prism PHP package to be installed.')
-                    ->visible(fn () => ! AiFeatureDetector::isPrismInstalled())
+                    ->description('Igor requires the laravel/ai SDK to be installed.')
+                    ->visible(fn () => ! AiFeatureDetector::isInstalled())
                     ->schema([
-                        TextEntry::make('prism_not_installed')
+                        TextEntry::make('ai_sdk_not_installed')
                             ->label('')
                             ->markdown()
                             ->state(<<<'MD'
@@ -43,7 +46,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                             To enable Igor, run:
                             ```
-                            composer require prism-php/prism
+                            composer require laravel/ai
                             ```
 
                             After installation, refresh this page to configure Igor.
@@ -52,7 +55,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
                 // Nested tabs for Provider and Prompts
                 Tabs::make('igor-tabs')
-                    ->visible(fn () => AiFeatureDetector::isPrismInstalled())
+                    ->visible(fn () => AiFeatureDetector::isInstalled())
                     ->tabs([
 
                         // Provider Configuration Tab
@@ -71,64 +74,156 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                             ->live()
                                             ->columnSpanFull(),
 
-                                        Select::make('provider')
-                                            ->label('AI Provider')
-                                            ->options(fn () => $this->getProviderOptions())
-                                            ->default('openai')
-                                            ->required()
-                                            ->live()
-                                            ->visible(fn ($get) => $get('enabled'))
-                                            ->columnSpan(1),
-
-                                        TextInput::make('api_key')
-                                            ->label('API Key')
-                                            ->password()
-                                            ->helperText(function ($state) {
-                                                if (! $state) {
-                                                    return 'Your API key will be encrypted and stored securely';
-                                                }
-
-                                                $key = is_string($state) ? $state : '';
-                                                $len = strlen($key);
-
-                                                if ($len <= 8) {
-                                                    return 'Current key: ****';
-                                                }
-
-                                                return sprintf(
-                                                    'Current key: %s...%s',
-                                                    substr($key, 0, 4),
-                                                    substr($key, -4)
-                                                );
-                                            })
-                                            ->dehydrateStateUsing(fn ($state) => $state ?: app(AiSettings::class)->api_key)
-                                            ->required(fn ($get) => $get('provider') !== 'ollama')
-                                            ->visible(fn ($get) => $get('enabled') && $get('provider') !== 'ollama')
-                                            ->columnSpan(1),
-
-                                        Select::make('model')
-                                            ->label('Model')
-                                            ->options(fn ($get) => $this->getModelsForProvider($get('provider'), $get('api_key')))
-                                            ->required()
-                                            ->searchable()
-                                            ->placeholder('Enter API key and click "Refresh Models"')
-                                            ->helperText(fn ($get) => $this->getModelHelperText($get('provider')))
-                                            ->visible(fn ($get) => $get('enabled'))
-                                            ->columnSpan(1),
-
-                                        Actions::make([
-                                            Action::make('refresh_models')
-                                                ->label('Refresh Models')
-                                                ->icon('heroicon-o-arrow-path')
-                                                ->color('gray')
-                                                ->size('sm')
-                                                ->action(function ($get, $set, $livewire) {
-                                                    $this->refreshModels($get('provider'), $get('api_key'), $livewire);
-                                                })
-                                                ->visible(fn ($get) => $get('enabled') && (! empty($get('api_key')) || $get('provider') === 'ollama')),
-                                        ])
-                                            ->visible(fn ($get) => $get('enabled'))
+                                        TextEntry::make('ai_setup_notice')
+                                            ->label('')
+                                            ->markdown()
+                                            ->state(
+                                                '**No AI provider configured.** Add an API key to your `.env` '
+                                                . '(e.g. `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `GEMINI_API_KEY`) '
+                                                . 'and publish `config/ai.php` if you need to customize providers. '
+                                                . 'Keys are no longer stored in the database.'
+                                            )
+                                            ->visible(fn () => empty(AiFeatureDetector::configuredProviders()))
                                             ->columnSpanFull(),
+
+                                        Fieldset::make('Text Generation')
+                                            ->schema([
+                                                Select::make('text_provider')
+                                                    ->label('Provider')
+                                                    ->options(fn () => AiFeatureDetector::configuredProviders())
+                                                    ->default('openai')
+                                                    ->required()
+                                                    ->live()
+                                                    ->columnSpan(1),
+
+                                                Select::make('text_model')
+                                                    ->label('Model')
+                                                    ->options(fn ($get) => $this->getModelsForProvider($get('text_provider')))
+                                                    ->required()
+                                                    ->searchable()
+                                                    ->placeholder('Click "Refresh Models"')
+                                                    ->helperText(fn ($get) => $this->getModelHelperText($get('text_provider')))
+                                                    ->columnSpan(1),
+
+                                                Actions::make([
+                                                    Action::make('refresh_models')
+                                                        ->label('Refresh Models')
+                                                        ->icon('heroicon-o-arrow-path')
+                                                        ->color('gray')
+                                                        ->size('sm')
+                                                        ->action(function ($get, $set, $livewire) {
+                                                            $this->refreshModels($get('text_provider'), $livewire);
+                                                        })
+                                                        ->visible(fn ($get) => array_key_exists($get('text_provider'), AiFeatureDetector::configuredProviders())),
+
+                                                    Action::make('test_model')
+                                                        ->label('Test Model')
+                                                        ->icon('heroicon-o-bolt')
+                                                        ->color('gray')
+                                                        ->size('sm')
+                                                        ->action(function ($get) {
+                                                            try {
+                                                                app(AiService::class)->verifyTextModel($get('text_provider'), $get('text_model'));
+
+                                                                Notification::make()
+                                                                    ->title('Model responded ✓')
+                                                                    ->body("Your key can use [{$get('text_model')}]. It's alive!")
+                                                                    ->success()
+                                                                    ->send();
+                                                            } catch (Exception $e) {
+                                                                Notification::make()
+                                                                    ->title('Model test failed')
+                                                                    ->body($e->getMessage())
+                                                                    ->danger()
+                                                                    ->persistent()
+                                                                    ->send();
+                                                            }
+                                                        })
+                                                        ->visible(fn ($get) => filled($get('text_model')) && array_key_exists($get('text_provider'), AiFeatureDetector::configuredProviders())),
+                                                ])
+                                                    ->columnSpanFull(),
+                                            ])
+                                            ->columns(2)
+                                            ->columnSpanFull()
+                                            ->visible(fn ($get) => $get('enabled') && ! empty(AiFeatureDetector::configuredProviders())),
+
+                                        Fieldset::make('Image Generation')
+                                            ->schema([
+                                                TextEntry::make('image_provider_notice')
+                                                    ->label('')
+                                                    ->markdown()
+                                                    ->state(
+                                                        '**No image-capable provider configured.** Add e.g. '
+                                                        . '`OPENAI_API_KEY` or `GEMINI_API_KEY` to your `.env`.'
+                                                    )
+                                                    ->visible(fn () => empty(AiFeatureDetector::imageCapableProviders()))
+                                                    ->columnSpanFull(),
+
+                                                Select::make('image_provider')
+                                                    ->label('Provider')
+                                                    ->options(fn () => AiFeatureDetector::imageCapableProviders())
+                                                    ->placeholder('Auto (first configured image-capable provider)')
+                                                    ->nullable()
+                                                    ->live()
+                                                    ->afterStateUpdated(fn ($set) => $set('image_model', null))
+                                                    ->columnSpan(1),
+
+                                                Select::make('image_model')
+                                                    ->label('Model')
+                                                    ->options(fn ($get) => app(AiModelService::class)->imageModelsForProvider($get('image_provider') ?? ''))
+                                                    ->placeholder('Provider default')
+                                                    ->nullable()
+                                                    ->helperText('Leave empty for the provider default model')
+                                                    ->visible(fn ($get) => filled($get('image_provider')))
+                                                    ->columnSpan(1),
+
+                                                Select::make('image_quality')
+                                                    ->label('Quality')
+                                                    ->options([
+                                                        'low'    => 'Low',
+                                                        'medium' => 'Medium',
+                                                        'high'   => 'High',
+                                                    ])
+                                                    ->default('medium')
+                                                    ->columnSpan(1),
+
+                                                Actions::make([
+                                                    Action::make('test_image_model')
+                                                        ->label('Test Model')
+                                                        ->icon('heroicon-o-bolt')
+                                                        ->color('gray')
+                                                        ->size('sm')
+                                                        ->requiresConfirmation()
+                                                        ->modalHeading('Test image generation?')
+                                                        ->modalDescription('This generates one small low-quality image with the selected provider/model — your provider will charge for it (typically a cent or two).')
+                                                        ->modalSubmitActionLabel('Generate test image')
+                                                        ->action(function ($get) {
+                                                            try {
+                                                                app(AiImageService::class)->verifyImageModel($get('image_provider'), $get('image_model'));
+
+                                                                $label = $get('image_provider') ? "[{$get('image_provider')}]" : 'the auto-selected provider';
+
+                                                                Notification::make()
+                                                                    ->title('Image model responded ✓')
+                                                                    ->body("Your key can generate images with {$label}. It's alive!")
+                                                                    ->success()
+                                                                    ->send();
+                                                            } catch (Exception $e) {
+                                                                Notification::make()
+                                                                    ->title('Image model test failed')
+                                                                    ->body($e->getMessage())
+                                                                    ->danger()
+                                                                    ->persistent()
+                                                                    ->send();
+                                                            }
+                                                        })
+                                                        ->visible(fn () => ! empty(AiFeatureDetector::imageCapableProviders())),
+                                                ])
+                                                    ->columnSpanFull(),
+                                            ])
+                                            ->columns(3)
+                                            ->columnSpanFull()
+                                            ->visible(fn ($get) => $get('enabled') && ! empty(AiFeatureDetector::configuredProviders())),
 
                                     ])
                                     ->columns(2),
@@ -270,6 +365,27 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                             ->collapsible()
                                             ->collapsed(),
 
+                                        // Featured Image Generation
+                                        Section::make('Featured Image Generation')
+                                            ->description('Generate a featured image with an image-capable AI provider when a post has none')
+                                            ->schema([
+                                                Toggle::make('featured_image_enabled')
+                                                    ->label('Featured Image Generation')
+                                                    ->helperText('Generate featured images with an image-capable AI model')
+                                                    ->default(true)
+                                                    ->live()
+                                                    ->columnSpanFull(),
+
+                                                Textarea::make('featured_image_prompt')
+                                                    ->label('Image Prompt Template')
+                                                    ->helperText('Pre-fills the generation prompt. Placeholders: {title}, {excerpt}. Provider, model, and quality are configured in the Provider tab under Image Generation.')
+                                                    ->columnSpanFull()
+                                                    ->visible(fn ($get) => $get('featured_image_enabled')),
+                                            ])
+                                            ->columns(2)
+                                            ->collapsible()
+                                            ->collapsed(),
+
                                     ]),
 
                             ]),
@@ -296,35 +412,10 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
     }
 
     /**
-     * Get provider options from Prism config, filtered to text-capable providers
-     */
-    protected function getProviderOptions(): array
-    {
-        $excludedProviders = ['elevenlabs', 'voyageai'];
-
-        $labels = [
-            'openai'     => 'OpenAI',
-            'anthropic'  => 'Anthropic',
-            'ollama'     => 'Ollama (Local)',
-            'gemini'     => 'Google Gemini',
-            'openrouter' => 'OpenRouter',
-            'mistral'    => 'Mistral',
-            'groq'       => 'Groq',
-            'xai'        => 'xAI (Grok)',
-            'deepseek'   => 'DeepSeek',
-        ];
-
-        return collect(config('prism.providers', []))
-            ->except($excludedProviders)
-            ->mapWithKeys(fn ($config, $key) => [$key => $labels[$key] ?? ucfirst($key)])
-            ->toArray();
-    }
-
-    /**
      * Get available models for a provider
-     * Uses dynamic fetching when API key is available, falls back to config
+     * Uses dynamic fetching when cached, falls back to config
      */
-    protected function getModelsForProvider(?string $provider, ?string $apiKey = null): array
+    protected function getModelsForProvider(?string $provider): array
     {
         if (! $provider) {
             return [];
@@ -333,7 +424,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
         // Use AiModelService for dynamic model fetching
         $modelService = app(AiModelService::class);
 
-        return $modelService->getModelsForProvider($provider, $apiKey);
+        return $modelService->getModelsForProvider($provider);
     }
 
     /**
@@ -351,18 +442,18 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
             return 'Models loaded from ' . ucfirst($provider) . ' API (cached)';
         }
 
-        return 'Enter API key and click "Refresh Models" to load available models';
+        return 'Click "Refresh Models" to load available models';
     }
 
     /**
      * Refresh models from provider API
      */
-    protected function refreshModels(?string $provider, ?string $apiKey, $livewire): void
+    protected function refreshModels(?string $provider, $livewire): void
     {
-        if (! $provider || (! $apiKey && $provider !== 'ollama')) {
+        if (! $provider || ! array_key_exists($provider, AiFeatureDetector::configuredProviders())) {
             Notification::make()
                 ->title('Missing Information')
-                ->body('Please select a provider and enter an API key first.')
+                ->body('Please select a configured provider first.')
                 ->warning()
                 ->send();
 
@@ -371,7 +462,7 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
 
         try {
             $modelService = app(AiModelService::class);
-            $models = $modelService->refreshModels($provider, $apiKey);
+            $models = $modelService->refreshModels($provider);
 
             $count = count($models);
 

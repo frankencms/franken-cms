@@ -249,4 +249,12 @@ OUTPUT FORMAT
 Return only the final SEO blog post title text.
 PROMPT;
     }
+
+    /**
+     * Get default prompt for Featured Image Generation
+     */
+    public static function featuredImage(): string
+    {
+        return 'Editorial blog header illustration, modern and clean, no embedded text, about: {title}';
+    }
 }

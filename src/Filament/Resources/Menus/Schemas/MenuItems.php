@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use FrankenCms\Enums\LinkTargets;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
+use FrankenCms\Rules\MenuItemUrl;
 
 class MenuItems
 {
@@ -77,10 +78,11 @@ class MenuItems
                                     TextInput::make('url')
                                         ->label('URL')
                                         ->inlineLabel()
-                                        ->placeholder('https://example.com')
+                                        ->placeholder('https://example.com or /about')
+                                        ->helperText('Accepts full URLs, relative paths (/about), anchors (#section), and mailto:/tel: links. Relative paths are converted to full URLs on output.')
                                         ->visible(fn (callable $get): bool => $get('link_to') === 'custom')
                                         ->required(fn (callable $get): bool => $get('link_to') === 'custom')
-                                        ->url()
+                                        ->rule(new MenuItemUrl)
                                         ->dehydrated(),
 
                                     // Hidden fields to store the polymorphic relationship

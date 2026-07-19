@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Commands;
 
 use Exception;
+use FrankenCms\OgImage\OgImageFeature;
 use FrankenCms\Support\IgorMessages;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -92,6 +93,9 @@ class InstallCommand extends Command
         if ($themeInstalled) {
             $this->offerExampleContent();
         }
+
+        // Offer OG image generation setup
+        $this->offerOgImageSetup();
 
         // Success
         $this->showSuccess();
@@ -777,6 +781,67 @@ CSS;
             "   Categories & Tags\n" .
             '   Main Navigation Menu'
         );
+    }
+
+    protected function offerOgImageSetup(): void
+    {
+        if (OgImageFeature::isInstalled()) {
+            info(IgorMessages::installMessage('og_image_already_installed', 'igor'));
+
+            return;
+        }
+
+        $installOgImage = confirm(
+            label: IgorMessages::installMessage('og_image_offer', 'igor'),
+            default: true,
+            hint: 'Recommended — needs Chrome/Node on the server, or Cloudflare credentials'
+        );
+
+        if (! $installOgImage) {
+            note(IgorMessages::installMessage('og_image_skip', 'igor'));
+
+            return;
+        }
+
+        $exitCode = 1;
+
+        spin(
+            function () use (&$exitCode) {
+                exec('composer require spatie/laravel-og-image 2>&1', $output, $exitCode);
+            },
+            IgorMessages::installMessage('og_image_installing', 'igor')
+        );
+
+        if ($exitCode !== 0) {
+            warning('Could not install spatie/laravel-og-image automatically. Please run: composer require spatie/laravel-og-image');
+
+            return;
+        }
+
+        info('spatie/laravel-og-image installed.');
+
+        // Publish in a fresh process — the current process booted before the
+        // package was required, so its class map and provider registration
+        // are stale (package:discover has not run in-process). Shelling out
+        // gives us a fresh `php artisan` boot that can see the new provider.
+        $publishExitCode = 1;
+
+        spin(
+            function () use (&$publishExitCode) {
+                exec('php artisan vendor:publish --tag=og-image-config --force 2>&1', $publishOutput, $publishExitCode);
+            },
+            'Publishing OG image configuration...'
+        );
+
+        if ($publishExitCode !== 0) {
+            warning('Could not publish the OG image config automatically. Please run: php artisan vendor:publish --tag=og-image-config');
+
+            return;
+        }
+
+        info(IgorMessages::installMessage('og_image_configured', 'igor'));
+
+        note(IgorMessages::ogImageFollowUp());
     }
 
     protected function showSuccess(): void

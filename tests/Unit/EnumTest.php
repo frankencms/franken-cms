@@ -1,5 +1,8 @@
 <?php
 
+use Filament\Support\Contracts\HasDescription;
+use Filament\Support\Contracts\HasIcon;
+use Filament\Support\Contracts\HasLabel;
 use FrankenCms\Enums\DateFormat;
 use FrankenCms\Enums\DayOfWeek;
 use FrankenCms\Enums\LinkTargets;
@@ -67,8 +70,8 @@ describe('DateFormat', function () {
 
     it('implements HasLabel and HasDescription', function () {
         foreach (DateFormat::cases() as $case) {
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasLabel::class);
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasDescription::class);
+            expect($case)->toBeInstanceOf(HasLabel::class);
+            expect($case)->toBeInstanceOf(HasDescription::class);
         }
     });
 });
@@ -133,7 +136,7 @@ describe('DayOfWeek', function () {
 
     it('implements HasLabel', function () {
         foreach (DayOfWeek::cases() as $case) {
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasLabel::class);
+            expect($case)->toBeInstanceOf(HasLabel::class);
         }
     });
 });
@@ -167,7 +170,7 @@ describe('LinkTargets', function () {
 
     it('implements HasLabel', function () {
         foreach (LinkTargets::cases() as $case) {
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasLabel::class);
+            expect($case)->toBeInstanceOf(HasLabel::class);
         }
     });
 });
@@ -229,8 +232,8 @@ describe('PermalinkStructure', function () {
 
     it('implements HasLabel and HasDescription', function () {
         foreach (PermalinkStructure::cases() as $case) {
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasLabel::class);
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasDescription::class);
+            expect($case)->toBeInstanceOf(HasLabel::class);
+            expect($case)->toBeInstanceOf(HasDescription::class);
         }
     });
 });
@@ -287,8 +290,8 @@ describe('PermalinkTags', function () {
 
     it('implements HasLabel and HasDescription', function () {
         foreach (PermalinkTags::cases() as $case) {
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasLabel::class);
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasDescription::class);
+            expect($case)->toBeInstanceOf(HasLabel::class);
+            expect($case)->toBeInstanceOf(HasDescription::class);
         }
     });
 });
@@ -347,9 +350,9 @@ describe('PostStatus', function () {
 
     it('implements HasLabel, HasDescription, and HasIcon', function () {
         foreach (PostStatus::cases() as $case) {
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasLabel::class);
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasDescription::class);
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasIcon::class);
+            expect($case)->toBeInstanceOf(HasLabel::class);
+            expect($case)->toBeInstanceOf(HasDescription::class);
+            expect($case)->toBeInstanceOf(HasIcon::class);
         }
     });
 });
@@ -397,8 +400,8 @@ describe('TimeFormat', function () {
 
     it('implements HasLabel and HasDescription', function () {
         foreach (TimeFormat::cases() as $case) {
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasLabel::class);
-            expect($case)->toBeInstanceOf(\Filament\Support\Contracts\HasDescription::class);
+            expect($case)->toBeInstanceOf(HasLabel::class);
+            expect($case)->toBeInstanceOf(HasDescription::class);
         }
     });
 });

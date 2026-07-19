@@ -82,7 +82,7 @@ trait HasPermalinkUrl
             $this->id,                      // %post_id%
             $this->post_slug,               // %postname%
             $this->category->slug ?? 'uncategorized', // %category% (assuming a category relationship)
-            str($this->author->name)->slug() ?? 'guest',           // %author% (assuming an author relationship)
+            str($this->author?->name ?? 'guest')->slug(), // %author% (posts can outlive their author)
         ], $structure);
 
         // Build the final URL with proper slashes

@@ -2,7 +2,6 @@
 
 namespace FrankenCms\Settings;
 
-use FrankenCms\SettingsCasts\EncryptedSettingsCast;
 use Spatie\LaravelSettings\Settings;
 
 class AiSettings extends Settings
@@ -10,11 +9,9 @@ class AiSettings extends Settings
     // Provider Configuration
     public bool $enabled = false;
 
-    public string $provider = 'openai';
+    public string $text_provider = 'openai';
 
-    public ?string $api_key = null;
-
-    public string $model = 'gpt-4o';
+    public string $text_model = 'gpt-4o';
 
     // SEO Title Generator Prompt
     public bool $seo_title_enabled = true;
@@ -51,18 +48,20 @@ class AiSettings extends Settings
 
     public string $blog_post_title_prompt = '';
 
+    // Image Generation Engine (shared by all image features)
+    public string $image_quality = 'medium';
+
+    public ?string $image_provider = null;
+
+    public ?string $image_model = null;
+
+    // Featured Image Generation
+    public bool $featured_image_enabled = true;
+
+    public string $featured_image_prompt = '';
+
     public static function group(): string
     {
         return 'franken_cms_ai';
-    }
-
-    /**
-     * Define encrypted fields
-     */
-    public static function casts(): array
-    {
-        return [
-            'api_key' => EncryptedSettingsCast::class,
-        ];
     }
 }

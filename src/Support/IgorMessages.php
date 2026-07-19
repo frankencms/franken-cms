@@ -149,6 +149,26 @@ class IgorMessages
                 'igor'   => 'The panel theme is configured for our creation, Master!',
                 'doctor' => 'Now our creation will look MAGNIFICENT in the admin panel!',
             ],
+            'og_image_offer' => [
+                'igor'   => 'Master, shall Igor install the Ogre (spatie/laravel-og-image) to paint automatic portraits for every page?',
+                'doctor' => 'A likeness, automatically rendered! Every creation deserves its portrait!',
+            ],
+            'og_image_installing' => [
+                'igor'   => 'Fetching the image-conjuring elixir from the vault... 🧪',
+                'doctor' => 'Let the machine SEE what we have created!',
+            ],
+            'og_image_configured' => [
+                'igor'   => 'The Ogre is bound to our creation, Master! Portraits shall be painted automatically!',
+                'doctor' => 'MAGNIFICENT! Every page now bears its own likeness!',
+            ],
+            'og_image_skip' => [
+                'igor'   => 'As you wish, Master. Manual portraits will suffice for now — summon the Ogre later with: composer require spatie/laravel-og-image',
+                'doctor' => 'No matter — we may summon the Ogre again another night!',
+            ],
+            'og_image_already_installed' => [
+                'igor'   => 'Master! The Ogre already dwells within these walls!',
+                'doctor' => 'Ah, it seems that work is already complete.',
+            ],
         ];
     }
 
@@ -218,5 +238,20 @@ ASCII,
 ASCII,
             default => '',
         };
+    }
+
+    /**
+     * Follow-up instructions printed after spatie/laravel-og-image is installed
+     */
+    public static function ogImageFollowUp(): string
+    {
+        return <<<'TEXT'
+Next steps for OG images:
+   Publish the config (php artisan vendor:publish --tag=franken-cms-config) and uncomment og_image.templates — the example theme ships designed templates in theme/og-templates/
+   Add <x-franken-og-image /> to your theme layout (already present if you installed the example theme)
+   Local rendering needs Chrome: npm install puppeteer && npx puppeteer browsers install chrome
+   For production hosts without Chrome, set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (requires a publicly reachable site URL — Cloudflare cannot fetch local .test domains)
+   Preview any page's card by appending ?ogimage to its URL
+TEXT;
     }
 }

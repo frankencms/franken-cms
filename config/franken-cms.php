@@ -1,6 +1,7 @@
 <?php
 
 // config for Franken CMS/FrankenCms
+use App\Models\User;
 use Filament\Forms\Components\RichEditor\TextColor;
 
 return [
@@ -11,7 +12,7 @@ return [
     'theme_folder' => 'theme',
 
     'models' => [
-        'user' => \App\Models\User::class,
+        'user' => User::class,
 
     ],
 
@@ -19,6 +20,41 @@ return [
 
     'settings' => [
 
+    ],
+
+    'ai' => [
+        // Ollama has no API key; opt in explicitly to expose it as a provider.
+        'enable_ollama' => env('CMS_AI_ENABLE_OLLAMA', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | OG Image Generation
+    |--------------------------------------------------------------------------
+    |
+    | Requires spatie/laravel-og-image (composer require spatie/laravel-og-image).
+    | Map post types to Blade views containing an <x-og-image> component; add
+    | <x-franken-og-image /> to your theme layout once. Manual per-post uploads
+    | and the site default image are used automatically as fallbacks.
+    | For hosts without Chrome/Node, set the Cloudflare credentials below to
+    | render via Cloudflare's Browser Rendering API.
+    |
+    */
+
+    'og_image' => [
+        'enabled'   => true,
+        'templates' => [
+            // 'post' => 'theme.og-templates.post',
+            // 'page' => 'theme.og-templates.page',
+        ],
+
+        // Site-wide fallback template, used when a page has no type template,
+        // no manually uploaded image, and no default image in SEO settings.
+        'default_template' => null, // e.g. 'theme.og-templates.default'
+        'cloudflare'       => [
+            'api_token'  => env('CLOUDFLARE_API_TOKEN'),
+            'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+        ],
     ],
 
     /*

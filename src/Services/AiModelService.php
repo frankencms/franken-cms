@@ -25,7 +25,7 @@ class AiModelService
      * Get available models for a provider
      * Uses cache if available, fetches from API otherwise
      */
-    public function getModelsForProvider(string $provider, ?string $apiKey = null): array
+    public function getModelsForProvider(string $provider): array
     {
         $cacheKey = self::CACHE_PREFIX . $provider;
         $cached = Cache::get($cacheKey);
@@ -34,30 +34,38 @@ class AiModelService
             return $cached;
         }
 
-        if ($apiKey || $provider === 'ollama') {
-            try {
-                $models = $this->fetchModelsFromApi($provider, $apiKey ?? '');
-                if (! empty($models)) {
-                    Cache::put($cacheKey, $models, self::CACHE_TTL);
+        if (! $this->hasApiAccess($provider)) {
+            return $this->getCuratedModels($provider);
+        }
 
-                    return $models;
-                }
-            } catch (Exception $e) {
-                Log::warning("Failed to fetch models for {$provider}: " . $e->getMessage());
+        try {
+            $models = $this->fetchModelsFromApi($provider);
+            if (! empty($models)) {
+                Cache::put($cacheKey, $models, self::CACHE_TTL);
+
+                return $models;
             }
+        } catch (Exception $e) {
+            Log::warning("Failed to fetch models for {$provider}: " . $e->getMessage());
         }
 
         return [];
     }
 
     /**
-     * Force refresh models from API
+     * Force refresh models from API.
+     * Returns the curated fallback (uncached) when no key is configured, so
+     * a stale cached result can never linger once credentials are added.
      */
-    public function refreshModels(string $provider, string $apiKey): array
+    public function refreshModels(string $provider): array
     {
+        if (! $this->hasApiAccess($provider)) {
+            return $this->getCuratedModels($provider);
+        }
+
         $cacheKey = self::CACHE_PREFIX . $provider;
 
-        $models = $this->fetchModelsFromApi($provider, $apiKey);
+        $models = $this->fetchModelsFromApi($provider);
 
         if (! empty($models)) {
             Cache::put($cacheKey, $models, self::CACHE_TTL);
@@ -66,6 +74,86 @@ class AiModelService
         }
 
         return [];
+    }
+
+    /**
+     * Resolve the configured API key for a provider from config/ai.php
+     */
+    protected function resolveKey(string $provider): ?string
+    {
+        return config("ai.providers.{$provider}.key");
+    }
+
+    /**
+     * Whether the provider has credentials to call its live API.
+     * Ollama needs no key, so it always has API access.
+     */
+    protected function hasApiAccess(string $provider): bool
+    {
+        return $provider === 'ollama' || ! empty($this->resolveKey($provider));
+    }
+
+    /**
+     * Curated image-generation models per provider. Provider model-list APIs
+     * don't flag image capability, so this list is maintained by hand; the
+     * first entry per provider matches the laravel/ai SDK's default.
+     *
+     * @return array<string, string> model id => label
+     */
+    public function imageModelsForProvider(string $provider): array
+    {
+        return match ($provider) {
+            'openai' => [
+                'gpt-image-2' => 'GPT Image 2',
+                'gpt-image-1' => 'GPT Image 1',
+                'dall-e-3'    => 'DALL·E 3',
+            ],
+            'gemini' => [
+                'gemini-3.1-flash-image-preview' => 'Gemini 3.1 Flash Image (Preview)',
+                'gemini-2.5-flash-image'         => 'Gemini 2.5 Flash Image',
+            ],
+            'azure' => [
+                'gpt-image-1' => 'GPT Image 1 (deployment)',
+            ],
+            'bedrock' => [
+                'amazon.nova-canvas-v1:0' => 'Amazon Nova Canvas',
+            ],
+            'xai' => [
+                'grok-imagine-image' => 'Grok Imagine',
+                'grok-2-image'       => 'Grok 2 Image',
+            ],
+            'openrouter' => [
+                'google/gemini-3.1-flash-image-preview' => 'Gemini 3.1 Flash Image (Preview)',
+                'openai/gpt-image-1'                    => 'GPT Image 1',
+            ],
+            default => [],
+        };
+    }
+
+    /**
+     * Curated fallback model list shown when no API key is configured yet,
+     * so provider/model selection stays usable before the user finishes setup.
+     */
+    protected function getCuratedModels(string $provider): array
+    {
+        return match ($provider) {
+            'openai' => [
+                'gpt-4o'      => 'GPT-4o',
+                'gpt-4o-mini' => 'GPT-4o Mini',
+                'gpt-4.1'     => 'GPT-4.1',
+                'o3-mini'     => 'O3 Mini',
+            ],
+            'anthropic' => [
+                'claude-opus-4-5'   => 'Claude Opus 4.5',
+                'claude-sonnet-4-5' => 'Claude Sonnet 4.5',
+                'claude-haiku-4-5'  => 'Claude Haiku 4.5',
+            ],
+            'gemini' => [
+                'gemini-2.5-pro'   => 'Gemini 2.5 Pro',
+                'gemini-2.5-flash' => 'Gemini 2.5 Flash',
+            ],
+            default => [],
+        };
     }
 
     /**
@@ -79,7 +167,7 @@ class AiModelService
             return;
         }
 
-        foreach (array_keys(config('prism.providers', [])) as $key) {
+        foreach (array_keys(config('ai.providers', [])) as $key) {
             Cache::forget(self::CACHE_PREFIX . $key);
         }
     }
@@ -93,18 +181,22 @@ class AiModelService
     }
 
     /**
-     * Get the base URL for a provider from Prism config
+     * Get the base URL for a provider from config/ai.php
      */
     protected function getProviderUrl(string $provider): string
     {
-        return config("prism.providers.{$provider}.url", '');
+        return config("ai.providers.{$provider}.url", '');
     }
 
     /**
-     * Fetch models from provider API
+     * Fetch models from provider API.
+     * Only called once hasApiAccess() confirms a key is configured (or the
+     * provider is Ollama, which needs none).
      */
-    protected function fetchModelsFromApi(string $provider, string $apiKey): array
+    protected function fetchModelsFromApi(string $provider): array
     {
+        $apiKey = $this->resolveKey($provider) ?? '';
+
         return match ($provider) {
             'openai'    => $this->fetchOpenAiModels($apiKey),
             'anthropic' => $this->fetchAnthropicModels($apiKey),
@@ -247,7 +339,7 @@ class AiModelService
     protected function fetchGeminiModels(string $apiKey): array
     {
         $baseUrl = $this->getProviderUrl('gemini');
-        $url = $baseUrl . '?key=' . $apiKey;
+        $url = rtrim($baseUrl, '/') . '/models?key=' . $apiKey;
 
         $response = Http::get($url);
 

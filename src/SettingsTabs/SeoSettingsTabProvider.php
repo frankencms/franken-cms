@@ -15,6 +15,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Models\SiteSettingsMedia;
+use FrankenCms\OgImage\OgImageFeature;
 use FrankenCms\Settings\SeoSettings;
 
 class SeoSettingsTabProvider implements SettingsTabProviderInterface
@@ -146,7 +147,19 @@ class SeoSettingsTabProvider implements SettingsTabProviderInterface
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('og_default_image')
                             ->label('Default Social Media Image')
-                            ->helperText('Default image for social sharing (1200×630px recommended). Used for Facebook, LinkedIn, Twitter, and other platforms when individual pages don\'t have their own image.')
+                            ->helperText(function () {
+                                $base = 'Default image for social sharing (1200×630px recommended). Used for Facebook, LinkedIn, Twitter, and other platforms when individual pages don\'t have their own image.';
+
+                                if (! OgImageFeature::isEnabled()) {
+                                    return $base;
+                                }
+
+                                if (OgImageFeature::defaultTemplate()) {
+                                    return $base . ' OG image generation is active: content types with a template get a generated image instead, and if you leave this empty the site-wide fallback template generates one automatically.';
+                                }
+
+                                return $base . ' OG image generation is active: content types with a template in config/franken-cms.php get a generated image instead of this one.';
+                            })
                             ->collection('og-default')
                             ->model(fn () => SiteSettingsMedia::getInstance())
                             ->image()

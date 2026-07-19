@@ -1,7 +1,16 @@
 <?php
 
 use FrankenCms\Helpers\TemplateHelpers;
+use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\FaviconGenerator;
+use FrankenCms\Settings\GeneralSettings;
+use FrankenCms\Settings\MediaSettings;
+use FrankenCms\Settings\PermalinkSettings;
+use FrankenCms\Settings\ReadingSettings;
+use FrankenCms\Settings\RobotsSettings;
+use FrankenCms\Settings\SeoSettings;
+use FrankenCms\Settings\SitemapSettings;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View;
 
 if (! function_exists('_renderFrankenField')) {
@@ -73,13 +82,13 @@ if (! function_exists('setting')) {
 
         // Map short group names to settings classes
         $settingsMap = [
-            'general'   => \FrankenCms\Settings\GeneralSettings::class,
-            'reading'   => \FrankenCms\Settings\ReadingSettings::class,
-            'seo'       => \FrankenCms\Settings\SeoSettings::class,
-            'media'     => \FrankenCms\Settings\MediaSettings::class,
-            'permalink' => \FrankenCms\Settings\PermalinkSettings::class,
-            'robots'    => \FrankenCms\Settings\RobotsSettings::class,
-            'sitemap'   => \FrankenCms\Settings\SitemapSettings::class,
+            'general'   => GeneralSettings::class,
+            'reading'   => ReadingSettings::class,
+            'seo'       => SeoSettings::class,
+            'media'     => MediaSettings::class,
+            'permalink' => PermalinkSettings::class,
+            'robots'    => RobotsSettings::class,
+            'sitemap'   => SitemapSettings::class,
         ];
 
         // Check if the group exists
@@ -97,7 +106,7 @@ if (! function_exists('setting')) {
             }
 
             return $default;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             logger()->error("Failed to retrieve setting '{$key}': " . $e->getMessage());
             return $default;
         }
@@ -196,7 +205,7 @@ if (! function_exists('frankenField')) {
         // (this is where rendered fields are cached)
         $frankenFields = View::shared('frankenFields');
 
-        if ($frankenFields && $frankenFields instanceof \Illuminate\Support\Collection) {
+        if ($frankenFields && $frankenFields instanceof Collection) {
             // Try camelCase version first (e.g., 'hero.tags' -> 'heroTags')
             $camelCaseName = frankenFieldVariableName($fieldName);
             if ($frankenFields->has($camelCaseName)) {
@@ -210,7 +219,7 @@ if (! function_exists('frankenField')) {
         }
 
         // If not in collection, fall back to fetching from custom_fields
-        $currentPage = app(\FrankenCms\Services\CurrentPageService::class)->getPage();
+        $currentPage = app(CurrentPageService::class)->getPage();
 
         if (! $currentPage) {
             return null;

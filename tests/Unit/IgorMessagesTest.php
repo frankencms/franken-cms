@@ -51,7 +51,8 @@ describe('installationMessages', function () {
         $expectedSteps = [
             'welcome', 'publishing_config', 'publishing_migrations',
             'running_migrations', 'detecting_panels', 'registering_plugin',
-            'success', 'error',
+            'success', 'error', 'og_image_offer', 'og_image_installing',
+            'og_image_configured', 'og_image_skip', 'og_image_already_installed',
         ];
 
         foreach ($expectedSteps as $step) {
@@ -130,5 +131,22 @@ describe('asciiArt', function () {
         $art = IgorMessages::asciiArt('unknown');
 
         expect($art)->toBe('');
+    });
+});
+
+describe('ogImageFollowUp', function () {
+    test('returns a non-empty string', function () {
+        $text = IgorMessages::ogImageFollowUp();
+
+        expect($text)->toBeString()->not->toBeEmpty();
+    });
+
+    test('mentions the config templates mapping, the blade component, and the Cloudflare env vars', function () {
+        $text = IgorMessages::ogImageFollowUp();
+
+        expect($text)->toContain('og_image.templates');
+        expect($text)->toContain('<x-franken-og-image />');
+        expect($text)->toContain('CLOUDFLARE_API_TOKEN');
+        expect($text)->toContain('CLOUDFLARE_ACCOUNT_ID');
     });
 });

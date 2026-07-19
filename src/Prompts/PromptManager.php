@@ -16,35 +16,35 @@ class PromptManager
             'prompt_key'      => 'seo_title_prompt',
             'context'         => 'all',
             'supports_vision' => false,
-            'max_tokens'      => 100,  // ~60 chars for SEO title
+            'max_tokens'      => 2000, // headroom for reasoning models; output is still a short title
         ],
         'generate_seo_description' => [
             'enabled_key'     => 'seo_description_enabled',
             'prompt_key'      => 'seo_description_prompt',
             'context'         => 'all',
             'supports_vision' => false,
-            'max_tokens'      => 250,  // ~160 chars for meta description
+            'max_tokens'      => 2000, // headroom for reasoning models; output is still a short description
         ],
         'generate_teaser' => [
             'enabled_key'     => 'teaser_enabled',
             'prompt_key'      => 'teaser_prompt',
             'context'         => 'post',
             'supports_vision' => false,
-            'max_tokens'      => 300,  // ~100-200 words
+            'max_tokens'      => 2000, // headroom for reasoning models; output is still ~100-200 words
         ],
         'generate_alt_text' => [
             'enabled_key'     => 'alt_text_enabled',
             'prompt_key'      => 'alt_text_prompt',
             'context'         => 'media',
             'supports_vision' => true,
-            'max_tokens'      => 150,  // ~100 chars for alt text
+            'max_tokens'      => 2000, // headroom for reasoning models; output is still short alt text
         ],
         'generate_image_title' => [
             'enabled_key'     => 'image_title_enabled',
             'prompt_key'      => 'image_title_prompt',
             'context'         => 'media',
             'supports_vision' => true,
-            'max_tokens'      => 100,  // ~60 chars for title
+            'max_tokens'      => 2000, // headroom for reasoning models; output is still a short title
         ],
         'generate_blog_post' => [
             'enabled_key'     => 'blog_post_enabled',
@@ -58,7 +58,7 @@ class PromptManager
             'prompt_key'      => 'blog_post_title_prompt',
             'context'         => 'post',
             'supports_vision' => false,
-            'max_tokens'      => 100,  // ~50-60 chars for blog post title
+            'max_tokens'      => 2000, // headroom for reasoning models; output is still a short title
         ],
     ];
 

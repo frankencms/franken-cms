@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrankenCms\Models;
 
+use FrankenCms\Settings\MediaSettings;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -78,7 +79,7 @@ class SiteSettingsMedia extends Model implements HasMedia
             ->performOnCollections('twitter-default');
 
         // Get media settings for default featured image dimensions
-        $mediaSettings = app(\FrankenCms\Settings\MediaSettings::class);
+        $mediaSettings = app(MediaSettings::class);
 
         // Default featured image - featured size (for single post view)
         $this->addMediaConversion('featured')

@@ -15,6 +15,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use FrankenCms\Filament\Actions\GenerateSeoDescriptionAction;
 use FrankenCms\Filament\Actions\GenerateSeoTitleAction;
+use FrankenCms\OgImage\OgImageFeature;
 use FrankenCms\Settings\SeoSettings;
 use Illuminate\Support\HtmlString;
 
@@ -289,7 +290,15 @@ trait HasSeoFields
 
                         SpatieMediaLibraryFileUpload::make('seo_og_image')
                             ->label('Social Media Image')
-                            ->helperText('Image for social media shares (1200×630px recommended). Used for Facebook, LinkedIn, Twitter, and other platforms. Leave blank to use default or featured image.')
+                            ->helperText(function ($record) {
+                                $default = 'Image for social media shares (1200×630px recommended). Used for Facebook, LinkedIn, Twitter, and other platforms. Leave blank to use default or featured image.';
+
+                                if ($record && OgImageFeature::templateFor($record)) {
+                                    return $default . ' An OG image template is active for this content type and takes priority — this upload is only used as a fallback if the template is removed.';
+                                }
+
+                                return $default;
+                            })
                             ->collection('seo-og')
                             ->image()
                             ->imageEditor()

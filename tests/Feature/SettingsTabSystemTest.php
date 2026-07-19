@@ -5,7 +5,10 @@ use Filament\Schemas\Components\Tabs\Tab;
 use FrankenCms\Contracts\SettingsTabProviderInterface;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Settings\GeneralSettings;
+use FrankenCms\Settings\MediaSettings;
+use FrankenCms\Settings\ReadingSettings;
 use Spatie\LaravelSettings\Settings;
+use Spatie\LaravelSettings\SettingsRepositories\DatabaseSettingsRepository;
 
 beforeEach(function () {
     // Configure Spatie Settings for testing
@@ -13,7 +16,7 @@ beforeEach(function () {
         'settings.default_repository' => 'database',
         'settings.repositories'       => [
             'database' => [
-                'type'       => \Spatie\LaravelSettings\SettingsRepositories\DatabaseSettingsRepository::class,
+                'type'       => DatabaseSettingsRepository::class,
                 'model'      => null,
                 'table'      => 'settings',
                 'connection' => null,
@@ -22,8 +25,8 @@ beforeEach(function () {
     ]);
 
     // Create settings table if it doesn't exist
-    if (! \Schema::hasTable('settings')) {
-        \Schema::create('settings', function ($table) {
+    if (! Schema::hasTable('settings')) {
+        Schema::create('settings', function ($table) {
             $table->id();
             $table->string('group');
             $table->string('name');
@@ -35,8 +38,8 @@ beforeEach(function () {
     }
 
     // Clear and initialize settings with default values
-    \DB::table('settings')->truncate();
-    \DB::table('settings')->insert([
+    DB::table('settings')->truncate();
+    DB::table('settings')->insert([
         ['group' => 'franken_cms_general', 'name' => 'title', 'payload' => json_encode('Default Title'), 'locked' => false],
         ['group' => 'franken_cms_general', 'name' => 'icon', 'payload' => json_encode(null), 'locked' => false],
         ['group' => 'franken_cms_general', 'name' => 'membership', 'payload' => json_encode(false), 'locked' => false],
@@ -91,7 +94,7 @@ it('can register and use custom tabs', function () {
     };
 
     // Add database entries for custom settings
-    \DB::table('settings')->insert([
+    DB::table('settings')->insert([
         ['group' => 'test_custom', 'name' => 'custom_field', 'payload' => json_encode('default'), 'locked' => false],
         ['group' => 'test_custom', 'name' => 'custom_enabled', 'payload' => json_encode(false), 'locked' => false],
     ]);
@@ -148,7 +151,7 @@ it('can register and use custom tabs', function () {
 
 it('handles multiple settings classes correctly', function () {
     // Set up multiple settings - ReadingSettings
-    \DB::table('settings')->insert([
+    DB::table('settings')->insert([
         ['group' => 'franken_cms_reading', 'name' => 'home_page', 'payload' => json_encode(null), 'locked' => false],
         ['group' => 'franken_cms_reading', 'name' => 'post_page', 'payload' => json_encode(null), 'locked' => false],
         ['group' => 'franken_cms_reading', 'name' => 'posts_per_page', 'payload' => json_encode(10), 'locked' => false],
@@ -177,12 +180,12 @@ it('handles multiple settings classes correctly', function () {
     $settingsClasses = $registry->getSettingsClasses();
 
     expect($settingsClasses)->toContain(GeneralSettings::class);
-    expect($settingsClasses)->toContain(\FrankenCms\Settings\ReadingSettings::class);
-    expect($settingsClasses)->toContain(\FrankenCms\Settings\MediaSettings::class);
+    expect($settingsClasses)->toContain(ReadingSettings::class);
+    expect($settingsClasses)->toContain(MediaSettings::class);
 
     // Test that each settings class works independently
     $generalSettings = app(GeneralSettings::class);
-    $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+    $readingSettings = app(ReadingSettings::class);
 
     expect($generalSettings->title)->toBe('Default Title');
     expect($readingSettings->posts_per_page)->toBe(10);
@@ -192,7 +195,7 @@ it('handles multiple settings classes correctly', function () {
     $generalSettings->save();
 
     // Verify other settings are unchanged
-    $freshReadingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+    $freshReadingSettings = app(ReadingSettings::class);
     expect($freshReadingSettings->posts_per_page)->toBe(10);
 });
 

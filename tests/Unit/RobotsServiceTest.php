@@ -5,6 +5,7 @@ use FrankenCms\Services\SitemapService;
 use FrankenCms\Settings\RobotsSettings;
 use FrankenCms\Settings\SitemapSettings;
 use Illuminate\Support\Facades\File;
+use Spatie\LaravelSettings\Settings;
 
 /**
  * Create a mock RobotsSettings with proper initialization.
@@ -16,7 +17,7 @@ function createRobotsSettingsMock(): RobotsSettings
 
     // Set the 'loaded' property to true to prevent the load() method from being called
     // The property is in the parent Spatie\LaravelSettings\Settings class
-    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection = new ReflectionProperty(Settings::class, 'loaded');
     $reflection->setAccessible(true);
     $reflection->setValue($settings, true);
 
@@ -41,7 +42,7 @@ function createRobotsSitemapSettingsMock(): SitemapSettings
 {
     $settings = Mockery::mock(SitemapSettings::class)->makePartial();
 
-    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection = new ReflectionProperty(Settings::class, 'loaded');
     $reflection->setAccessible(true);
     $reflection->setValue($settings, true);
 

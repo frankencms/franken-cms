@@ -5,6 +5,7 @@ namespace FrankenCms\View\Components;
 use Diglactic\Breadcrumbs\Breadcrumbs as BreadcrumbsFacade;
 use Exception;
 use FrankenCms\Services\CurrentPageService;
+use FrankenCms\Settings\ReadingSettings;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
@@ -33,7 +34,7 @@ class Breadcrumbs extends Component
         }
 
         // Don't show breadcrumbs on the homepage
-        $readingSettings = app(\FrankenCms\Settings\ReadingSettings::class);
+        $readingSettings = app(ReadingSettings::class);
         if ($readingSettings->home_page === $currentPage->post_slug) {
             return;
         }

@@ -2,6 +2,7 @@
 
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Settings\AiSettings;
+use Spatie\LaravelSettings\Settings;
 
 /**
  * Create a mock AiSettings with proper Spatie initialization.
@@ -10,15 +11,14 @@ function createAiSettingsMock(array $overrides = []): AiSettings
 {
     $settings = Mockery::mock(AiSettings::class)->makePartial();
 
-    $reflection = new ReflectionProperty(\Spatie\LaravelSettings\Settings::class, 'loaded');
+    $reflection = new ReflectionProperty(Settings::class, 'loaded');
     $reflection->setAccessible(true);
     $reflection->setValue($settings, true);
 
     // Set defaults
     $settings->enabled = $overrides['enabled'] ?? true;
-    $settings->provider = $overrides['provider'] ?? 'openai';
-    $settings->api_key = $overrides['api_key'] ?? 'sk-test-key';
-    $settings->model = $overrides['model'] ?? 'gpt-4o';
+    $settings->text_provider = $overrides['provider'] ?? 'openai';
+    $settings->text_model = $overrides['model'] ?? 'gpt-4o';
     $settings->seo_title_enabled = $overrides['seo_title_enabled'] ?? true;
     $settings->seo_title_prompt = $overrides['seo_title_prompt'] ?? 'Generate an SEO title for: {title}';
     $settings->seo_description_enabled = $overrides['seo_description_enabled'] ?? true;
@@ -53,7 +53,7 @@ describe('getPrompt', function () {
         expect($config['enabled'])->toBeTrue();
         expect($config['context'])->toBe('all');
         expect($config['supports_vision'])->toBeFalse();
-        expect($config['max_tokens'])->toBe(100);
+        expect($config['max_tokens'])->toBe(2000);
     });
 
     test('returns vision-enabled config for alt text', function () {
