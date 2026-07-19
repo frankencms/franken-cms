@@ -107,6 +107,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '18_create_stack_settings',
                 '19_create_ai_settings',
                 '20_create_user_bios_table',
+                '21_add_post_slug_unique_index',
+                '22_remove_ai_api_key_setting',
+                '23_add_ai_featured_image_settings',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
