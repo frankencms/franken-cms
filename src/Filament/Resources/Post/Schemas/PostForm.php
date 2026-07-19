@@ -95,12 +95,8 @@ class PostForm
                                             $component->state($record->getMeta('post_teaser', ''));
                                         }
                                     })
-                                    ->dehydrated(false)
-                                    ->afterStateUpdated(function ($state, $record): void {
-                                        if ($record) {
-                                            $record->setMeta('post_teaser', $state);
-                                        }
-                                    })
+                                    // Dehydrates with the form: HasMeta::fill() routes it to
+                                    // postmeta on both create (pendingMeta) and edit
                                     ->hintAction(GenerateTeaserAction::make('generate_teaser')),
 
                                 RichEditor::make('post_content')
