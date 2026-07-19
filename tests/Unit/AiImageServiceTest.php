@@ -50,6 +50,34 @@ describe('generate', function () {
     })->throws(Exception::class, 'not configured');
 });
 
+describe('provider fallback', function () {
+    test('routes to a configured image-capable provider when the SDK image default is unconfigured', function () {
+        // The SDK ships default_for_images = gemini; only openai has a key here.
+        config()->set('ai.default_for_images', 'gemini');
+        Image::fake();
+
+        $this->service->generate('a mountain');
+
+        Image::assertGenerated(fn ($prompt) => $prompt->provider instanceof \Laravel\Ai\Providers\OpenAiProvider);
+    });
+
+    test('fallbackProvider defers to the SDK default when it is configured', function () {
+        config()->set('ai.default_for_images', 'openai');
+
+        $method = new ReflectionMethod($this->service, 'fallbackProvider');
+
+        expect($method->invoke($this->service))->toBeNull();
+    });
+
+    test('fallbackProvider returns the first configured image-capable provider otherwise', function () {
+        config()->set('ai.default_for_images', 'gemini');
+
+        $method = new ReflectionMethod($this->service, 'fallbackProvider');
+
+        expect($method->invoke($this->service))->toBe('openai');
+    });
+});
+
 describe('aspectSize', function () {
     test('passes through supported ratios and maps the rest to 16:9', function () {
         $media = app(MediaSettings::class);

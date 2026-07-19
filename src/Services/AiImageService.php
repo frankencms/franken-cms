@@ -28,11 +28,13 @@ class AiImageService
 
         $settings = app(AiSettings::class);
 
-        $provider = $settings->featured_image_provider;
+        $selected = $settings->featured_image_provider;
 
-        if ($provider && ! array_key_exists($provider, AiFeatureDetector::imageCapableProviders())) {
-            throw new Exception("The selected image provider [{$provider}] is not configured. Update the AI settings or set its API key in your .env.");
+        if ($selected && ! array_key_exists($selected, AiFeatureDetector::imageCapableProviders())) {
+            throw new Exception("The selected image provider [{$selected}] is not configured. Update the AI settings or set its API key in your .env.");
         }
+
+        $provider = $selected ?? $this->fallbackProvider();
 
         try {
             return Image::of($prompt)
@@ -40,11 +42,28 @@ class AiImageService
                 ->quality($settings->featured_image_quality)
                 ->generate(
                     provider: $provider,
-                    model: $provider ? $settings->featured_image_model : null,
+                    model: $selected ? $settings->featured_image_model : null,
                 );
         } catch (Exception $e) {
             throw new Exception('AI image generation failed: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * The SDK's default_for_images provider may not have credentials even
+     * when the feature is available (e.g. the SDK defaults images to gemini
+     * while only OPENAI_API_KEY is set). Route to a configured image-capable
+     * provider in that case; null lets the SDK use its own default.
+     */
+    protected function fallbackProvider(): ?string
+    {
+        $default = config('ai.default_for_images');
+
+        if ($default && array_key_exists($default, AiFeatureDetector::imageCapableProviders())) {
+            return null;
+        }
+
+        return array_key_first(AiFeatureDetector::imageCapableProviders());
     }
 
     /**
