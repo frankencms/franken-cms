@@ -74,6 +74,58 @@ With the SDK installed and at least one provider configured, go to **CMS Setting
 
 > **Note:** API keys are no longer stored in the database. If you're upgrading from an older Franken CMS version, remove any stale `cms_ai.api_key` row from your settings table (or run `php artisan migrate:fresh`) and set the key in `.env` instead.
 
+## Open Graph Images
+
+Franken CMS can generate og:image and twitter:image previews automatically for posts and pages, built on [spatie/laravel-og-image](https://github.com/spatie/laravel-og-image). It's entirely opt-in — without the package, manual per-post uploads and the site default image keep working exactly as before.
+
+### Install the package
+
+```bash
+composer require spatie/laravel-og-image
+```
+
+The `franken-cms:install` command will also offer to install and wire it up for you.
+
+### Map templates
+
+Templates are mapped by post type in `config/franken-cms.php`:
+
+```php
+'og_image' => [
+    'templates' => [
+        'post' => 'theme.og-templates.post',
+        'page' => 'theme.og-templates.page',
+    ],
+],
+```
+
+Each template is a plain Blade view rendered on a 1200×630 canvas and receives `$post` — do not wrap it in `<x-og-image>` yourself, Franken CMS's component handles that.
+
+### Add the component
+
+Drop `<x-franken-og-image />` into your theme layout before `</body>` (the example theme ships with it already in place).
+
+### Resolution order
+
+For each page, an image is resolved in this order: mapped template → per-post uploaded image → site default image. Posts that opt into Twitter summary cards (instead of large-image cards) keep the classic manual `og:image`/`twitter:image` tag path.
+
+### Rendering environment
+
+Image generation needs Chrome and Node available on the server. If that's not an option, set the following in `.env` to render via Cloudflare's Browser Rendering API instead:
+
+```env
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_ACCOUNT_ID=
+```
+
+### Hand-coded pages
+
+For routes outside the CMS (hand-coded, non-post/page views), use `<x-og-image>` directly per [Spatie's documentation](https://github.com/spatie/laravel-og-image).
+
+### Previewing
+
+Append `?ogimage` to any page URL to preview the generated image directly in the browser.
+
 ## Testing
 
 ```bash
