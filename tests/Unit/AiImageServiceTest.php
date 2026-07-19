@@ -32,7 +32,7 @@ describe('generate', function () {
         $media->save();
 
         $settings = app(AiSettings::class);
-        $settings->featured_image_quality = 'high';
+        $settings->image_quality = 'high';
         $settings->save();
 
         $this->service->generate('a mountain');
@@ -44,7 +44,7 @@ describe('generate', function () {
 
     test('throws when the settings-selected image provider is no longer configured', function () {
         $settings = app(AiSettings::class);
-        $settings->featured_image_provider = 'gemini'; // capable but unconfigured
+        $settings->image_provider = 'gemini'; // capable but unconfigured
         $settings->save();
 
         $this->service->generate('a mountain');

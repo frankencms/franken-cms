@@ -27,7 +27,7 @@ describe('generate', function () {
 
         $settings = app(AiSettings::class);
         $settings->enabled = true;
-        $settings->provider = 'openai';
+        $settings->text_provider = 'openai';
         $settings->save();
 
         $this->service->generate('generate_seo_title', ['title' => 'Test']);

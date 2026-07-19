@@ -17,8 +17,8 @@ function createAiSettingsMock(array $overrides = []): AiSettings
 
     // Set defaults
     $settings->enabled = $overrides['enabled'] ?? true;
-    $settings->provider = $overrides['provider'] ?? 'openai';
-    $settings->model = $overrides['model'] ?? 'gpt-4o';
+    $settings->text_provider = $overrides['provider'] ?? 'openai';
+    $settings->text_model = $overrides['model'] ?? 'gpt-4o';
     $settings->seo_title_enabled = $overrides['seo_title_enabled'] ?? true;
     $settings->seo_title_prompt = $overrides['seo_title_prompt'] ?? 'Generate an SEO title for: {title}';
     $settings->seo_description_enabled = $overrides['seo_description_enabled'] ?? true;

@@ -30,8 +30,8 @@ class AiService
 
         $settings = app(AiSettings::class);
 
-        if (! array_key_exists($settings->provider, AiFeatureDetector::configuredProviders())) {
-            throw new Exception("The selected AI provider [{$settings->provider}] is not configured. Set its API key in your .env or choose a configured provider in settings.");
+        if (! array_key_exists($settings->text_provider, AiFeatureDetector::configuredProviders())) {
+            throw new Exception("The selected AI text provider [{$settings->text_provider}] is not configured. Set its API key in your .env or choose a configured provider in settings.");
         }
 
         $promptConfig = $this->promptManager->getPrompt($actionKey);
@@ -60,8 +60,8 @@ class AiService
                 $stream = $agent->stream(
                     $formattedPrompt,
                     $attachments,
-                    provider: $settings->provider,
-                    model: $settings->model,
+                    provider: $settings->text_provider,
+                    model: $settings->text_model,
                 );
 
                 foreach ($stream as $event) {
@@ -77,8 +77,8 @@ class AiService
             $response = $agent->prompt(
                 $formattedPrompt,
                 $attachments,
-                provider: $settings->provider,
-                model: $settings->model,
+                provider: $settings->text_provider,
+                model: $settings->text_model,
             );
 
             return trim($response->text);
@@ -99,14 +99,14 @@ class AiService
         try {
             $settings = app(AiSettings::class);
 
-            if (! array_key_exists($settings->provider, AiFeatureDetector::configuredProviders())) {
+            if (! array_key_exists($settings->text_provider, AiFeatureDetector::configuredProviders())) {
                 return false;
             }
 
             $response = (new CmsAgent(maxTokens: 10))->prompt(
                 'Respond with only the word "OK"',
-                provider: $settings->provider,
-                model: $settings->model,
+                provider: $settings->text_provider,
+                model: $settings->text_model,
             );
 
             return ! empty($response->text);
