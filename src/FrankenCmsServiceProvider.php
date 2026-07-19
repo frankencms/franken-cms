@@ -30,6 +30,7 @@ use FrankenCms\Models\Taxonomy;
 use FrankenCms\Models\Term;
 use FrankenCms\Models\UserBio;
 use FrankenCms\Observers\PostObserver;
+use FrankenCms\OgImage\OgImageFeature;
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Providers\SeoServiceProvider;
 use FrankenCms\Registries\FieldTypeRegistry;
@@ -67,6 +68,7 @@ use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spatie\LaravelSettings\Events\SettingsSaved;
+use Spatie\OgImage\Facades\OgImage;
 
 class FrankenCmsServiceProvider extends PackageServiceProvider
 {
@@ -213,6 +215,9 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // This allows themes to have their own self-contained components
         $this->registerThemeComponents();
 
+        // Register Cloudflare Browser Rendering for spatie/laravel-og-image, if configured
+        $this->registerOgImageRendering();
+
         // Register custom blade directives
         $this->registerBladeDirectives();
         $this->registerFieldTypes();
@@ -288,6 +293,22 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             Blade::anonymousComponentPath(
                 $componentsPath,
                 'theme'
+            );
+        }
+    }
+
+    private function registerOgImageRendering(): void
+    {
+        if (! OgImageFeature::isInstalled()) {
+            return;
+        }
+
+        $cloudflare = config('franken-cms.og_image.cloudflare');
+
+        if (! empty($cloudflare['api_token']) && ! empty($cloudflare['account_id'])) {
+            OgImage::useCloudflare(
+                apiToken: $cloudflare['api_token'],
+                accountId: $cloudflare['account_id'],
             );
         }
     }

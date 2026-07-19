@@ -29,6 +29,32 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | OG Image Generation
+    |--------------------------------------------------------------------------
+    |
+    | Requires spatie/laravel-og-image (composer require spatie/laravel-og-image).
+    | Map post types to Blade views containing an <x-og-image> component; add
+    | <x-franken-og-image /> to your theme layout once. Manual per-post uploads
+    | and the site default image are used automatically as fallbacks.
+    | For hosts without Chrome/Node, set the Cloudflare credentials below to
+    | render via Cloudflare's Browser Rendering API.
+    |
+    */
+
+    'og_image' => [
+        'enabled'   => true,
+        'templates' => [
+            // 'post' => 'theme.og-templates.post',
+            // 'page' => 'theme.og-templates.page',
+        ],
+        'cloudflare' => [
+            'api_token'  => env('CLOUDFLARE_API_TOKEN'),
+            'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Menu Configuration
     |--------------------------------------------------------------------------
     |
