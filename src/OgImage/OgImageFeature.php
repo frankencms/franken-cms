@@ -40,6 +40,17 @@ class OgImageFeature
     }
 
     /**
+     * The site-wide fallback template, used when no type template, manual
+     * upload, or default image resolves for a page
+     */
+    public static function defaultTemplate(): ?string
+    {
+        $view = config('franken-cms.og_image.default_template');
+
+        return ($view && view()->exists($view)) ? $view : null;
+    }
+
+    /**
      * Whether the current page will carry an og-image component.
      * Mirrors the component's branch logic so AddSeoDefaults can defer
      * tag ownership to the Spatie middleware without duplicates.
@@ -58,11 +69,7 @@ class OgImageFeature
         }
 
         // Summary-card posts keep the classic tag path (spatie always emits summary_large_image)
-        $usesSummary = $post
-            ? $post->getMeta('seo_use_twitter_summary', app(SeoSettings::class)->use_twitter_summary_card)
-            : app(SeoSettings::class)->use_twitter_summary_card;
-
-        if ($usesSummary) {
+        if ($post->getMeta('seo_use_twitter_summary', app(SeoSettings::class)->use_twitter_summary_card)) {
             return false;
         }
 
@@ -70,10 +77,14 @@ class OgImageFeature
             return true;
         }
 
-        if ($post?->getFirstMedia('seo-og')) {
+        if ($post->getFirstMedia('seo-og')) {
             return true;
         }
 
-        return SiteSettingsMedia::getInstance()->hasMedia('og-default');
+        if (SiteSettingsMedia::getInstance()->hasMedia('og-default')) {
+            return true;
+        }
+
+        return self::defaultTemplate() !== null;
     }
 }

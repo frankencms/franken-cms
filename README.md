@@ -107,7 +107,7 @@ Drop `<x-franken-og-image />` into your theme layout before `</body>` (the examp
 
 ### Resolution order
 
-For each page, an image is resolved in this order: mapped template → per-post uploaded image → site default image. Posts that opt into Twitter summary cards (instead of large-image cards) keep the classic manual `og:image`/`twitter:image` tag path.
+For each page, an image is resolved in this order: mapped template → per-post uploaded image → site default image → site-wide fallback template. The fallback template is opt-in — point `og_image.default_template` in `config/franken-cms.php` at a Blade view (the example theme ships one at `theme.og-templates.default`) and it generates an image for any page that would otherwise have none. Posts that opt into Twitter summary cards (instead of large-image cards) keep the classic manual `og:image`/`twitter:image` tag path.
 
 ### Rendering environment
 

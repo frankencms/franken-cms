@@ -48,6 +48,26 @@ describe('templateFor', function () {
     });
 });
 
+describe('defaultTemplate', function () {
+    test('returns null when not configured', function () {
+        config()->set('franken-cms.og_image.default_template', null);
+
+        expect(OgImageFeature::defaultTemplate())->toBeNull();
+    });
+
+    test('returns null when the configured view does not exist', function () {
+        config()->set('franken-cms.og_image.default_template', 'theme.og-templates.missing');
+
+        expect(OgImageFeature::defaultTemplate())->toBeNull();
+    });
+
+    test('returns the configured view when it exists', function () {
+        config()->set('franken-cms.og_image.default_template', 'franken-cms::help');
+
+        expect(OgImageFeature::defaultTemplate())->toBe('franken-cms::help');
+    });
+});
+
 describe('resolvesFor', function () {
     test('is false when nothing resolves', function () {
         config()->set('franken-cms.og_image.templates', []);
@@ -109,6 +129,14 @@ describe('resolvesFor', function () {
             'responsive_images'     => [],
             'order_column'          => 1,
         ]);
+
+        expect(OgImageFeature::resolvesFor($post))->toBeTrue();
+    });
+
+    test('is true when only the default fallback template is configured', function () {
+        config()->set('franken-cms.og_image.templates', []);
+        config()->set('franken-cms.og_image.default_template', 'franken-cms::help');
+        $post = Post::factory()->create();
 
         expect(OgImageFeature::resolvesFor($post))->toBeTrue();
     });
