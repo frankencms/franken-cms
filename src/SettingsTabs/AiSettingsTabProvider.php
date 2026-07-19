@@ -6,6 +6,7 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -252,6 +253,67 @@ class AiSettingsTabProvider implements SettingsTabProviderInterface
                                                     ->columnSpanFull()
                                                     ->visible(fn ($get) => $get('blog_post_title_enabled')),
                                             ])
+                                            ->collapsible()
+                                            ->collapsed(),
+
+                                        // Featured Image Generation
+                                        Section::make('Featured Image Generation')
+                                            ->description('Generate a featured image with an image-capable AI provider when a post has none')
+                                            ->schema([
+                                                Toggle::make('featured_image_enabled')
+                                                    ->label('Featured Image Generation')
+                                                    ->helperText('Generate featured images with an image-capable AI model')
+                                                    ->default(true)
+                                                    ->live()
+                                                    ->columnSpanFull(),
+
+                                                TextEntry::make('featured_image_provider_notice')
+                                                    ->label('')
+                                                    ->markdown()
+                                                    ->state(
+                                                        '**No image-capable provider configured.** Add e.g. '
+                                                        . '`OPENAI_API_KEY` or `GEMINI_API_KEY` to your `.env`.'
+                                                    )
+                                                    ->visible(fn () => empty(AiFeatureDetector::imageCapableProviders()))
+                                                    ->columnSpanFull(),
+
+                                                Textarea::make('featured_image_prompt')
+                                                    ->label('Image Prompt Template')
+                                                    ->helperText('Pre-fills the generation prompt. Placeholders: {title}, {excerpt}')
+                                                    ->columnSpanFull()
+                                                    ->visible(fn ($get) => $get('featured_image_enabled')),
+
+                                                Select::make('featured_image_quality')
+                                                    ->label('Image Quality')
+                                                    ->options([
+                                                        'low'    => 'Low',
+                                                        'medium' => 'Medium',
+                                                        'high'   => 'High',
+                                                    ])
+                                                    ->default('medium')
+                                                    ->visible(fn ($get) => $get('featured_image_enabled'))
+                                                    ->columnSpan(1),
+
+                                                Select::make('featured_image_provider')
+                                                    ->label('Image Provider')
+                                                    ->options(fn () => AiFeatureDetector::imageCapableProviders())
+                                                    ->placeholder('SDK default (config/ai.php)')
+                                                    ->nullable()
+                                                    ->live()
+                                                    ->afterStateUpdated(fn ($set) => $set('featured_image_model', null))
+                                                    ->visible(fn ($get) => $get('featured_image_enabled'))
+                                                    ->columnSpan(1),
+
+                                                Select::make('featured_image_model')
+                                                    ->label('Image Model')
+                                                    ->options(fn ($get) => app(AiModelService::class)->imageModelsForProvider($get('featured_image_provider') ?? ''))
+                                                    ->placeholder('Provider default')
+                                                    ->nullable()
+                                                    ->helperText('Leave empty for the provider default model')
+                                                    ->visible(fn ($get) => $get('featured_image_enabled') && filled($get('featured_image_provider')))
+                                                    ->columnSpanFull(),
+                                            ])
+                                            ->columns(2)
                                             ->collapsible()
                                             ->collapsed(),
 

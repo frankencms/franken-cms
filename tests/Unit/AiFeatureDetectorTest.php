@@ -67,3 +67,54 @@ describe('isAvailable', function () {
         expect(AiFeatureDetector::isAvailable())->toBeTrue();
     });
 });
+
+describe('imageCapableProviders', function () {
+    test('returns only configured providers that support image generation', function () {
+        config()->set('ai.providers', [
+            'openai'    => ['driver' => 'openai', 'key' => 'sk-test'],
+            'anthropic' => ['driver' => 'anthropic', 'key' => 'sk-test'],
+            'gemini'    => ['driver' => 'gemini', 'key' => null],
+        ]);
+
+        // anthropic is configured but not image-capable; gemini is capable but unconfigured
+        expect(AiFeatureDetector::imageCapableProviders())->toBe(['openai' => 'Openai']);
+    });
+
+    test('returns empty array when nothing image-capable is configured', function () {
+        config()->set('ai.providers', [
+            'anthropic' => ['driver' => 'anthropic', 'key' => 'sk-test'],
+        ]);
+
+        expect(AiFeatureDetector::imageCapableProviders())->toBe([]);
+    });
+});
+
+describe('isImageAvailable', function () {
+    test('is false when no image-capable provider is configured', function () {
+        config()->set('ai.providers', ['anthropic' => ['driver' => 'anthropic', 'key' => 'sk-test']]);
+        $settings = app(AiSettings::class);
+        $settings->enabled = true;
+        $settings->save();
+
+        expect(AiFeatureDetector::isImageAvailable())->toBeFalse();
+    });
+
+    test('is true when AI is enabled and an image-capable provider is configured', function () {
+        config()->set('ai.providers', ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]);
+        $settings = app(AiSettings::class);
+        $settings->enabled = true;
+        $settings->save();
+
+        expect(AiFeatureDetector::isImageAvailable())->toBeTrue();
+    });
+
+    test('is false when the featured image feature is disabled in settings', function () {
+        config()->set('ai.providers', ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]);
+        $settings = app(AiSettings::class);
+        $settings->enabled = true;
+        $settings->featured_image_enabled = false;
+        $settings->save();
+
+        expect(AiFeatureDetector::isImageAvailable())->toBeFalse();
+    });
+});

@@ -48,6 +48,17 @@ class AiSettings extends Settings
 
     public string $blog_post_title_prompt = '';
 
+    // Featured Image Generation
+    public bool $featured_image_enabled = true;
+
+    public string $featured_image_prompt = '';
+
+    public string $featured_image_quality = 'medium';
+
+    public ?string $featured_image_provider = null;
+
+    public ?string $featured_image_model = null;
+
     public static function group(): string
     {
         return 'franken_cms_ai';

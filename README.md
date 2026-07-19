@@ -74,6 +74,19 @@ With the SDK installed and at least one provider configured, go to **CMS Setting
 
 > **Note:** API keys are no longer stored in the database. If you're upgrading from an older Franken CMS version, remove any stale `cms_ai.api_key` row from your settings table (or run `php artisan migrate:fresh`) and set the key in `.env` instead.
 
+### Featured image generation
+
+Igor can also generate a post's featured image. This needs an *image-capable* provider — `OPENAI_API_KEY` or `GEMINI_API_KEY` are the easiest to set up, but Azure, Bedrock, xAI, and OpenRouter also work as long as they're configured with credentials in `config/ai.php`.
+
+Configure it in **CMS Settings → Igor → Prompts → Featured Image Generation**:
+
+- A toggle to enable/disable the feature
+- A prompt template with `{title}` and `{excerpt}` placeholders (`{excerpt}` is filled from the post's teaser field)
+- An optional provider/model override — leave it unset to use the SDK's `default_for_images` from `config/ai.php`
+- An image quality setting (low/medium/high)
+
+Once enabled, a **Generate with AI** button appears next to the featured image upload when editing an existing post or page (it's hidden while creating a new one, since there's no record yet to attach the image to). The generated image's aspect ratio follows the featured image aspect ratio configured in Media settings (21:9 and custom ratios fall back to 16:9).
+
 ## Open Graph Images
 
 Franken CMS can generate og:image and twitter:image previews automatically for posts and pages, built on [spatie/laravel-og-image](https://github.com/spatie/laravel-og-image). It's entirely opt-in — without the package, manual per-post uploads and the site default image keep working exactly as before.

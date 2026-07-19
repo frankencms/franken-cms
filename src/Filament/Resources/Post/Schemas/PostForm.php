@@ -23,6 +23,7 @@ use FrankenCms\Enums\PostStatus;
 use FrankenCms\Enums\PostType;
 use FrankenCms\Filament\Actions\GenerateAltTextAction;
 use FrankenCms\Filament\Actions\GenerateBlogPostAction;
+use FrankenCms\Filament\Actions\GenerateFeaturedImageAction;
 use FrankenCms\Filament\Actions\GenerateImageTitleAction;
 use FrankenCms\Filament\Actions\GenerateTeaserAction;
 use FrankenCms\Filament\Actions\GenerateTitleAction;
@@ -343,6 +344,7 @@ class PostForm
                                             ->label(__('Featured Image'))
                                             ->collection('featured')
 //                                            ->disk('public')
+                                            ->hintAction(GenerateFeaturedImageAction::make('generate_featured_image'))
                                             ->image()
                                             ->imageEditor()
                                             ->imageEditorAspectRatios(function () use ($mediaSettings) {
