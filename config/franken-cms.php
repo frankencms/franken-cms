@@ -47,7 +47,11 @@ return [
             // 'post' => 'theme.og-templates.post',
             // 'page' => 'theme.og-templates.page',
         ],
-        'cloudflare' => [
+
+        // Site-wide fallback template, used when a page has no type template,
+        // no manually uploaded image, and no default image in SEO settings.
+        'default_template' => null, // e.g. 'theme.og-templates.default'
+        'cloudflare'       => [
             'api_token'  => env('CLOUDFLARE_API_TOKEN'),
             'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
         ],

@@ -40,6 +40,17 @@ class OgImageFeature
     }
 
     /**
+     * The site-wide fallback template, used when no type template, manual
+     * upload, or default image resolves for a page
+     */
+    public static function defaultTemplate(): ?string
+    {
+        $view = config('franken-cms.og_image.default_template');
+
+        return ($view && view()->exists($view)) ? $view : null;
+    }
+
+    /**
      * Whether the current page will carry an og-image component.
      * Mirrors the component's branch logic so AddSeoDefaults can defer
      * tag ownership to the Spatie middleware without duplicates.
@@ -74,6 +85,10 @@ class OgImageFeature
             return true;
         }
 
-        return SiteSettingsMedia::getInstance()->hasMedia('og-default');
+        if (SiteSettingsMedia::getInstance()->hasMedia('og-default')) {
+            return true;
+        }
+
+        return self::defaultTemplate() !== null;
     }
 }

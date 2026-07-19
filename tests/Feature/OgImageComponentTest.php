@@ -113,6 +113,46 @@ test('renders nothing when nothing resolves', function () {
     expect(trim(Blade::render('<x-franken-og-image />')))->toBe('');
 });
 
+test('renders the default fallback template when nothing else resolves', function () {
+    config()->set('franken-cms.og_image.templates', []);
+    config()->set('franken-cms.og_image.default_template', 'test-fixtures::og-post');
+    $post = Post::factory()->create();
+    app(CurrentPageService::class)->setPage($post);
+
+    $html = Blade::render('<x-franken-og-image />');
+
+    expect($html)->toContain('data-og-image')
+        ->and($html)->toContain('data-og-hash');
+});
+
+test('prefers the site default image over the fallback template', function () {
+    config()->set('franken-cms.og_image.templates', []);
+    config()->set('franken-cms.og_image.default_template', 'test-fixtures::og-post');
+    $post = Post::factory()->create();
+    app(CurrentPageService::class)->setPage($post);
+
+    $siteSettings = SiteSettingsMedia::getInstance();
+    $siteSettings->media()->create([
+        'collection_name'       => 'og-default',
+        'name'                  => 'default-og',
+        'file_name'             => 'default-og.jpg',
+        'mime_type'             => 'image/jpeg',
+        'disk'                  => 'public',
+        'conversions_disk'      => 'public',
+        'size'                  => 1024,
+        'manipulations'         => [],
+        'custom_properties'     => [],
+        'generated_conversions' => [],
+        'responsive_images'     => [],
+        'order_column'          => 1,
+    ]);
+
+    $html = Blade::render('<x-franken-og-image />');
+
+    expect($html)->toContain($siteSettings->getFirstMedia('og-default')->getFullUrl('og'))
+        ->and($html)->not->toContain('data-og-hash');
+});
+
 test('renders nothing when there is no current page and no site default', function () {
     config()->set('franken-cms.og_image.templates', []);
 
