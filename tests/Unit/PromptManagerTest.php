@@ -53,7 +53,7 @@ describe('getPrompt', function () {
         expect($config['enabled'])->toBeTrue();
         expect($config['context'])->toBe('all');
         expect($config['supports_vision'])->toBeFalse();
-        expect($config['max_tokens'])->toBe(100);
+        expect($config['max_tokens'])->toBe(2000);
     });
 
     test('returns vision-enabled config for alt text', function () {

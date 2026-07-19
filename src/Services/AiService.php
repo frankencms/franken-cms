@@ -71,7 +71,7 @@ class AiService
                     }
                 }
 
-                return trim($fullText);
+                return $this->guardAgainstEmptyResult(trim($fullText));
             }
 
             $response = $agent->prompt(
@@ -81,10 +81,26 @@ class AiService
                 model: $settings->text_model,
             );
 
-            return trim($response->text);
+            return $this->guardAgainstEmptyResult(trim($response->text));
         } catch (Exception $e) {
             throw new Exception('AI generation failed: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * An empty result is a failure, not a success — typically a reasoning
+     * model exhausting the token cap before producing output, or a model
+     * incompatible with the request.
+     *
+     * @throws Exception
+     */
+    protected function guardAgainstEmptyResult(string $text): string
+    {
+        if ($text === '') {
+            throw new Exception('the model returned no content. Try a different model, or check that your provider project has access to the selected one.');
+        }
+
+        return $text;
     }
 
     /**

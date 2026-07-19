@@ -1,5 +1,6 @@
 <?php
 
+use FrankenCms\Ai\CmsAgent;
 use FrankenCms\Prompts\PromptManager;
 use FrankenCms\Services\AiService;
 use FrankenCms\Settings\AiSettings;
@@ -83,4 +84,29 @@ describe('buildImageAttachments', function () {
 
         expect($attachments)->toBe([]);
     });
+});
+
+describe('generation results', function () {
+    beforeEach(function () {
+        config()->set('ai.providers', ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]);
+        $settings = app(AiSettings::class);
+        $settings->enabled = true;
+        $settings->text_provider = 'openai';
+        $settings->text_model = 'gpt-4o';
+        $settings->save();
+    });
+
+    test('returns the trimmed model output', function () {
+        CmsAgent::fake(['  A Great Coffee Title  ']);
+
+        $result = $this->service->generate('blog_post_title', ['title' => '', 'content' => 'coffee']);
+
+        expect($result)->toBe('A Great Coffee Title');
+    });
+
+    test('treats an empty model response as a failure, not a success', function () {
+        CmsAgent::fake(['']);
+
+        $this->service->generate('blog_post_title', ['title' => '', 'content' => 'coffee']);
+    })->throws(Exception::class, 'returned no content');
 });
