@@ -69,11 +69,7 @@ class OgImageFeature
         }
 
         // Summary-card posts keep the classic tag path (spatie always emits summary_large_image)
-        $usesSummary = $post
-            ? $post->getMeta('seo_use_twitter_summary', app(SeoSettings::class)->use_twitter_summary_card)
-            : app(SeoSettings::class)->use_twitter_summary_card;
-
-        if ($usesSummary) {
+        if ($post->getMeta('seo_use_twitter_summary', app(SeoSettings::class)->use_twitter_summary_card)) {
             return false;
         }
 
@@ -81,7 +77,7 @@ class OgImageFeature
             return true;
         }
 
-        if ($post?->getFirstMedia('seo-og')) {
+        if ($post->getFirstMedia('seo-og')) {
             return true;
         }
 
