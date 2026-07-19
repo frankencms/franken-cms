@@ -43,10 +43,17 @@ class OgImageFeature
      * Whether the current page will carry an og-image component.
      * Mirrors the component's branch logic so AddSeoDefaults can defer
      * tag ownership to the Spatie middleware without duplicates.
+     * Generation is scoped to CMS-managed pages (posts/pages resolved via
+     * CurrentPageService); hand-coded routes with no current page always
+     * keep the classic tag path, even when a site default og-default exists.
      */
     public static function resolvesFor(?Post $post): bool
     {
         if (! self::isEnabled()) {
+            return false;
+        }
+
+        if (! $post) {
             return false;
         }
 

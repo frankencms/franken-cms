@@ -2,6 +2,7 @@
 
 use FrankenCms\Http\Middleware\AddSeoDefaults;
 use FrankenCms\Models\Post;
+use FrankenCms\Models\SiteSettingsMedia;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Tests\Support\User;
 use Illuminate\Http\Request;
@@ -86,4 +87,31 @@ test('summary-card posts keep the classic tags even when a template is mapped', 
     $html = runOgOwnershipMiddleware();
 
     expect($html)->toContain('name="twitter:card" content="summary"');
+});
+
+test('hand-coded routes with no current page keep classic og:image and twitter:card even with a site default', function () {
+    config()->set('franken-cms.og_image.enabled', true);
+    config()->set('franken-cms.og_image.templates', ['post' => 'franken-cms::help']);
+
+    $siteSettings = SiteSettingsMedia::getInstance();
+    $siteSettings->media()->create([
+        'collection_name'       => 'og-default',
+        'name'                  => 'default-og',
+        'file_name'             => 'default-og.jpg',
+        'mime_type'             => 'image/jpeg',
+        'disk'                  => 'public',
+        'conversions_disk'      => 'public',
+        'size'                  => 1024,
+        'manipulations'         => [],
+        'custom_properties'     => [],
+        'generated_conversions' => [],
+        'responsive_images'     => [],
+        'order_column'          => 1,
+    ]);
+
+    // No current page set - simulates a hand-coded, non-CMS route.
+    $html = runOgOwnershipMiddleware();
+
+    expect($html)->toContain('property="og:image"')
+        ->and($html)->toContain('name="twitter:card"');
 });

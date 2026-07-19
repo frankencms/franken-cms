@@ -83,6 +83,28 @@ test('falls back to the site default og image url when no template or post media
         ->and($html)->toContain('data-og-url');
 });
 
+test('renders nothing when there is a site default but no current page (non-CMS route)', function () {
+    config()->set('franken-cms.og_image.templates', []);
+
+    $siteSettings = SiteSettingsMedia::getInstance();
+    $siteSettings->media()->create([
+        'collection_name'       => 'og-default',
+        'name'                  => 'default-og',
+        'file_name'             => 'default-og.jpg',
+        'mime_type'             => 'image/jpeg',
+        'disk'                  => 'public',
+        'conversions_disk'      => 'public',
+        'size'                  => 1024,
+        'manipulations'         => [],
+        'custom_properties'     => [],
+        'generated_conversions' => [],
+        'responsive_images'     => [],
+        'order_column'          => 1,
+    ]);
+
+    expect(trim(Blade::render('<x-franken-og-image />')))->toBe('');
+});
+
 test('renders nothing when nothing resolves', function () {
     config()->set('franken-cms.og_image.templates', []);
     $post = Post::factory()->create();

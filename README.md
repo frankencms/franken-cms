@@ -122,6 +122,8 @@ CLOUDFLARE_ACCOUNT_ID=
 
 For routes outside the CMS (hand-coded, non-post/page views), use `<x-og-image>` directly per [Spatie's documentation](https://github.com/spatie/laravel-og-image).
 
+FrankenCMS's OG image generation is scoped to CMS-managed pages, so on these non-CMS routes it keeps emitting its own classic tags (including a site default `og:image`, if one is configured). That means a page using `<x-og-image>` directly will end up with Spatie's generated tag alongside FrankenCMS's classic tag. Crawlers generally take the first `og:image` they encounter, so if that matters, either remove the site default or skip the `<x-og-image>` component on that page.
+
 ### Previewing
 
 Append `?ogimage` to any page URL to preview the generated image directly in the browser.

@@ -120,4 +120,25 @@ describe('resolvesFor', function () {
 
         expect(OgImageFeature::resolvesFor($post))->toBeFalse();
     });
+
+    test('is false for a null post even when a site default og-default exists', function () {
+        config()->set('franken-cms.og_image.templates', []);
+
+        $siteSettings = SiteSettingsMedia::getInstance();
+        $siteSettings->media()->create([
+            'collection_name'       => 'og-default',
+            'name'                  => 'default-og',
+            'file_name'             => 'default-og.jpg',
+            'mime_type'             => 'image/jpeg',
+            'disk'                  => 'public',
+            'size'                  => 1024,
+            'manipulations'         => [],
+            'custom_properties'     => [],
+            'generated_conversions' => [],
+            'responsive_images'     => [],
+            'order_column'          => 1,
+        ]);
+
+        expect(OgImageFeature::resolvesFor(null))->toBeFalse();
+    });
 });
