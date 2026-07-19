@@ -150,7 +150,7 @@ class IgorMessages
                 'doctor' => 'Now our creation will look MAGNIFICENT in the admin panel!',
             ],
             'og_image_offer' => [
-                'igor'   => 'Master, shall Igor summon the Ogre to paint portraits of every page? 🖼️',
+                'igor'   => 'Master, shall Igor install the Ogre (spatie/laravel-og-image) to paint automatic portraits for every page?',
                 'doctor' => 'A likeness, automatically rendered! Every creation deserves its portrait!',
             ],
             'og_image_installing' => [
@@ -162,7 +162,7 @@ class IgorMessages
                 'doctor' => 'MAGNIFICENT! Every page now bears its own likeness!',
             ],
             'og_image_skip' => [
-                'igor'   => 'As you wish, Master. Manual portraits will suffice for now...',
+                'igor'   => 'As you wish, Master. Manual portraits will suffice for now — summon the Ogre later with: composer require spatie/laravel-og-image',
                 'doctor' => 'No matter — we may summon the Ogre again another night!',
             ],
             'og_image_already_installed' => [

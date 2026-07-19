@@ -792,13 +792,13 @@ CSS;
         }
 
         $installOgImage = confirm(
-            label: 'Install spatie/laravel-og-image for automatic OG image generation?',
+            label: IgorMessages::installMessage('og_image_offer', 'igor'),
             default: true,
             hint: 'Recommended — needs Chrome/Node on the server, or Cloudflare credentials'
         );
 
         if (! $installOgImage) {
-            note('Manual OG image uploads will keep working. You can add automatic generation later with: composer require spatie/laravel-og-image');
+            note(IgorMessages::installMessage('og_image_skip', 'igor'));
 
             return;
         }
@@ -809,7 +809,7 @@ CSS;
             function () use (&$exitCode) {
                 exec('composer require spatie/laravel-og-image 2>&1', $output, $exitCode);
             },
-            'Installing spatie/laravel-og-image...'
+            IgorMessages::installMessage('og_image_installing', 'igor')
         );
 
         if ($exitCode !== 0) {
@@ -820,13 +820,24 @@ CSS;
 
         info('spatie/laravel-og-image installed.');
 
+        // Publish in a fresh process — the current process booted before the
+        // package was required, so its class map and provider registration
+        // are stale (package:discover has not run in-process). Shelling out
+        // gives us a fresh `php artisan` boot that can see the new provider.
+        $publishExitCode = 1;
+
         spin(
-            fn () => $this->callSilently('vendor:publish', [
-                '--tag'   => 'og-image-config',
-                '--force' => true,
-            ]),
+            function () use (&$publishExitCode) {
+                exec('php artisan vendor:publish --tag=og-image-config --force 2>&1', $publishOutput, $publishExitCode);
+            },
             'Publishing OG image configuration...'
         );
+
+        if ($publishExitCode !== 0) {
+            warning('Could not publish the OG image config automatically. Please run: php artisan vendor:publish --tag=og-image-config');
+
+            return;
+        }
 
         info(IgorMessages::installMessage('og_image_configured', 'igor'));
 
