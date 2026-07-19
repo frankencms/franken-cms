@@ -37,6 +37,21 @@ test('unknown placeholders are stripped', function () {
     expect($prompt)->toBe('About: X');
 });
 
+test('the modal default prompt maps post_teaser into the excerpt placeholder', function () {
+    $settings = app(AiSettings::class);
+    $settings->featured_image_prompt = 'Header about: {title}, focus {excerpt}';
+    $settings->save();
+
+    // PostForm's live form data uses `post_teaser`, not `post_excerpt`/`excerpt` (see
+    // src/Filament/Resources/Post/Schemas/PostForm.php:88) — pin that field-name mapping.
+    $prompt = GenerateFeaturedImageAction::defaultPromptFor([
+        'post_title'  => 'T',
+        'post_teaser' => 'E',
+    ]);
+
+    expect($prompt)->toBe('Header about: T, focus E');
+});
+
 test('generates and attaches the image to the featured collection', function () {
     Image::fake([TINY_PNG_BASE64]);
 

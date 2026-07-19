@@ -31,14 +31,7 @@ class GenerateFeaturedImageAction
                     ->label('Image prompt')
                     ->rows(4)
                     ->required()
-                    ->default(function ($livewire) {
-                        $data = $livewire->data ?? [];
-
-                        return self::fillPromptTemplate(app(AiSettings::class)->featured_image_prompt, [
-                            'title'   => $data['post_title'] ?? $data['title'] ?? '',
-                            'excerpt' => $data['post_excerpt'] ?? $data['excerpt'] ?? '',
-                        ]);
-                    }),
+                    ->default(fn ($livewire) => self::defaultPromptFor($livewire->data ?? [])),
             ])
             ->modalHeading('Generate Featured Image')
             ->modalSubmitActionLabel('Generate')
@@ -68,6 +61,20 @@ class GenerateFeaturedImageAction
     }
 
     /**
+     * Build the default prompt for the modal form from the current form's data state
+     *
+     * `post_teaser` is the actual field name on PostForm (the "excerpt" placeholder maps to
+     * it); `post_excerpt`/`excerpt` are kept as fallbacks for other consumers of this action.
+     */
+    public static function defaultPromptFor(array $data): string
+    {
+        return self::fillPromptTemplate(app(AiSettings::class)->featured_image_prompt, [
+            'title'   => $data['post_title'] ?? $data['title'] ?? '',
+            'excerpt' => $data['post_teaser'] ?? $data['post_excerpt'] ?? $data['excerpt'] ?? '',
+        ]);
+    }
+
+    /**
      * Interpolate {placeholders} into the prompt template; unknown placeholders are stripped
      */
     public static function fillPromptTemplate(string $template, array $context): string
@@ -94,6 +101,10 @@ class GenerateFeaturedImageAction
 
         // GeneratedImage::store() handles the base64 decode for us.
         $storedPath = $generated->storeAs('ai-featured', $tempName, 'local');
+
+        if (! is_string($storedPath)) {
+            throw new Exception('Failed to store the generated image.');
+        }
 
         try {
             // The 'featured' collection is registered with singleFile(), so
