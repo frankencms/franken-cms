@@ -16,6 +16,7 @@ use FrankenCms\Tests\Support\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use romanzipp\Seo\Providers\SeoServiceProvider as RomanzippSeoServiceProvider;
 use Spatie\LaravelSettings\LaravelSettingsServiceProvider;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;
@@ -85,6 +86,7 @@ class TestCase extends Orchestra
             SitemapServiceProvider::class,
             MediaLibraryServiceProvider::class,
             OgImageServiceProvider::class,
+            RomanzippSeoServiceProvider::class,
             FrankenCmsServiceProvider::class,
             TestPanelProvider::class,
         ];
