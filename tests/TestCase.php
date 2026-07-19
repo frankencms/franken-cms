@@ -14,6 +14,7 @@ use FrankenCms\FrankenCmsServiceProvider;
 use FrankenCms\Tests\Support\TestPanelProvider;
 use FrankenCms\Tests\Support\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Laravel\Ai\AiServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use romanzipp\Seo\Providers\SeoServiceProvider as RomanzippSeoServiceProvider;
@@ -83,6 +84,7 @@ class TestCase extends Orchestra
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
             LaravelSettingsServiceProvider::class,
+            AiServiceProvider::class,
             SitemapServiceProvider::class,
             MediaLibraryServiceProvider::class,
             OgImageServiceProvider::class,

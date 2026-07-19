@@ -36,6 +36,7 @@ use FrankenCms\Providers\SeoServiceProvider;
 use FrankenCms\Registries\FieldTypeRegistry;
 use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\AiFeatureDetector;
+use FrankenCms\Services\AiImageService;
 use FrankenCms\Services\AiModelService;
 use FrankenCms\Services\AiService;
 use FrankenCms\Services\BladeFormDirectiveProcessor;
@@ -163,6 +164,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
             $this->app->singleton(PromptManager::class);
             $this->app->singleton(AiService::class);
             $this->app->singleton(AiModelService::class);
+            $this->app->singleton(AiImageService::class);
         }
 
         // Register SVG Icons
