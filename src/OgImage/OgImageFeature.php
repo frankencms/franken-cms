@@ -40,8 +40,8 @@ class OgImageFeature
     }
 
     /**
-     * The site-wide fallback template, used when no type template, manual
-     * upload, or default image resolves for a page
+     * The site-wide fallback template, used when no manual upload, type
+     * template, or default image resolves for a page
      */
     public static function defaultTemplate(): ?string
     {
@@ -73,11 +73,11 @@ class OgImageFeature
             return false;
         }
 
-        if (self::templateFor($post)) {
+        if ($post->getFirstMedia('seo-og')) {
             return true;
         }
 
-        if ($post->getFirstMedia('seo-og')) {
+        if (self::templateFor($post)) {
             return true;
         }
 

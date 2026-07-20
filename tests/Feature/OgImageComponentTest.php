@@ -56,6 +56,19 @@ test('passes a manual upload url through without generation', function () {
         ->and($html)->toContain('data-og-url');
 });
 
+test('prefers the manual upload over the mapped template', function () {
+    config()->set('franken-cms.og_image.templates', ['post' => 'test-fixtures::og-post']);
+    $post = Post::factory()->create();
+    makeSeoOgMedia($post);
+    app(CurrentPageService::class)->setPage($post);
+
+    $html = Blade::render('<x-franken-og-image />');
+
+    expect($html)->toContain($post->getFirstMedia('seo-og')->getFullUrl('og'))
+        ->and($html)->toContain('data-og-url')
+        ->and($html)->not->toContain('data-og-hash');
+});
+
 test('falls back to the site default og image url when no template or post media', function () {
     config()->set('franken-cms.og_image.templates', []);
     $post = Post::factory()->create();

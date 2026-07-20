@@ -19,6 +19,14 @@ class OgImage extends Component
             return '';
         }
 
+        if ($url = $this->manualUrl($post)) {
+            return view('franken-cms::components.og-image', [
+                'template' => null,
+                'url'      => $url,
+                'post'     => $post,
+            ]);
+        }
+
         if ($template = OgImageFeature::templateFor($post)) {
             return view('franken-cms::components.og-image', [
                 'template' => $template,
@@ -27,7 +35,7 @@ class OgImage extends Component
             ]);
         }
 
-        if ($url = $this->manualUrl($post) ?? $this->defaultUrl()) {
+        if ($url = $this->defaultUrl()) {
             return view('franken-cms::components.og-image', [
                 'template' => null,
                 'url'      => $url,
