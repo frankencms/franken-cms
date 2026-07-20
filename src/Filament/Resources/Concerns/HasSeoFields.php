@@ -294,7 +294,7 @@ trait HasSeoFields
                                 $default = 'Image for social media shares (1200×630px recommended). Used for Facebook, LinkedIn, Twitter, and other platforms. Leave blank to use default or featured image.';
 
                                 if ($record && OgImageFeature::templateFor($record)) {
-                                    return $default . ' An OG image template is active for this content type and takes priority — this upload is only used as a fallback if the template is removed.';
+                                    return $default . ' An OG image template is active for this content type — uploading an image here overrides the generated template image for this page.';
                                 }
 
                                 return $default;
