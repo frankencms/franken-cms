@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Laravel\Ai\AiServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
-use romanzipp\Seo\Providers\SeoServiceProvider as RomanzippSeoServiceProvider;
+use Laravel\Head\HeadServiceProvider;
 use Spatie\LaravelSettings\LaravelSettingsServiceProvider;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;
@@ -101,7 +101,7 @@ class TestCase extends Orchestra
             SitemapServiceProvider::class,
             MediaLibraryServiceProvider::class,
             OgImageServiceProvider::class,
-            RomanzippSeoServiceProvider::class,
+            HeadServiceProvider::class,
             FrankenCmsServiceProvider::class,
             TestPanelProvider::class,
             LivewireServiceProvider::class,
