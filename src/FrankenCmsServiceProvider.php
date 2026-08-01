@@ -32,7 +32,6 @@ use FrankenCms\Models\UserBio;
 use FrankenCms\Observers\PostObserver;
 use FrankenCms\OgImage\OgImageFeature;
 use FrankenCms\Prompts\PromptManager;
-use FrankenCms\Providers\SeoServiceProvider;
 use FrankenCms\Registries\FieldTypeRegistry;
 use FrankenCms\Registries\SettingsTabRegistry;
 use FrankenCms\Services\AiFeatureDetector;
@@ -51,6 +50,7 @@ use FrankenCms\Services\MenuService;
 use FrankenCms\Services\PageRouteService;
 use FrankenCms\Services\PostService;
 use FrankenCms\Services\RobotsService;
+use FrankenCms\Services\SeoService;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Services\SitemapService;
 use FrankenCms\Services\SocialLinksService;
@@ -160,8 +160,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $this->app->singleton(FeedService::class);
         $this->app->singleton(SocialLinksService::class);
 
-        // Register the SEO service provider
-        $this->app->register(SeoServiceProvider::class);
+        // Register the SEO service
+        $this->app->singleton(SeoService::class);
 
         // Register AI services (only if the laravel/ai SDK is installed)
         if (AiFeatureDetector::isInstalled()) {
