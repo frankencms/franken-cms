@@ -108,6 +108,21 @@ it('emits icon tags only for generated favicon files that exist', function () {
     File::deleteDirectory($storagePath);
 });
 
+it('renders the per-post og title/description overrides without the site-name affix', function () {
+    seoDefaultSettings();
+
+    $post = makeHeadPost(['post_title' => 'Hello World']);
+    $post->setMeta('seo_og_title', 'Custom OG Title');
+    $post->setMeta('seo_og_description', 'Custom OG description');
+    app(CurrentPageService::class)->setPage($post);
+
+    $html = runHeadMiddleware();
+
+    expect($html)->toContain('property="og:title" content="Custom OG Title"')
+        ->and($html)->toContain('property="og:description" content="Custom OG description"')
+        ->and($html)->not->toContain('Custom OG Title - Franken Site');
+});
+
 it('adds breadcrumb json-ld schema for posts', function () {
     seoDefaultSettings();
 

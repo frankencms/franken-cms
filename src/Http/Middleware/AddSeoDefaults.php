@@ -61,7 +61,7 @@ class AddSeoDefaults
         // middleware owns og:image/twitter:image/twitter:card - don't duplicate them here.
         $ogImageHandledExternally = OgImageFeature::resolvesFor($post);
 
-        $this->registerCmsDefaults($ogImageHandledExternally);
+        $this->registerCmsDefaults();
 
         foreach (static::$appDefaults as $callback) {
             Head::defaults($callback);
@@ -75,10 +75,18 @@ class AddSeoDefaults
 
     /**
      * Register the CMS-settings-driven defaults layer.
+     *
+     * This layer must render identically on every request regardless of the
+     * og-image deferral outcome: Head::defaults() merges into a HeadManager
+     * that can persist across requests under a worker runtime (Octane,
+     * FrankenPHP), so a request-varying defaults layer would let a prior
+     * request's fields (e.g. twitter:card) leak into a later, differently
+     * shaped request. The twitter:card value itself is set per-request in
+     * the runtime layer (see addPageMetadata()) instead.
      */
-    protected function registerCmsDefaults(bool $ogImageHandledExternally): void
+    protected function registerCmsDefaults(): void
     {
-        Head::defaults(function (HeadBuilder $head) use ($ogImageHandledExternally): void {
+        Head::defaults(function (HeadBuilder $head): void {
             $separator = $this->settings->title_separator;
             $prepend = $this->settings->site_name_position === 'prepend';
 
@@ -112,14 +120,12 @@ class AddSeoDefaults
                 $head->meta('og:app_id', $this->settings->fb_app_id);
             }
 
-            if (! $ogImageHandledExternally) {
-                $head->twitter(
-                    card: $this->settings->use_twitter_summary_card
-                        ? TwitterCard::Summary
-                        : TwitterCard::SummaryWithLargeImage,
-                    site: $this->twitterHandle(),
-                );
-            } elseif ($handle = $this->twitterHandle()) {
+            // The card itself is set at runtime (see addPageMetadata()) so it
+            // never depends on the og-image deferral outcome of a prior request
+            // in this defaults layer. Registering the site handle here keeps
+            // the twitter builder non-empty on non-deferral pages even before
+            // the runtime layer runs, so twitter:title/description still derive.
+            if ($handle = $this->twitterHandle()) {
                 $head->twitter(site: $handle);
             }
 
@@ -154,17 +160,24 @@ class AddSeoDefaults
         Head::og(
             type: $this->seoService->getOgType($post),
             url: $this->seoService->getCanonicalUrl($post),
+            // Only override og:title/og:description explicitly for a resolved
+            // post, where seo_og_title/seo_og_description meta can differ from
+            // the document title/description. Leave them null (unset) when
+            // there's no post so laravel/head auto-derives them from the
+            // document layer - including any app-registered override.
+            title: $post ? $this->seoService->getOgTitle($post) : null,
+            description: $post ? $this->seoService->getOgDescription($post) : null,
         );
 
         if ($ogImageHandledExternally) {
             return;
         }
 
-        if ($post) {
-            $useTwitterSummary = (bool) $post->getMeta('seo_use_twitter_summary', $this->settings->use_twitter_summary_card);
+        $useTwitterSummary = $post
+            ? (bool) $post->getMeta('seo_use_twitter_summary', $this->settings->use_twitter_summary_card)
+            : $this->settings->use_twitter_summary_card;
 
-            Head::twitter(card: $useTwitterSummary ? TwitterCard::Summary : TwitterCard::SummaryWithLargeImage);
-        }
+        Head::twitter(card: $useTwitterSummary ? TwitterCard::Summary : TwitterCard::SummaryWithLargeImage);
 
         if ($image = $this->seoService->getOgImage($post)) {
             Head::ogImage($image);
