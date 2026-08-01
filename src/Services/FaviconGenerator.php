@@ -30,13 +30,6 @@ class FaviconGenerator
         'favicon-96x96.png'   => [96, 96],
         'favicon-128.png'     => [128, 128],
         'favicon-196x196.png' => [196, 196],
-
-        // MS Tiles
-        'mstile-70x70.png'   => [70, 70],
-        'mstile-144x144.png' => [144, 144],
-        'mstile-150x150.png' => [150, 150],
-        'mstile-310x150.png' => [310, 150],
-        'mstile-310x310.png' => [310, 310],
     ];
 
     /**
@@ -106,6 +99,30 @@ class FaviconGenerator
         if (file_exists($icoPath)) {
             unlink($icoPath);
         }
+    }
+
+    /**
+     * Generated favicon files that exist on disk, mapped to a "WxH" sizes
+     * attribute (null for favicon.ico).
+     *
+     * @return array<string, string|null>
+     */
+    public function generatedFiles(): array
+    {
+        $storagePath = storage_path('app/public/favicons');
+        $files = [];
+
+        foreach ($this->sizes as $filename => [$width, $height]) {
+            if (file_exists("{$storagePath}/{$filename}")) {
+                $files[$filename] = "{$width}x{$height}";
+            }
+        }
+
+        if (file_exists("{$storagePath}/favicon.ico")) {
+            $files['favicon.ico'] = null;
+        }
+
+        return $files;
     }
 
     /**
