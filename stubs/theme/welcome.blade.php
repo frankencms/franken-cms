@@ -5,12 +5,12 @@
         <section class="relative overflow-hidden bg-gradient-to-br from-black via-emerald-950 to-slate-900 py-20 text-white">
             {{-- Electric Orbs Background --}}
             <div class="pointer-events-none absolute inset-0 overflow-hidden">
-                <div class="absolute left-1/4 top-20 h-96 w-96 rounded-full bg-lime-500/10 blur-3xl"></div>
-                <div class="absolute right-1/4 top-40 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl"></div>
+                <div class="absolute top-20 left-1/4 h-96 w-96 rounded-full bg-lime-500/10 blur-3xl"></div>
+                <div class="absolute top-40 right-1/4 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl"></div>
                 <div class="absolute bottom-20 left-1/3 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl"></div>
             </div>
 
-            <div class="container relative mx-auto px-4">
+            <div class="relative container mx-auto px-4">
                 <div class="mx-auto max-w-4xl text-center">
                     <div class="mb-6 text-6xl drop-shadow-[0_0_20px_rgba(163,230,53,0.5)]">⚡</div>
                     <h1 class="mb-6 bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-5xl font-bold text-transparent drop-shadow-[0_0_30px_rgba(163,230,53,0.3)] md:text-6xl lg:text-7xl">
@@ -31,9 +31,7 @@
                         <h2 class="mb-4 bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-4xl font-bold text-transparent drop-shadow-[0_0_20px_rgba(163,230,53,0.3)]">
                             Let's Get Your Site Set Up
                         </h2>
-                        <p class="text-lg text-emerald-200/80">
-                            Follow these steps to configure your FrankenCMS site
-                        </p>
+                        <p class="text-lg text-emerald-200/80">Follow these steps to configure your FrankenCMS site</p>
                     </div>
 
                     {{-- Setup Steps --}}
@@ -41,9 +39,7 @@
                         {{-- Step 1 --}}
                         <div class="rounded-lg border-l-4 border-lime-400 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-[0_0_20px_rgba(163,230,53,0.1)]">
                             <div class="mb-2 flex items-center">
-                                <span
-                                    class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-lime-500 to-emerald-500 text-sm font-bold text-slate-950 shadow-[0_0_15px_rgba(163,230,53,0.4)]"
-                                >
+                                <span class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-lime-500 to-emerald-500 text-sm font-bold text-slate-950 shadow-[0_0_15px_rgba(163,230,53,0.4)]">
                                     1
                                 </span>
                                 <h3 class="bg-gradient-to-r from-lime-400 to-emerald-400 bg-clip-text text-xl font-bold text-transparent">
@@ -51,17 +47,16 @@
                                 </h3>
                             </div>
                             <p class="ml-11 text-emerald-200/70">
-                                Go to <strong class="text-lime-300">Admin → Pages → Create Page</strong> and create a page to serve as your homepage.
-                                You can choose from templates like "Home Page" or "About Page".
+                                Go to <strong class="text-lime-300">Admin → Pages → Create Page</strong> and create a
+                                page to serve as your homepage. You can choose from templates like "Home Page" or "About
+                                Page".
                             </p>
                         </div>
 
                         {{-- Step 2 --}}
                         <div class="rounded-lg border-l-4 border-emerald-400 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                             <div class="mb-2 flex items-center">
-                                <span
-                                    class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-sm font-bold text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-                                >
+                                <span class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-sm font-bold text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.4)]">
                                     2
                                 </span>
                                 <h3 class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-xl font-bold text-transparent">
@@ -69,38 +64,45 @@
                                 </h3>
                             </div>
                             <p class="ml-11 text-emerald-200/70">
-                                Create another page with the "Blog Posts" template. This page will display your blog posts listing.
+                                Create another page with the "Blog Posts" template. This page will display your blog
+                                posts listing.
                             </p>
                         </div>
 
                         {{-- Step 3 --}}
                         <div class="rounded-lg border-l-4 border-cyan-400 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-[0_0_20px_rgba(34,211,238,0.1)]">
                             <div class="mb-2 flex items-center">
-                                <span
-                                    class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-lime-500 text-sm font-bold text-slate-950 shadow-[0_0_15px_rgba(34,211,238,0.4)]"
-                                >
+                                <span class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-lime-500 text-sm font-bold text-slate-950 shadow-[0_0_15px_rgba(34,211,238,0.4)]">
                                     3
                                 </span>
                                 <h3 class="bg-gradient-to-r from-cyan-400 to-lime-400 bg-clip-text text-xl font-bold text-transparent">
                                     Configure Reading Settings
                                 </h3>
                             </div>
-                            <p class="ml-11 mb-3 text-emerald-200/70">
-                                Go to <strong class="text-lime-300">Admin → CMS Settings → Reading</strong> and configure:
+                            <p class="mb-3 ml-11 text-emerald-200/70">
+                                Go to <strong class="text-lime-300">Admin → CMS Settings → Reading</strong> and
+                                configure:
                             </p>
                             <ul class="ml-11 list-inside list-disc space-y-1 text-emerald-200/70">
-                                <li><strong class="text-lime-300">Homepage:</strong> Select the page you created in step 1</li>
-                                <li><strong class="text-lime-300">Posts Page:</strong> Select the blog page you created in step 2</li>
-                                <li><strong class="text-lime-300">Posts Per Page:</strong> Set how many posts to show per page (default: 10)</li>
+                                <li>
+                                    <strong class="text-lime-300">Homepage:</strong> Select the page you created in step
+                                    1
+                                </li>
+                                <li>
+                                    <strong class="text-lime-300">Posts Page:</strong> Select the blog page you created
+                                    in step 2
+                                </li>
+                                <li>
+                                    <strong class="text-lime-300">Posts Per Page:</strong> Set how many posts to show
+                                    per page (default: 10)
+                                </li>
                             </ul>
                         </div>
 
                         {{-- Step 4 --}}
                         <div class="rounded-lg border-l-4 border-lime-500 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-[0_0_20px_rgba(132,204,22,0.1)]">
                             <div class="mb-2 flex items-center">
-                                <span
-                                    class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-lime-500 to-cyan-500 text-sm font-bold text-slate-950 shadow-[0_0_15px_rgba(132,204,22,0.4)]"
-                                >
+                                <span class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-lime-500 to-cyan-500 text-sm font-bold text-slate-950 shadow-[0_0_15px_rgba(132,204,22,0.4)]">
                                     4
                                 </span>
                                 <h3 class="bg-gradient-to-r from-lime-400 to-cyan-400 bg-clip-text text-xl font-bold text-transparent">
@@ -108,11 +110,14 @@
                                 </h3>
                             </div>
                             <p class="ml-11 text-emerald-200/70">
-                                Go to <strong class="text-lime-300">Admin → CMS Settings → Permalinks</strong> to customize your URL structure for posts.
-                                Choose from formats like <code
+                                Go to <strong class="text-lime-300">Admin → CMS Settings → Permalinks</strong> to
+                                customize your URL structure for posts. Choose from formats like
+                                <code class="rounded bg-lime-500/20 px-2 py-1 font-mono text-sm text-lime-300 ring-1 ring-lime-400/30">/post-name/</code>
+                                or
+                                <code
                                     class="rounded bg-lime-500/20 px-2 py-1 font-mono text-sm text-lime-300 ring-1 ring-lime-400/30"
-                                >/post-name/</code> or
-                                <code class="rounded bg-lime-500/20 px-2 py-1 font-mono text-sm text-lime-300 ring-1 ring-lime-400/30">/2024/12/post-name/</code>.
+                                    >/2024/12/post-name/</code
+                                >.
                             </p>
                         </div>
                     </div>
@@ -155,12 +160,12 @@
                         About This Theme
                     </h2>
                     <p class="mb-6 text-lg text-emerald-200/80">
-                        You're using the <strong class="text-lime-300">FrankenCMS Default Theme</strong> - a modern, responsive starter theme built with
-                        Tailwind CSS.
+                        You're using the <strong class="text-lime-300">FrankenCMS Default Theme</strong> - a modern,
+                        responsive starter theme built with Tailwind CSS.
                     </p>
                     <p class="text-emerald-200/70">
-                        This theme includes templates for pages, blog posts, category archives, and more. Customize it to match
-                        your brand or use it as a foundation for your own custom theme.
+                        This theme includes templates for pages, blog posts, category archives, and more. Customize it
+                        to match your brand or use it as a foundation for your own custom theme.
                     </p>
                 </div>
             </div>
@@ -195,5 +200,5 @@
                 </div>
             </div>
         </section>
-    </x-slot>
+    </x-slot:main>
 </x-theme::layouts.main>

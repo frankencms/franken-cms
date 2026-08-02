@@ -68,7 +68,7 @@
                 <button
                     type="button"
                     class="rounded-md p-2 text-lime-400 transition-all duration-200 hover:bg-emerald-500/20 hover:text-cyan-400 hover:shadow-lg hover:shadow-lime-500/30"
-                    @click="mobileMenuOpen = !mobileMenuOpen"
+                    @click="mobileMenuOpen = ! mobileMenuOpen"
                     x-data="{ mobileMenuOpen: false }"
                 >
                     <span class="sr-only">Open menu</span>
@@ -86,9 +86,7 @@
 
         {{-- Mobile Menu with laboratory dark theme --}}
         <div class="md:hidden" x-data="{ mobileMenuOpen: false }" x-show="mobileMenuOpen" x-cloak>
-            <div
-                class="space-y-1 border-t border-emerald-500/30 bg-slate-900 pt-2 pb-3 shadow-inner shadow-emerald-500/10"
-            >
+            <div class="space-y-1 border-t border-emerald-500/30 bg-slate-900 pt-2 pb-3 shadow-inner shadow-emerald-500/10">
                 <a
                     href="/"
                     class="block px-3 py-2 text-base font-medium text-emerald-200/90 transition-all duration-200 hover:bg-emerald-500/20 hover:text-lime-400 hover:shadow-inner hover:shadow-lime-500/20"
