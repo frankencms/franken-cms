@@ -29,8 +29,7 @@
         overflow: hidden;
         background:
             radial-gradient(900px 500px at 12% -10%, rgba(132, 204, 22, 0.14), transparent 60%),
-            radial-gradient(700px 420px at 85% 110%, rgba(16, 185, 129, 0.12), transparent 65%),
-            #060d0a;
+            radial-gradient(700px 420px at 85% 110%, rgba(16, 185, 129, 0.12), transparent 65%), #060d0a;
         color: #f0fdf4;
         font-family: 'Bricolage Grotesque', sans-serif;
     }
@@ -80,10 +79,12 @@
         letter-spacing: 0.22em;
         text-transform: uppercase;
         color: #bef264;
-        background: rgba(101, 163, 13, 0.10);
+        background: rgba(101, 163, 13, 0.1);
     }
 
-    .og-specimen-label .bolt { filter: drop-shadow(0 0 6px rgba(163, 230, 53, 0.8)); }
+    .og-specimen-label .bolt {
+        filter: drop-shadow(0 0 6px rgba(163, 230, 53, 0.8));
+    }
 
     .og-title {
         font-size: {{ $titleSize }};
@@ -109,7 +110,9 @@
         color: rgba(209, 250, 229, 0.75);
     }
 
-    .og-meta .tick { color: #a3e635; }
+    .og-meta .tick {
+        color: #a3e635;
+    }
 
     .og-footer {
         display: flex;
@@ -153,7 +156,12 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(115deg, rgba(6, 13, 10, 0.85) 0%, rgba(6, 78, 59, 0.35) 45%, rgba(6, 13, 10, 0.15) 100%);
+        background: linear-gradient(
+            115deg,
+            rgba(6, 13, 10, 0.85) 0%,
+            rgba(6, 78, 59, 0.35) 45%,
+            rgba(6, 13, 10, 0.15) 100%
+        );
         mix-blend-mode: multiply;
     }
 
@@ -164,11 +172,7 @@
         bottom: 0;
         right: calc(46% - 24px);
         width: 4px;
-        background: repeating-linear-gradient(
-            to bottom,
-            transparent 0 26px,
-            rgba(163, 230, 53, 0.55) 26px 54px
-        );
+        background: repeating-linear-gradient(to bottom, transparent 0 26px, rgba(163, 230, 53, 0.55) 26px 54px);
         transform: rotate(3.5deg);
         transform-origin: top;
     }
@@ -221,7 +225,7 @@
                 @endif
             </div>
 
-            <div class="og-footer" style="margin-top: 34px;">
+            <div class="og-footer" style="margin-top: 34px">
                 <span class="dot"></span>
                 <span>{{ setting('general.title') }}</span>
             </div>

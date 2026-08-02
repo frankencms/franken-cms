@@ -20,9 +20,7 @@
                     @endif
 
                     {{-- Post Title --}}
-                    <h1
-                        class="mb-4 bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-4xl font-bold text-transparent drop-shadow-[0_0_20px_rgba(163,230,53,0.3)] md:text-5xl"
-                    >
+                    <h1 class="mb-4 bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-4xl font-bold text-transparent drop-shadow-[0_0_20px_rgba(163,230,53,0.3)] md:text-5xl">
                         {{ $post->post_title }}
                     </h1>
 
@@ -52,9 +50,7 @@
 
                     {{-- Post Teaser/Excerpt --}}
                     @if ($post->getMeta('post_teaser'))
-                        <div class="mt-6 text-lg text-emerald-200/80">
-                            {{ $post->getMeta('post_teaser') }}
-                        </div>
+                        <div class="mt-6 text-lg text-emerald-200/80">{{ $post->getMeta('post_teaser') }}</div>
                     @endif
                 </header>
 
@@ -69,19 +65,17 @@
                         $objectPosition = \FrankenCms\Support\FocalPoint::toCss($featuredMedia->getCustomProperty('focal_point'));
 
                         $attributes = [
-                            'class' => trim('h-full w-full object-cover rounded shadow-[0_0_30px_rgba(163,230,53,0.15)] ring-1 ring-emerald-500/30 ' . $cssClasses),
-                            'sizes' => '(max-width: 768px) 100vw, (max-width: 1280px) 896px, 1024px',
+                            'class'   => trim('h-full w-full object-cover rounded shadow-[0_0_30px_rgba(163,230,53,0.15)] ring-1 ring-emerald-500/30 ' . $cssClasses),
+                            'sizes'   => '(max-width: 768px) 100vw, (max-width: 1280px) 896px, 1024px',
                             'loading' => $lazyLoading ? 'lazy' : 'eager',
-                            'alt' => $alt,
-                            'title' => $title,
-                            'style' => $objectPosition,
+                            'alt'     => $alt,
+                            'title'   => $title,
+                            'style'   => $objectPosition,
                         ];
                     @endphp
 
                     <div class="mx-auto mb-12 max-w-4xl">
-                        <div class="aspect-video overflow-hidden">
-                            {!! $featuredMedia('featured', $attributes) !!}
-                        </div>
+                        <div class="aspect-video overflow-hidden">{!! $featuredMedia('featured', $attributes) !!}</div>
                         @if ($featuredMedia->getCustomProperty('caption'))
                             <p class="mt-2 text-center text-sm text-emerald-200/60">
                                 {{ $featuredMedia->getCustomProperty('caption') }}
@@ -91,9 +85,7 @@
                 @endif
 
                 {{-- Post Content --}}
-                <div
-                    class="mx-auto prose prose-lg max-w-4xl prose-invert prose-headings:bg-gradient-to-r prose-headings:from-lime-400 prose-headings:to-emerald-400 prose-headings:bg-clip-text prose-headings:text-transparent prose-p:text-emerald-200/80 prose-a:text-lime-400 prose-a:transition-colors hover:prose-a:text-cyan-400 prose-blockquote:border-l-lime-400 prose-blockquote:text-emerald-200/70 prose-strong:text-lime-300 prose-code:text-cyan-300"
-                >
+                <div class="prose prose-lg prose-invert prose-headings:bg-gradient-to-r prose-headings:from-lime-400 prose-headings:to-emerald-400 prose-headings:bg-clip-text prose-headings:text-transparent prose-p:text-emerald-200/80 prose-a:text-lime-400 prose-a:transition-colors hover:prose-a:text-cyan-400 prose-blockquote:border-l-lime-400 prose-blockquote:text-emerald-200/70 prose-strong:text-lime-300 prose-code:text-cyan-300 mx-auto max-w-4xl">
                     @if ($post->post_content)
                         {!! $post->renderRichContent('post_content') !!}
                     @endif
@@ -139,9 +131,7 @@
                                             loading="lazy"
                                         />
                                     @else
-                                        <div
-                                            class="{{ $bioImageShape === 'circle' ? 'rounded-full' : 'rounded-lg' }} flex size-16 items-center justify-center bg-emerald-900/50 text-2xl font-bold text-lime-300 ring-2 ring-emerald-700/30"
-                                        >
+                                        <div class="{{ $bioImageShape === 'circle' ? 'rounded-full' : 'rounded-lg' }} flex size-16 items-center justify-center bg-emerald-900/50 text-2xl font-bold text-lime-300 ring-2 ring-emerald-700/30">
                                             {{ strtoupper(substr($post->author->name, 0, 1)) }}
                                         </div>
                                     @endif
@@ -157,9 +147,7 @@
                                     </div>
 
                                     @if ($authorBio->bio)
-                                        <div
-                                            class="prose prose-sm mb-4 text-emerald-100/90 prose-p:text-emerald-100/90 prose-a:text-lime-400 hover:prose-a:text-cyan-400 prose-strong:text-lime-300"
-                                        >
+                                        <div class="prose prose-sm prose-p:text-emerald-100/90 prose-a:text-lime-400 hover:prose-a:text-cyan-400 prose-strong:text-lime-300 mb-4 text-emerald-100/90">
                                             {!! $authorBio->bio !!}
                                         </div>
                                     @endif
@@ -191,23 +179,23 @@
                                         @endif
 
                                         @frankenSocialLinks($authorBio)
-                                        <a
-                                            href="{{ $socialLink['url'] }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="inline-flex items-center gap-1 text-sm text-lime-400 transition-colors hover:text-lime-300"
-                                            aria-label="{{ $socialLink['label'] }}"
-                                        >
-                                            <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                                                />
-                                            </svg>
-                                            {{ $socialLink['label'] }}
-                                        </a>
+                                            <a
+                                                href="{{ $socialLink['url'] }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex items-center gap-1 text-sm text-lime-400 transition-colors hover:text-lime-300"
+                                                aria-label="{{ $socialLink['label'] }}"
+                                            >
+                                                <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                                    />
+                                                </svg>
+                                                {{ $socialLink['label'] }}
+                                            </a>
                                         @endFrankenSocialLinks
                                     </div>
                                 </div>
@@ -217,5 +205,5 @@
                 @endif
             </div>
         </article>
-    </x-slot>
+    </x-slot:main>
 </x-theme::layouts.main>

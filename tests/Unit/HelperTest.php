@@ -1,6 +1,5 @@
 <?php
 
-use FrankenCms\Services\FaviconGenerator;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\PermalinkSettings;
@@ -335,32 +334,6 @@ describe('_parseFieldExpression() helper function', function () {
 
         expect($result['name'])->toBe('hero.title');
         expect($result['options'])->toBe($options);
-    });
-
-});
-
-describe('favicon_tags() helper function', function () {
-
-    it('returns string from FaviconGenerator', function () {
-        $mockGenerator = Mockery::mock(FaviconGenerator::class);
-        $mockGenerator->shouldReceive('getHtmlTags')
-            ->once()
-            ->andReturn('<link rel="icon" href="/favicon.ico">');
-
-        app()->instance(FaviconGenerator::class, $mockGenerator);
-
-        expect(favicon_tags())->toBe('<link rel="icon" href="/favicon.ico">');
-    });
-
-    it('returns empty string when no favicons configured', function () {
-        $mockGenerator = Mockery::mock(FaviconGenerator::class);
-        $mockGenerator->shouldReceive('getHtmlTags')
-            ->once()
-            ->andReturn('');
-
-        app()->instance(FaviconGenerator::class, $mockGenerator);
-
-        expect(favicon_tags())->toBe('');
     });
 
 });

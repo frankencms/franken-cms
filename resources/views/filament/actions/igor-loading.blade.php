@@ -3,7 +3,7 @@
     x-data="{ loading: false }"
     x-init="
         $el.closest('form').addEventListener('submit', () => {
-            loading = true
+            loading = true;
         })
     "
 >
@@ -29,15 +29,11 @@
                 <div class="mb-6 flex justify-center">
                     <div class="relative inline-flex items-center justify-center">
                         {{-- Pulsing background glow --}}
-                        <div
-                            class="absolute inset-0 animate-pulse rounded-full bg-primary-500/20 blur-xl dark:bg-primary-400/20"
-                        ></div>
+                        <div class="bg-primary-500/20 dark:bg-primary-400/20 absolute inset-0 animate-pulse rounded-full blur-xl"></div>
 
                         {{-- Icon circle --}}
-                        <div
-                            class="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary-50 to-primary-100 ring-4 ring-primary-100 dark:from-primary-950/50 dark:to-primary-900/50 dark:ring-primary-900/50"
-                        >
-                            <x-frankencms-igor class="size-16 animate-pulse text-primary-600 dark:text-primary-400" />
+                        <div class="from-primary-50 to-primary-100 ring-primary-100 dark:from-primary-950/50 dark:to-primary-900/50 dark:ring-primary-900/50 relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br ring-4">
+                            <x-frankencms-igor class="text-primary-600 dark:text-primary-400 size-16 animate-pulse" />
                         </div>
                     </div>
                 </div>
@@ -51,9 +47,7 @@
                     </div>
 
                     {{-- Rotating Messages --}}
-                    <div
-                        class="rounded-lg border border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50"
-                    >
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50">
                         <p
                             class="min-h-[1.5rem] text-base font-medium text-gray-700 dark:text-gray-300"
                             x-data="{
@@ -63,11 +57,11 @@
                             }"
                             x-init="
                                 interval = setInterval(() => {
-                                    currentMessage = messages[Math.floor(Math.random() * messages.length)]
-                                }, 2500)
+                                    currentMessage = messages[Math.floor(Math.random() * messages.length)];
+                                }, 2500);
                                 $watch('loading', (value) => {
-                                    if (! value) clearInterval(interval)
-                                })
+                                    if (! value) clearInterval(interval);
+                                });
                             "
                             x-text="currentMessage"
                         ></p>
@@ -77,7 +71,7 @@
                     <div class="space-y-2">
                         <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                             <div
-                                class="h-full w-full bg-gradient-to-r from-primary-600 via-primary-500 to-warning-500"
+                                class="from-primary-600 via-primary-500 to-warning-500 h-full w-full bg-gradient-to-r"
                                 style="animation: progress 2s ease-in-out infinite; transform-origin: left"
                             ></div>
                         </div>

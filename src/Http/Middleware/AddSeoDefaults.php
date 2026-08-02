@@ -7,296 +7,220 @@ namespace FrankenCms\Http\Middleware;
 use Closure;
 use Diglactic\Breadcrumbs\Breadcrumbs;
 use Exception;
+use FrankenCms\Models\Post;
 use FrankenCms\OgImage\OgImageFeature;
 use FrankenCms\Services\CurrentPageService;
+use FrankenCms\Services\FaviconGenerator;
 use FrankenCms\Services\SeoService;
 use FrankenCms\Settings\ReadingSettings;
 use FrankenCms\Settings\SeoSettings;
 use Illuminate\Http\Request;
-use romanzipp\Seo\Structs\Link as LinkMeta;
-use romanzipp\Seo\Structs\Meta;
-use romanzipp\Seo\Structs\Meta\OpenGraph;
-use romanzipp\Seo\Structs\Meta\Twitter;
-use romanzipp\Seo\Structs\Script;
+use Laravel\Head\Enums\TwitterCard;
+use Laravel\Head\Facades\Head;
+use Laravel\Head\Facades\Schema;
+use Laravel\Head\HeadBuilder;
 use Symfony\Component\HttpFoundation\Response;
 
 class AddSeoDefaults
 {
+    /**
+     * Application-level default callbacks applied over the CMS defaults.
+     *
+     * @var array<int, callable(HeadBuilder): mixed>
+     */
+    protected static array $appDefaults = [];
+
     public function __construct(
         protected SeoSettings $settings,
         protected SeoService $seoService,
-        protected CurrentPageService $currentPageService
+        protected CurrentPageService $currentPageService,
+        protected FaviconGenerator $faviconGenerator,
     ) {}
+
+    /**
+     * Register application head defaults that override the CMS-settings
+     * defaults field by field. Call from a service provider's boot method.
+     *
+     * @param  callable(HeadBuilder): mixed  $callback
+     */
+    public static function registering(callable $callback): void
+    {
+        static::$appDefaults[] = $callback;
+    }
+
+    public static function flushRegisteredCallbacks(): void
+    {
+        static::$appDefaults = [];
+    }
 
     public function handle(Request $request, Closure $next): Response
     {
-        // Basic meta tags
-        seo()->charset();
-        seo()->viewport();
-        seo()->csrfToken();
-
-        // Get current post/page if available
         $post = $this->currentPageService->getPage();
-
-        // Title & Description
-        seo()->title($this->seoService->getTitle($post));
-        seo()->description($this->seoService->getDescription($post));
-
-        // Canonical URL
-        if ($this->settings->enable_canonical) {
-            seo()->canonical($this->seoService->getCanonicalUrl($post));
-        }
-
-        // Robots meta
-        seo()->meta('robots', $this->seoService->getRobotsContent($post));
-
-        // Theme color
-        if ($themeColor = $this->seoService->getThemeColor()) {
-            seo()->add(
-                Meta::make()
-                    ->name('theme-color')
-                    ->content($themeColor)
-            );
-        }
-
-        // Include favicon tags
-        $this->includeFavicons();
 
         // When the og-image feature resolves for this page, the Spatie og-image
         // middleware owns og:image/twitter:image/twitter:card - don't duplicate them here.
         $ogImageHandledExternally = OgImageFeature::resolvesFor($post);
 
-        // Include OpenGraph tags
-        $this->includeOpenGraph($post, $ogImageHandledExternally);
+        $this->registerCmsDefaults();
 
-        // Include Twitter tags
-        $this->includeTwitter($post, $ogImageHandledExternally);
+        foreach (static::$appDefaults as $callback) {
+            Head::defaults($callback);
+        }
 
-        // Include JSON-LD breadcrumbs
-        $this->includeBreadcrumbs($post);
+        $this->addPageMetadata($post, $ogImageHandledExternally);
+        $this->addBreadcrumbSchema($post);
 
         return $next($request);
     }
 
     /**
-     * Add OpenGraph meta tags
+     * Register the CMS-settings-driven defaults layer.
+     *
+     * This layer must render identically on every request regardless of the
+     * og-image deferral outcome: Head::defaults() merges into a HeadManager
+     * that can persist across requests under a worker runtime (Octane,
+     * FrankenPHP), so a request-varying defaults layer would let a prior
+     * request's fields (e.g. twitter:card) leak into a later, differently
+     * shaped request. The twitter:card value itself is set per-request in
+     * the runtime layer (see addPageMetadata()) instead.
      */
-    private function includeOpenGraph($post = null, bool $ogImageHandledExternally = false): void
+    protected function registerCmsDefaults(): void
     {
-        seo()->addMany([
-            OpenGraph::make()
-                ->property('locale')
-                ->content(app()->getLocale()),
+        Head::defaults(function (HeadBuilder $head): void {
+            $separator = $this->settings->title_separator;
+            $prepend = $this->settings->site_name_position === 'prepend';
 
-            OpenGraph::make()
-                ->property('site_name')
-                ->content($this->settings->site_name),
-
-            OpenGraph::make()
-                ->property('type')
-                ->content($this->seoService->getOgType($post)),
-
-            OpenGraph::make()
-                ->property('url')
-                ->content($this->seoService->getCanonicalUrl($post)),
-
-            OpenGraph::make()
-                ->property('title')
-                ->content($this->seoService->getOgTitle($post)),
-        ]);
-
-        // Add OG description if available
-        if ($description = $this->seoService->getOgDescription($post)) {
-            seo()->add(
-                OpenGraph::make()
-                    ->property('description')
-                    ->content($description)
+            $head->title(
+                $this->settings->site_name,
+                prefix: $this->settings->append_site_name && $prepend
+                    ? "{$this->settings->site_name} {$separator} "
+                    : null,
+                suffix: $this->settings->append_site_name && ! $prepend
+                    ? " {$separator} {$this->settings->site_name}"
+                    : null,
             );
-        }
 
-        // Add OG image if available (unless the Spatie og-image middleware owns it)
-        if (! $ogImageHandledExternally && $image = $this->seoService->getOgImage($post)) {
-            seo()->add(
-                OpenGraph::make()
-                    ->property('image')
-                    ->content($image)
-            );
-        }
-
-        // Add Facebook App ID if configured
-        if ($this->settings->fb_app_id) {
-            seo()->add(
-                OpenGraph::make()
-                    ->property('app_id')
-                    ->content($this->settings->fb_app_id)
-            );
-        }
-    }
-
-    /**
-     * Add Twitter meta tags
-     */
-    private function includeTwitter($post = null, bool $ogImageHandledExternally = false): void
-    {
-        // Check per-post setting first, then fall back to global setting
-        $useTwitterSummary = $post
-            ? $post->getMeta('seo_use_twitter_summary', $this->settings->use_twitter_summary_card)
-            : $this->settings->use_twitter_summary_card;
-
-        // The twitter:card value is tied to the image strategy, so it's suppressed
-        // alongside twitter:image when the Spatie og-image middleware owns them.
-        if (! $ogImageHandledExternally) {
-            seo()->add(
-                Twitter::make()
-                    ->name('card')
-                    ->content($useTwitterSummary ? 'summary' : 'summary_large_image')
-            );
-        }
-
-        // Add Twitter username if configured
-        if ($this->settings->twitter_username && is_string($this->settings->twitter_username) && $this->settings->twitter_username !== '') {
-            $username = $this->settings->twitter_username;
-            // Ensure @ prefix
-            if (! str_starts_with($username, '@')) {
-                $username = "@{$username}";
+            if ($this->settings->default_meta_description) {
+                $head->description($this->settings->default_meta_description);
             }
 
-            seo()->add(
-                Twitter::make()
-                    ->name('site')
-                    ->content($username)
+            if ($this->settings->enable_canonical) {
+                $head->canonical();
+            }
+
+            $head->robots("{$this->settings->default_robots_index}, {$this->settings->default_robots_follow}");
+
+            $head->og(
+                type: $this->settings->og_type ?: 'website',
+                siteName: $this->settings->site_name,
+                locale: app()->getLocale(),
             );
+
+            if ($this->settings->fb_app_id) {
+                $head->meta('og:app_id', $this->settings->fb_app_id);
+            }
+
+            // The card itself is set at runtime (see addPageMetadata()) so it
+            // never depends on the og-image deferral outcome of a prior request
+            // in this defaults layer. Registering the site handle here keeps
+            // the twitter builder non-empty on non-deferral pages even before
+            // the runtime layer runs, so twitter:title/description still derive.
+            if ($handle = $this->twitterHandle()) {
+                $head->twitter(site: $handle);
+            }
+
+            if ($themeColor = $this->seoService->getThemeColor()) {
+                $head->themeColor($themeColor);
+            }
+
+            $this->addFaviconIcons($head);
+        });
+    }
+
+    /**
+     * Set runtime metadata for the resolved CMS page, mirroring the classic
+     * tag ownership rules for the Spatie og-image middleware.
+     */
+    protected function addPageMetadata(?Post $post, bool $ogImageHandledExternally): void
+    {
+        if ($post) {
+            Head::title($this->seoService->getTitle($post));
+
+            if ($description = $this->seoService->getDescription($post)) {
+                Head::description($description);
+            }
+
+            if ($this->settings->enable_canonical) {
+                Head::canonical($this->seoService->getCanonicalUrl($post));
+            }
+
+            Head::robots($this->seoService->getRobotsContent($post));
         }
 
-        // Add Twitter title
-        seo()->add(
-            Twitter::make()
-                ->name('title')
-                ->content($this->seoService->getTwitterTitle($post))
+        Head::og(
+            type: $this->seoService->getOgType($post),
+            url: $this->seoService->getCanonicalUrl($post),
+            // Only override og:title/og:description explicitly for a resolved
+            // post, where seo_og_title/seo_og_description meta can differ from
+            // the document title/description. Leave them null (unset) when
+            // there's no post so laravel/head auto-derives them from the
+            // document layer - including any app-registered override.
+            title: $post ? $this->seoService->getOgTitle($post) : null,
+            description: $post ? $this->seoService->getOgDescription($post) : null,
         );
 
-        // Add Twitter description if available
-        if ($description = $this->seoService->getTwitterDescription($post)) {
-            seo()->add(
-                Twitter::make()
-                    ->name('description')
-                    ->content($description)
-            );
+        if ($ogImageHandledExternally) {
+            return;
         }
 
-        // Add Twitter image if available (unless the Spatie og-image middleware owns it)
-        if (! $ogImageHandledExternally && $image = $this->seoService->getTwitterImage($post)) {
-            seo()->add(
-                Twitter::make()
-                    ->name('image')
-                    ->content($image)
+        $useTwitterSummary = $post
+            ? (bool) $post->getMeta('seo_use_twitter_summary', $this->settings->use_twitter_summary_card)
+            : $this->settings->use_twitter_summary_card;
+
+        Head::twitter(card: $useTwitterSummary ? TwitterCard::Summary : TwitterCard::SummaryWithLargeImage);
+
+        if ($image = $this->seoService->getOgImage($post)) {
+            Head::ogImage($image);
+        }
+
+        if ($image = $this->seoService->getTwitterImage($post)) {
+            Head::twitterImage($image);
+        }
+    }
+
+    /**
+     * Emit icon tags for generated favicon files that exist on disk.
+     */
+    protected function addFaviconIcons(HeadBuilder $head): void
+    {
+        foreach ($this->faviconGenerator->generatedFiles() as $filename => $sizes) {
+            if (str_starts_with($filename, 'apple-touch-icon')) {
+                $head->appleTouchIcon("/{$filename}", sizes: $sizes);
+
+                continue;
+            }
+
+            $head->icon(
+                "/{$filename}",
+                type: $filename === 'favicon.ico' ? 'image/x-icon' : 'image/png',
+                sizes: $sizes,
             );
         }
     }
 
     /**
-     * Add favicon link tags
+     * Add JSON-LD breadcrumb structured data for CMS pages.
      */
-    private function includeFavicons(): void
+    protected function addBreadcrumbSchema(?Post $post): void
     {
-        // Apple Touch Icons
-        $appleTouchSizes = [
-            ['57x57', '57'],
-            ['60x60', '60'],
-            ['72x72', '72'],
-            ['76x76', '76'],
-            ['114x114', '114'],
-            ['120x120', '120'],
-            ['144x144', '144'],
-            ['152x152', '152'],
-        ];
-
-        foreach ($appleTouchSizes as [$filename, $size]) {
-            seo()->add(
-                LinkMeta::make()
-                    ->rel('apple-touch-icon')
-                    ->attr('sizes', "{$size}x{$size}")
-                    ->href("/apple-touch-icon-{$filename}.png")
-            );
-        }
-
-        // Standard Favicons
-        seo()->addMany([
-            LinkMeta::make()
-                ->rel('icon')
-                ->attr('type', 'image/png')
-                ->attr('sizes', '16x16')
-                ->href('/favicon-16x16.png'),
-
-            LinkMeta::make()
-                ->rel('icon')
-                ->attr('type', 'image/png')
-                ->attr('sizes', '32x32')
-                ->href('/favicon-32x32.png'),
-
-            LinkMeta::make()
-                ->rel('icon')
-                ->attr('type', 'image/png')
-                ->attr('sizes', '96x96')
-                ->href('/favicon-96x96.png'),
-
-            LinkMeta::make()
-                ->rel('icon')
-                ->attr('type', 'image/png')
-                ->attr('sizes', '128x128')
-                ->href('/favicon-128.png'),
-
-            LinkMeta::make()
-                ->rel('icon')
-                ->attr('type', 'image/png')
-                ->attr('sizes', '196x196')
-                ->href('/favicon-196x196.png'),
-        ]);
-
-        // MS Tiles
-        seo()->addMany([
-            Meta::make()
-                ->name('msapplication-TileColor')
-                ->content('#ffffff'),
-
-            Meta::make()
-                ->name('msapplication-TileImage')
-                ->content('/mstile-144x144.png'),
-
-            Meta::make()
-                ->name('msapplication-square70x70logo')
-                ->content('/mstile-70x70.png'),
-
-            Meta::make()
-                ->name('msapplication-square150x150logo')
-                ->content('/mstile-150x150.png'),
-
-            Meta::make()
-                ->name('msapplication-wide310x150logo')
-                ->content('/mstile-310x150.png'),
-
-            Meta::make()
-                ->name('msapplication-square310x310logo')
-                ->content('/mstile-310x310.png'),
-        ]);
-    }
-
-    /**
-     * Add JSON-LD breadcrumb structured data
-     */
-    private function includeBreadcrumbs($post = null): void
-    {
-        // Don't add breadcrumbs if no post/page or if it's the homepage
         if (! $post) {
             return;
         }
 
-        $readingSettings = app(ReadingSettings::class);
-        if ($readingSettings->home_page === $post->post_slug) {
+        if (app(ReadingSettings::class)->home_page === $post->post_slug) {
             return;
         }
 
-        // Determine the breadcrumb name based on the page type
         $breadcrumbName = match ($post->post_type) {
             'page'  => 'franken-cms.page',
             'post'  => 'franken-cms.post',
@@ -308,35 +232,31 @@ class AddSeoDefaults
         }
 
         try {
-            // Generate breadcrumbs array
             $breadcrumbs = Breadcrumbs::generate($breadcrumbName, $post);
 
-            // Build Schema.org BreadcrumbList structure
-            $json = [
-                '@context'        => 'https://schema.org',
-                '@type'           => 'BreadcrumbList',
-                'itemListElement' => [],
-            ];
+            $schema = Schema::breadcrumbs();
 
-            foreach ($breadcrumbs as $i => $breadcrumb) {
-                $json['itemListElement'][] = [
-                    '@type'    => 'ListItem',
-                    'position' => $i + 1,
-                    'item'     => [
-                        '@id'  => $breadcrumb->url ?: request()->fullUrl(),
-                        'name' => $breadcrumb->title,
-                    ],
-                ];
+            foreach ($breadcrumbs as $breadcrumb) {
+                $schema->item($breadcrumb->title, $breadcrumb->url ?: request()->fullUrl());
             }
 
-            // Add as script tag with raw JSON (disable escaping for JSON-LD)
-            seo()->add(
-                Script::make()
-                    ->attr('type', 'application/ld+json')
-                    ->body(json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), false)
-            );
-        } catch (Exception $e) {
-            // Silently fail if breadcrumbs can't be generated
+            Head::schema($schema);
+        } catch (Exception) {
+            // Breadcrumbs are best-effort; skip when generation fails.
         }
+    }
+
+    /**
+     * The configured Twitter/X handle, normalized to include the @ prefix.
+     */
+    protected function twitterHandle(): ?string
+    {
+        $username = $this->settings->twitter_username;
+
+        if (! is_string($username) || $username === '') {
+            return null;
+        }
+
+        return str_starts_with($username, '@') ? $username : "@{$username}";
     }
 }

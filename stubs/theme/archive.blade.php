@@ -9,16 +9,12 @@
                         {{ ucfirst($taxonomy->name) }} Archive
                     </div>
 
-                    <h1
-                        class="mb-4 bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-4xl font-bold text-transparent drop-shadow-[0_0_20px_rgba(163,230,53,0.3)] md:text-5xl"
-                    >
+                    <h1 class="mb-4 bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-4xl font-bold text-transparent drop-shadow-[0_0_20px_rgba(163,230,53,0.3)] md:text-5xl">
                         {{ $term->name }}
                     </h1>
 
                     @if ($term->description)
-                        <div class="mx-auto max-w-2xl text-lg text-emerald-200/80">
-                            {{ $term->description }}
-                        </div>
+                        <div class="mx-auto max-w-2xl text-lg text-emerald-200/80">{{ $term->description }}</div>
                     @endif
                 </header>
 
@@ -26,9 +22,7 @@
                 @if ($posts->count() > 0)
                     <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                         @foreach ($posts as $post)
-                            <article
-                                class="group flex flex-col overflow-hidden rounded-lg border border-emerald-500/20 bg-gradient-to-br from-slate-900 to-slate-800 shadow-[0_0_20px_rgba(16,185,129,0.1)] transition-all duration-300 hover:border-lime-400/40 hover:shadow-[0_0_30px_rgba(163,230,53,0.2)]"
-                            >
+                            <article class="group flex flex-col overflow-hidden rounded-lg border border-emerald-500/20 bg-gradient-to-br from-slate-900 to-slate-800 shadow-[0_0_20px_rgba(16,185,129,0.1)] transition-all duration-300 hover:border-lime-400/40 hover:shadow-[0_0_30px_rgba(163,230,53,0.2)]">
                                 {{-- Featured Image --}}
                                 @if ($post->hasMedia('featured'))
                                     @php
@@ -40,12 +34,12 @@
                                         $objectPosition = str_replace(['object-position: ', ';'], '', \FrankenCms\Support\FocalPoint::toCss($media->getCustomProperty('focal_point')));
 
                                         $attributes = [
-                                            'class' => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
-                                            'sizes' => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
+                                            'class'   => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
+                                            'sizes'   => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
                                             'loading' => $lazyLoading ? 'lazy' : 'eager',
-                                            'alt' => $alt,
-                                            'title' => $title,
-                                            'style' => "object-position: $objectPosition;",
+                                            'alt'     => $alt,
+                                            'title'   => $title,
+                                            'style'   => "object-position: {$objectPosition};",
                                         ];
                                     @endphp
 
@@ -67,12 +61,12 @@
                                             $objectPosition = str_replace(['object-position: ', ';'], '', \FrankenCms\Support\FocalPoint::toCss($defaultImage->getCustomProperty('focal_point')));
 
                                             $attributes = [
-                                                'class' => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
-                                                'sizes' => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
+                                                'class'   => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
+                                                'sizes'   => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
                                                 'loading' => $lazyLoading ? 'lazy' : 'eager',
-                                                'alt' => $alt,
-                                                'title' => $title,
-                                                'style' => "object-position: $objectPosition;",
+                                                'alt'     => $alt,
+                                                'title'   => $title,
+                                                'style'   => "object-position: {$objectPosition};",
                                             ];
                                         @endphp
 
@@ -114,9 +108,7 @@
                                     @endif
 
                                     {{-- Post Meta --}}
-                                    <div
-                                        class="mt-auto flex items-center justify-between border-t border-emerald-500/20 pt-4 text-xs text-emerald-200/60"
-                                    >
+                                    <div class="mt-auto flex items-center justify-between border-t border-emerald-500/20 pt-4 text-xs text-emerald-200/60">
                                         <div class="flex items-center gap-3">
                                             @if ($post->author)
                                                 <span>{{ $post->author->name }}</span>
@@ -139,9 +131,7 @@
                     </div>
 
                     {{-- Pagination --}}
-                    <div class="mt-12">
-                        {{ $posts->links() }}
-                    </div>
+                    <div class="mt-12">{{ $posts->links() }}</div>
                 @else
                     <div class="py-12 text-center text-emerald-200/70">
                         <p>No posts found in this {{ $taxonomy->name }}.</p>
@@ -149,5 +139,5 @@
                 @endif
             </div>
         </div>
-    </x-slot>
+    </x-slot:main>
 </x-theme::layouts.main>

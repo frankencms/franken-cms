@@ -32,8 +32,7 @@
         overflow: hidden;
         background:
             radial-gradient(900px 500px at 12% -10%, rgba(132, 204, 22, 0.14), transparent 60%),
-            radial-gradient(700px 420px at 85% 110%, rgba(16, 185, 129, 0.12), transparent 65%),
-            #060d0a;
+            radial-gradient(700px 420px at 85% 110%, rgba(16, 185, 129, 0.12), transparent 65%), #060d0a;
         color: #f0fdf4;
         font-family: 'Bricolage Grotesque', sans-serif;
     }
@@ -81,10 +80,12 @@
         letter-spacing: 0.22em;
         text-transform: uppercase;
         color: #bef264;
-        background: rgba(101, 163, 13, 0.10);
+        background: rgba(101, 163, 13, 0.1);
     }
 
-    .og-chip .bolt { filter: drop-shadow(0 0 6px rgba(163, 230, 53, 0.8)); }
+    .og-chip .bolt {
+        filter: drop-shadow(0 0 6px rgba(163, 230, 53, 0.8));
+    }
 
     .og-title {
         font-size: {{ $titleSize }};
@@ -136,7 +137,12 @@
         transform: translateY(-50%) rotate(14deg);
         font-size: 560px;
         line-height: 1;
-        background: linear-gradient(165deg, rgba(163, 230, 53, 0.30) 20%, rgba(52, 211, 153, 0.16) 55%, rgba(34, 211, 238, 0.08) 90%);
+        background: linear-gradient(
+            165deg,
+            rgba(163, 230, 53, 0.3) 20%,
+            rgba(52, 211, 153, 0.16) 55%,
+            rgba(34, 211, 238, 0.08) 90%
+        );
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;

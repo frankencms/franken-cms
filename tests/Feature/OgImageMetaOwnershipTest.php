@@ -6,6 +6,11 @@ use FrankenCms\Models\SiteSettingsMedia;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Tests\Support\User;
 use Illuminate\Http\Request;
+use Laravel\Head\Facades\Head;
+
+beforeEach(function () {
+    AddSeoDefaults::flushRegisteredCallbacks();
+});
 
 function makeOgOwnershipPost(array $attributes = []): Post
 {
@@ -42,7 +47,7 @@ function runOgOwnershipMiddleware(): string
 
     $middleware->handle(Request::create('/'), fn ($request) => response('ok'));
 
-    return seo()->render()->toHtml();
+    return Head::render()->toHtml();
 }
 
 test('classic path still emits og:image when the feature is disabled', function () {

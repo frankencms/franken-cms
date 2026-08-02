@@ -2,7 +2,6 @@
 
 use FrankenCms\Helpers\TemplateHelpers;
 use FrankenCms\Services\CurrentPageService;
-use FrankenCms\Services\FaviconGenerator;
 use FrankenCms\Settings\GeneralSettings;
 use FrankenCms\Settings\MediaSettings;
 use FrankenCms\Settings\PermalinkSettings;
@@ -110,18 +109,6 @@ if (! function_exists('setting')) {
             logger()->error("Failed to retrieve setting '{$key}': " . $e->getMessage());
             return $default;
         }
-    }
-}
-
-if (! function_exists('favicon_tags')) {
-    /**
-     * Get HTML tags for favicons
-     *
-     * @return string HTML meta tags for favicons
-     */
-    function favicon_tags(): string
-    {
-        return app(FaviconGenerator::class)->getHtmlTags();
     }
 }
 

@@ -30,13 +30,6 @@ class FaviconGenerator
         'favicon-96x96.png'   => [96, 96],
         'favicon-128.png'     => [128, 128],
         'favicon-196x196.png' => [196, 196],
-
-        // MS Tiles
-        'mstile-70x70.png'   => [70, 70],
-        'mstile-144x144.png' => [144, 144],
-        'mstile-150x150.png' => [150, 150],
-        'mstile-310x150.png' => [310, 150],
-        'mstile-310x310.png' => [310, 310],
     ];
 
     /**
@@ -109,36 +102,26 @@ class FaviconGenerator
     }
 
     /**
-     * Get HTML meta tags for favicons
+     * Generated favicon files that exist on disk, mapped to a "WxH" sizes
+     * attribute (null for favicon.ico).
+     *
+     * @return array<string, string|null>
      */
-    public function getHtmlTags(): string
+    public function generatedFiles(): array
     {
-        $html = [];
+        $storagePath = storage_path('app/public/favicons');
+        $files = [];
 
-        // Apple Touch Icons
-        $html[] = '<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">';
-        $html[] = '<link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">';
-        $html[] = '<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">';
-        $html[] = '<link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">';
-        $html[] = '<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">';
-        $html[] = '<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">';
-        $html[] = '<link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">';
-        $html[] = '<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">';
+        foreach ($this->sizes as $filename => [$width, $height]) {
+            if (file_exists("{$storagePath}/{$filename}")) {
+                $files[$filename] = "{$width}x{$height}";
+            }
+        }
 
-        // Standard Favicons
-        $html[] = '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">';
-        $html[] = '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">';
-        $html[] = '<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">';
-        $html[] = '<link rel="icon" type="image/png" sizes="196x196" href="/favicon-196x196.png">';
+        if (file_exists("{$storagePath}/favicon.ico")) {
+            $files['favicon.ico'] = null;
+        }
 
-        // MS Tiles
-        $html[] = '<meta name="msapplication-TileColor" content="#ffffff">';
-        $html[] = '<meta name="msapplication-TileImage" content="/mstile-144x144.png">';
-        $html[] = '<meta name="msapplication-square70x70logo" content="/mstile-70x70.png">';
-        $html[] = '<meta name="msapplication-square150x150logo" content="/mstile-150x150.png">';
-        $html[] = '<meta name="msapplication-wide310x150logo" content="/mstile-310x150.png">';
-        $html[] = '<meta name="msapplication-square310x310logo" content="/mstile-310x310.png">';
-
-        return implode("\n    ", $html);
+        return $files;
     }
 }

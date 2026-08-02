@@ -16,36 +16,12 @@ class SeoService
     ) {}
 
     /**
-     * Get the SEO title for a post/page
+     * Get the raw SEO title for a post/page (site-name affixes are applied
+     * by the laravel/head defaults layer, not here).
      */
-    public function getTitle(?Post $post = null, ?string $suffix = null): string
+    public function getTitle(?Post $post = null): string
     {
-        // Get the base title (custom SEO title, post title, or site name)
-        $title = $post?->getMeta('seo_title') ?? $post?->post_title ?? $this->settings->site_name;
-
-        // Check if we should append site name
-        if (! $this->settings->append_site_name) {
-            // User disabled site name appending, just return the title
-            return $title;
-        }
-
-        // If the title is already the site name (no post or post has no title), don't duplicate it
-        if ($title === $this->settings->site_name) {
-            return $title;
-        }
-
-        // Get the site name and separator
-        $siteName = $suffix ?? $this->settings->site_name;
-        $separator = $this->settings->title_separator;
-
-        // Construct the title based on position preference
-        if ($this->settings->site_name_position === 'prepend') {
-            // Site name comes first: "Site Name - Page Title"
-            return "{$siteName} {$separator} {$title}";
-        }
-
-        // Default to append: "Page Title - Site Name"
-        return "{$title} {$separator} {$siteName}";
+        return $post?->getMeta('seo_title') ?? $post?->post_title ?? $this->settings->site_name;
     }
 
     /**
@@ -165,24 +141,6 @@ class SeoService
         }
 
         return null;
-    }
-
-    /**
-     * Get the Twitter title
-     * Since we consolidated social media fields, Twitter uses the same title as OG
-     */
-    public function getTwitterTitle(?Post $post = null): string
-    {
-        return $this->getOgTitle($post);
-    }
-
-    /**
-     * Get the Twitter description
-     * Since we consolidated social media fields, Twitter uses the same description as OG
-     */
-    public function getTwitterDescription(?Post $post = null): ?string
-    {
-        return $this->getOgDescription($post);
     }
 
     /**

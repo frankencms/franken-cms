@@ -7,16 +7,12 @@
             <div class="container mx-auto px-4">
                 {{-- Page Header --}}
                 <header class="mb-12 text-center">
-                    <h1
-                        class="mb-4 bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-4xl font-bold text-transparent drop-shadow-[0_0_20px_rgba(163,230,53,0.5)] md:text-5xl"
-                    >
+                    <h1 class="mb-4 bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-4xl font-bold text-transparent drop-shadow-[0_0_20px_rgba(163,230,53,0.5)] md:text-5xl">
                         {{ $page->post_title }}
                     </h1>
 
                     @if ($page->post_content)
-                        <div
-                            class="mx-auto prose prose-lg prose-invert prose-headings:bg-gradient-to-r prose-headings:from-lime-400 prose-headings:to-emerald-400 prose-headings:bg-clip-text prose-headings:text-transparent prose-p:text-emerald-200/80 prose-a:text-cyan-400 hover:prose-a:text-cyan-300"
-                        >
+                        <div class="prose prose-lg prose-invert prose-headings:bg-gradient-to-r prose-headings:from-lime-400 prose-headings:to-emerald-400 prose-headings:bg-clip-text prose-headings:text-transparent prose-p:text-emerald-200/80 prose-a:text-cyan-400 hover:prose-a:text-cyan-300 mx-auto">
                             {!! $page->renderRichContent('post_content') !!}
                         </div>
                     @endif
@@ -26,9 +22,7 @@
                 @if ($posts->count() > 0)
                     <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                         @foreach ($posts as $post)
-                            <article
-                                class="group flex flex-col overflow-hidden rounded-lg border border-emerald-500/30 bg-gradient-to-br from-slate-900 to-slate-800 shadow-[0_0_20px_rgba(163,230,53,0.2)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(163,230,53,0.4)]"
-                            >
+                            <article class="group flex flex-col overflow-hidden rounded-lg border border-emerald-500/30 bg-gradient-to-br from-slate-900 to-slate-800 shadow-[0_0_20px_rgba(163,230,53,0.2)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(163,230,53,0.4)]">
                                 {{-- Featured Image --}}
 
                                 @if ($post->hasMedia('featured'))
@@ -41,25 +35,21 @@
                                         $objectPosition = \FrankenCms\Support\FocalPoint::toCss($media->getCustomProperty('focal_point'));
 
                                         $attributes = [
-                                            'class' => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
-                                            'sizes' => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
+                                            'class'   => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
+                                            'sizes'   => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
                                             'loading' => $lazyLoading ? 'lazy' : 'eager',
-                                            'alt' => $alt,
-                                            'title' => $title,
-                                            'style' => $objectPosition,
+                                            'alt'     => $alt,
+                                            'title'   => $title,
+                                            'style'   => $objectPosition,
                                         ];
                                     @endphp
 
                                     <a href="{{ $post->url }}" class="relative block overflow-hidden">
-                                        <div
-                                            class="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                                        ></div>
+                                        <div class="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
                                         {!! $media('listing', $attributes) !!}
 
-                                        <div
-                                            class="absolute inset-0 ring-1 ring-emerald-500/20 transition-all duration-300 ring-inset group-hover:ring-emerald-400/40"
-                                        ></div>
+                                        <div class="absolute inset-0 ring-1 ring-emerald-500/20 transition-all duration-300 ring-inset group-hover:ring-emerald-400/40"></div>
                                     </a>
                                 @else
                                     @php
@@ -76,30 +66,24 @@
                                             $objectPosition = \FrankenCms\Support\FocalPoint::toCss($defaultImage->getCustomProperty('focal_point'));
 
                                             $attributes = [
-                                                'class' => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
-                                                'sizes' => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
+                                                'class'   => trim('h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 ' . $cssClasses),
+                                                'sizes'   => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
                                                 'loading' => $lazyLoading ? 'lazy' : 'eager',
-                                                'alt' => $alt,
-                                                'title' => $title,
-                                                'style' => $objectPosition,
+                                                'alt'     => $alt,
+                                                'title'   => $title,
+                                                'style'   => $objectPosition,
                                             ];
                                         @endphp
 
                                         <a href="{{ $post->url }}" class="relative block overflow-hidden">
-                                            <div
-                                                class="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                                            ></div>
+                                            <div class="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
                                             {!! $defaultImage('listing', $attributes) !!}
 
-                                            <div
-                                                class="absolute inset-0 ring-1 ring-emerald-500/20 transition-all duration-300 ring-inset group-hover:ring-emerald-400/40"
-                                            ></div>
+                                            <div class="absolute inset-0 ring-1 ring-emerald-500/20 transition-all duration-300 ring-inset group-hover:ring-emerald-400/40"></div>
                                         </a>
                                     @else
-                                        <div
-                                            class="h-48 w-full bg-gradient-to-br from-emerald-900/20 to-cyan-900/20 ring-1 ring-emerald-500/20 ring-inset"
-                                        ></div>
+                                        <div class="h-48 w-full bg-gradient-to-br from-emerald-900/20 to-cyan-900/20 ring-1 ring-emerald-500/20 ring-inset"></div>
                                     @endif
                                 @endif
 
@@ -136,9 +120,7 @@
                                     @endif
 
                                     {{-- Post Meta --}}
-                                    <div
-                                        class="mt-auto flex items-center justify-between border-t border-emerald-500/20 pt-4 text-xs text-emerald-200/60"
-                                    >
+                                    <div class="mt-auto flex items-center justify-between border-t border-emerald-500/20 pt-4 text-xs text-emerald-200/60">
                                         <div class="flex items-center gap-3">
                                             @if ($post->author)
                                                 <span class="text-lime-400/80">{{ $post->author->name }}</span>
@@ -161,17 +143,13 @@
                     </div>
 
                     {{-- Pagination --}}
-                    <div class="mt-12">
-                        {{ $posts->links() }}
-                    </div>
+                    <div class="mt-12">{{ $posts->links() }}</div>
                 @else
-                    <div
-                        class="rounded-lg border border-emerald-500/30 bg-gradient-to-br from-slate-900 to-slate-800 py-12 text-center shadow-[0_0_20px_rgba(163,230,53,0.2)]"
-                    >
+                    <div class="rounded-lg border border-emerald-500/30 bg-gradient-to-br from-slate-900 to-slate-800 py-12 text-center shadow-[0_0_20px_rgba(163,230,53,0.2)]">
                         <p class="text-emerald-200/70">No posts found.</p>
                     </div>
                 @endif
             </div>
         </div>
-    </x-slot>
+    </x-slot:main>
 </x-theme::layouts.main>
