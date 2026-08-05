@@ -582,8 +582,8 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         $breadcrumbService->registerBreadcrumbs();
 
         // Note: User-defined breadcrumbs from routes/breadcrumbs.php are automatically
-        // loaded by the diglactic/laravel-breadcrumbs ServiceProvider, so we don't need
-        // to load them here. Users can reference our breadcrumbs using:
-        // $trail->parent('franken-cms.home') in their custom breadcrumb definitions.
+        // loaded by the daikazu/breadcrumbs ServiceProvider (via its definition_file
+        // config), so we don't need to load them here. Users can reference our
+        // breadcrumbs using $trail->parent('franken-cms.home') in their definitions.
     }
 }

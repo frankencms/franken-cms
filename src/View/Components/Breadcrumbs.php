@@ -2,8 +2,7 @@
 
 namespace FrankenCms\View\Components;
 
-use Diglactic\Breadcrumbs\Breadcrumbs as BreadcrumbsFacade;
-use Exception;
+use Daikazu\Breadcrumbs\Facades\Breadcrumbs as BreadcrumbsFacade;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Settings\ReadingSettings;
 use Illuminate\View\Component;
@@ -46,30 +45,28 @@ class Breadcrumbs extends Component
             default => null,
         };
 
-        if (! $breadcrumbName) {
+        if (! $breadcrumbName || ! BreadcrumbsFacade::has($breadcrumbName)) {
             return;
         }
 
-        try {
-            // Generate breadcrumbs using the diglactic package
-            $this->breadcrumbs = BreadcrumbsFacade::generate($breadcrumbName, $currentPage)->toArray();
-        } catch (Exception $e) {
-            // Silently fail if breadcrumbs can't be generated
-            // This allows pages without breadcrumb definitions to work normally
-            $this->breadcrumbs = [];
-        }
+        $this->breadcrumbs = BreadcrumbsFacade::generate($breadcrumbName, $currentPage)->toArray();
+    }
+
+    /**
+     * Returning '' from render() would compile the empty string into a
+     * zero-byte cached view that the framework rewrites on every request,
+     * which sends the Vite dev server into an infinite full-reload loop.
+     */
+    public function shouldRender(): bool
+    {
+        return $this->breadcrumbs !== [];
     }
 
     /**
      * Get the view / contents that represent the component.
      */
-    public function render(): View | string
+    public function render(): View
     {
-        // Don't render if no breadcrumbs
-        if (empty($this->breadcrumbs)) {
-            return '';
-        }
-
         return view('franken-cms::components.breadcrumbs');
     }
 }

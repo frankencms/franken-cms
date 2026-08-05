@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FrankenCms\Http\Middleware;
 
 use Closure;
-use Diglactic\Breadcrumbs\Breadcrumbs;
+use Daikazu\Breadcrumbs\Facades\Breadcrumbs;
 use Exception;
 use FrankenCms\Models\Post;
 use FrankenCms\OgImage\OgImageFeature;
@@ -237,7 +237,7 @@ class AddSeoDefaults
             $schema = Schema::breadcrumbs();
 
             foreach ($breadcrumbs as $breadcrumb) {
-                $schema->item($breadcrumb->title, $breadcrumb->url ?: request()->fullUrl());
+                $schema->item($breadcrumb->label, $breadcrumb->url ?: request()->fullUrl());
             }
 
             Head::schema($schema);

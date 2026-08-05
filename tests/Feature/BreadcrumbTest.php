@@ -1,6 +1,6 @@
 <?php
 
-use Diglactic\Breadcrumbs\Breadcrumbs;
+use Daikazu\Breadcrumbs\Facades\Breadcrumbs;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 use FrankenCms\Models\Taxonomy;
@@ -22,7 +22,7 @@ test('home breadcrumb is registered', function () {
     $breadcrumbs = Breadcrumbs::generate('franken-cms.home');
 
     expect($breadcrumbs)->toHaveCount(1);
-    expect($breadcrumbs[0]->title)->toBe('Home');
+    expect($breadcrumbs[0]->label)->toBe('Home');
     expect($breadcrumbs[0]->url)->toBe(url('/'));
 });
 
@@ -36,8 +36,8 @@ test('single level page breadcrumbs', function () {
     $breadcrumbs = Breadcrumbs::generate('franken-cms.page', $page);
 
     expect($breadcrumbs)->toHaveCount(2);
-    expect($breadcrumbs[0]->title)->toBe('Home');
-    expect($breadcrumbs[1]->title)->toBe('About');
+    expect($breadcrumbs[0]->label)->toBe('Home');
+    expect($breadcrumbs[1]->label)->toBe('About');
     expect($breadcrumbs[1]->url)->toBe(url('/about'));
 });
 
@@ -66,10 +66,10 @@ test('nested page breadcrumbs with 3 levels', function () {
     $breadcrumbs = Breadcrumbs::generate('franken-cms.page', $grandchild);
 
     expect($breadcrumbs)->toHaveCount(4);
-    expect($breadcrumbs[0]->title)->toBe('Home');
-    expect($breadcrumbs[1]->title)->toBe('About');
-    expect($breadcrumbs[2]->title)->toBe('Team');
-    expect($breadcrumbs[3]->title)->toBe('Leadership');
+    expect($breadcrumbs[0]->label)->toBe('Home');
+    expect($breadcrumbs[1]->label)->toBe('About');
+    expect($breadcrumbs[2]->label)->toBe('Team');
+    expect($breadcrumbs[3]->label)->toBe('Leadership');
 });
 
 test('getBreadcrumbAncestors uses single query for nested pages', function () {
@@ -140,9 +140,9 @@ test('post breadcrumbs show blog parent', function () {
     $breadcrumbs = Breadcrumbs::generate('franken-cms.post', $post);
 
     expect($breadcrumbs)->toHaveCount(3);
-    expect($breadcrumbs[0]->title)->toBe('Home');
-    expect($breadcrumbs[1]->title)->toBe('Blog');
-    expect($breadcrumbs[2]->title)->toBe('My First Post');
+    expect($breadcrumbs[0]->label)->toBe('Home');
+    expect($breadcrumbs[1]->label)->toBe('Blog');
+    expect($breadcrumbs[2]->label)->toBe('My First Post');
 });
 
 test('blog listing breadcrumbs', function () {
@@ -159,8 +159,8 @@ test('blog listing breadcrumbs', function () {
     $breadcrumbs = Breadcrumbs::generate('franken-cms.blog');
 
     expect($breadcrumbs)->toHaveCount(2);
-    expect($breadcrumbs[0]->title)->toBe('Home');
-    expect($breadcrumbs[1]->title)->toBe('Blog');
+    expect($breadcrumbs[0]->label)->toBe('Home');
+    expect($breadcrumbs[1]->label)->toBe('Blog');
 });
 
 test('taxonomy archive breadcrumbs', function () {
@@ -188,9 +188,9 @@ test('taxonomy archive breadcrumbs', function () {
     $breadcrumbs = Breadcrumbs::generate('franken-cms.taxonomy', $taxonomy, $term);
 
     expect($breadcrumbs)->toHaveCount(3);
-    expect($breadcrumbs[0]->title)->toBe('Home');
-    expect($breadcrumbs[1]->title)->toBe('Blog');
-    expect($breadcrumbs[2]->title)->toBe('Technology');
+    expect($breadcrumbs[0]->label)->toBe('Home');
+    expect($breadcrumbs[1]->label)->toBe('Blog');
+    expect($breadcrumbs[2]->label)->toBe('Technology');
     expect($breadcrumbs[2]->url)->toBe(url('/category/technology'));
 });
 
@@ -229,6 +229,6 @@ test('custom home text is used in breadcrumbs', function () {
     $breadcrumbs = Breadcrumbs::generate('franken-cms.home');
 
     expect($breadcrumbs)->toHaveCount(1);
-    expect($breadcrumbs[0]->title)->toBe('Home');
+    expect($breadcrumbs[0]->label)->toBe('Home');
     expect(config('franken-cms.breadcrumbs.home_text'))->toBe('Home');
 });

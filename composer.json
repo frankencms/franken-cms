@@ -20,7 +20,7 @@
     ],
     "require": {
         "php": "^8.3",
-        "diglactic/laravel-breadcrumbs": "^10.0",
+        "daikazu/breadcrumbs": "^1.1",
         "filament/filament": "^v5.0.0",
         "filament/spatie-laravel-media-library-plugin": "^v5.0.0",
         "filament/spatie-laravel-settings-plugin": "^v5.0.0",

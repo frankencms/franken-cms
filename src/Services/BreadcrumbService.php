@@ -2,14 +2,13 @@
 
 namespace FrankenCms\Services;
 
-use Diglactic\Breadcrumbs\Breadcrumbs;
-use Diglactic\Breadcrumbs\Manager;
+use Daikazu\Breadcrumbs\Facades\Breadcrumbs;
+use Daikazu\Breadcrumbs\Trail;
 use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 use FrankenCms\Models\Taxonomy;
 use FrankenCms\Models\Term;
 use FrankenCms\Settings\ReadingSettings;
-use ReflectionClass;
 
 class BreadcrumbService
 {
@@ -38,7 +37,7 @@ class BreadcrumbService
             return;
         }
 
-        Breadcrumbs::for('franken-cms.home', function ($trail) {
+        Breadcrumbs::for('franken-cms.home', function (Trail $trail) {
             $homeText = config('franken-cms.breadcrumbs.home_text', 'Home');
             $trail->push($homeText, url('/'));
         });
@@ -53,7 +52,7 @@ class BreadcrumbService
             return;
         }
 
-        Breadcrumbs::for('franken-cms.page', function ($trail, Page $page) {
+        Breadcrumbs::for('franken-cms.page', function (Trail $trail, Page $page) {
             // Add home
             $trail->parent('franken-cms.home');
 
@@ -82,7 +81,7 @@ class BreadcrumbService
             return;
         }
 
-        Breadcrumbs::for('franken-cms.blog', function ($trail) {
+        Breadcrumbs::for('franken-cms.blog', function (Trail $trail) {
             // Add home
             $trail->parent('franken-cms.home');
 
@@ -105,7 +104,7 @@ class BreadcrumbService
             return;
         }
 
-        Breadcrumbs::for('franken-cms.post', function ($trail, Post $post) {
+        Breadcrumbs::for('franken-cms.post', function (Trail $trail, Post $post) {
             // Add blog listing as parent
             $trail->parent('franken-cms.blog');
 
@@ -123,7 +122,7 @@ class BreadcrumbService
             return;
         }
 
-        Breadcrumbs::for('franken-cms.taxonomy', function ($trail, Taxonomy $taxonomy, Term $term) {
+        Breadcrumbs::for('franken-cms.taxonomy', function (Trail $trail, Taxonomy $taxonomy, Term $term) {
             // Add blog listing as parent
             $trail->parent('franken-cms.blog');
 
@@ -151,12 +150,6 @@ class BreadcrumbService
      */
     protected function isBreadcrumbRegistered(string $name): bool
     {
-        $manager = app(Manager::class);
-        $reflection = new ReflectionClass($manager);
-        $callbacksProperty = $reflection->getProperty('callbacks');
-        $callbacksProperty->setAccessible(true);
-        $callbacks = $callbacksProperty->getValue($manager);
-
-        return isset($callbacks[$name]);
+        return Breadcrumbs::has($name);
     }
 }
