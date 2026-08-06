@@ -6,6 +6,7 @@ use FrankenCms\Services\PageRouteService;
 use FrankenCms\Services\RouteSitemapService;
 use FrankenCms\Settings\SitemapSettings;
 use FrankenCms\Tests\Support\User;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Spatie\LaravelSettings\Settings;
@@ -159,6 +160,18 @@ describe('Heuristic filters', function () {
         Route::redirect('old-path', 'new-path')->middleware('web');
 
         expect(routeSitemapService()->generate()->render())->not->toContain('old-path');
+    });
+
+    test('excludes routes behind auth.basic, can:, and framework auth FQCN middleware', function () {
+        Route::middleware(['web', 'auth.basic'])->get('basic-report-page', fn () => 'ok');
+        Route::middleware(['web', 'can:view-reports'])->get('can-gated-page', fn () => 'ok');
+        Route::middleware(['web', Authenticate::class])->get('fqcn-gated-page', fn () => 'ok');
+
+        $xml = routeSitemapService()->generate()->render();
+
+        expect($xml)->not->toContain('basic-report-page');
+        expect($xml)->not->toContain('can-gated-page');
+        expect($xml)->not->toContain('fqcn-gated-page');
     });
 });
 

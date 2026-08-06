@@ -36,7 +36,7 @@ Unnamed routes that pass all filters are included — name is only consulted for
 
 Registered on `Illuminate\Routing\Route` (Macroable) in `FrankenCmsServiceProvider::boot()`:
 
-- `->sitemap(?float $priority = null, ?string $changeFrequency = null): Route` — force-include the route (overrides the gated/vendor/package-name skips, but never the structural requirements: GET, parameterless, no domain) and optionally override metadata for this route.
+- `->sitemap(?float $priority = null, ?string $changeFrequency = null): Route` — force-include the route (overrides the gated/vendor/package-name skips, but never the structural requirements: GET, parameterless, no domain, `web` middleware) and optionally override metadata for this route.
 - `->skipSitemap(): Route` — force-exclude.
 
 Precedence: `excluded_paths` is evaluated last and always wins, including over `->sitemap()` — the site operator can remove any URL from the sitemap at runtime without a code deploy.

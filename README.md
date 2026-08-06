@@ -206,6 +206,8 @@ Allowed `changeFrequency` values: `always`, `hourly`, `daily`, `weekly`, `monthl
 
 Routes without overrides use the sitemap settings' default priority and change frequency. The **Excluded Paths** setting always wins — a URL matching an excluded pattern never appears, even with a `->sitemap()` force-include. Routes with URI parameters can't be enumerated; point **Custom Sitemaps** at a hand-built sitemap for those.
 
+Gate detection is alias- and known-middleware-based, not exhaustive — routes gated by policies, custom middleware classes, or custom middleware groups won't be recognized as gated automatically, so use `->skipSitemap()` explicitly for those.
+
 ## Testing
 
 ```bash

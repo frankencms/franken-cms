@@ -8,6 +8,12 @@ use FrankenCms\Settings\SitemapSettings;
 use FrankenCms\Sitemap\Sitemap;
 use FrankenCms\Sitemap\Url;
 use FrankenCms\Sitemap\UrlExclusionMatcher;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
+use Illuminate\Auth\Middleware\Authorize;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
+use Illuminate\Auth\Middleware\RequirePassword;
+use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Routing\RedirectController;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
@@ -41,6 +47,19 @@ class RouteSitemapService
      * Middleware that marks a route as gated (not publicly indexable)
      */
     protected const GATED_MIDDLEWARE = ['verified', 'signed', 'password.confirm', 'guest'];
+
+    /**
+     * Framework middleware FQCNs that mark a route as gated (not publicly indexable),
+     * for routes that reference middleware classes directly instead of via alias
+     */
+    protected const GATED_MIDDLEWARE_CLASSES = [
+        Authenticate::class,
+        AuthenticateWithBasicAuth::class,
+        Authorize::class,
+        RequirePassword::class,
+        EnsureEmailIsVerified::class,
+        ValidateSignature::class,
+    ];
 
     public function __construct(
         protected SitemapSettings $settings,
@@ -175,11 +194,19 @@ class RouteSitemapService
                 continue;
             }
 
-            if ($item === 'auth' || str_starts_with($item, 'auth:')) {
+            if ($item === 'auth' || str_starts_with($item, 'auth:') || str_starts_with($item, 'auth.')) {
+                return true;
+            }
+
+            if (str_starts_with($item, 'can:')) {
                 return true;
             }
 
             if (in_array($item, self::GATED_MIDDLEWARE, true)) {
+                return true;
+            }
+
+            if (in_array(ltrim($item, '\\'), self::GATED_MIDDLEWARE_CLASSES, true)) {
                 return true;
             }
         }
