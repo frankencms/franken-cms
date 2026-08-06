@@ -23,7 +23,8 @@ This feature auto-generates a third sitemap, `sitemap-routes.xml`, covering the 
 - URI contains no parameters (no `{` in the URI)
 - Route's gathered middleware includes `web`
 - No domain restriction (`$route->getDomain()` is null) — `url($uri)` would build wrong URLs otherwise
-- Not a package route — skip by exact/prefixed route name: `robots`, `feed.*`, `sitemap`, `sitemap.*`
+- Not a package route — skip by exact/prefixed route name (`robots`, `feed.*`, `sitemap`, `sitemap.*`) or a controller in the `FrankenCms\` namespace
+- Not a CMS page route — `PageRouteService::registerPageRoutes()` registers published pages as named closure routes (user-chosen names, so name prefixes can't catch them); skip any route whose name appears in the page-route names from `PageRouteService` — those pages are already in `sitemap-pages.xml`
 - Not a vendor route — skip route-name prefixes: `filament.`, `livewire.`, `debugbar.`, `horizon.`, `telescope.`, `pulse.`, `ignition.`
 - Not gated — skip if gathered middleware contains `auth`, any `auth:*` variant, `verified`, `signed`, `password.confirm`, or `guest` (`guest` auto-excludes Breeze/Fortify login and register pages)
 - Not a `Route::redirect()` route (action controller is `Illuminate\Routing\RedirectController`) — the redirect *target* belongs in a sitemap, not the redirecting URL. `Route::view()` routes (ViewController) are included.
