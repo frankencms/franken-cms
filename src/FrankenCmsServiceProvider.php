@@ -50,6 +50,7 @@ use FrankenCms\Services\MenuService;
 use FrankenCms\Services\PageRouteService;
 use FrankenCms\Services\PostService;
 use FrankenCms\Services\RobotsService;
+use FrankenCms\Services\RouteSitemapService;
 use FrankenCms\Services\SeoService;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Services\SitemapService;
@@ -159,6 +160,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register robots, sitemap, feed, and social links services
         $this->app->singleton(RobotsService::class);
         $this->app->singleton(SitemapService::class);
+        $this->app->singleton(RouteSitemapService::class);
         $this->app->singleton(FeedService::class);
         $this->app->singleton(SocialLinksService::class);
 
