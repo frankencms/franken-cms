@@ -11,6 +11,7 @@ use FrankenCms\Settings\SitemapSettings;
 use FrankenCms\Sitemap\Sitemap;
 use FrankenCms\Sitemap\SitemapIndex;
 use FrankenCms\Sitemap\Url;
+use FrankenCms\Sitemap\UrlExclusionMatcher;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -316,17 +317,7 @@ class SitemapService
      */
     protected function isExcluded(Post $post): bool
     {
-        $url = $this->getPostUrl($post);
-
-        foreach ($this->settings->excluded_paths as $excludedPath) {
-            // Support wildcards - escape everything except *, then replace * with .*
-            $pattern = str_replace('\\*', '.*', preg_quote($excludedPath, '/'));
-
-            if (preg_match('/^' . $pattern . '$/', $url)) {
-                return true;
-            }
-        }
-
-        return false;
+        return (new UrlExclusionMatcher($this->settings->excluded_paths))
+            ->matches($this->getPostUrl($post));
     }
 }
