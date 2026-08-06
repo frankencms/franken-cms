@@ -8,12 +8,12 @@ use Carbon\Carbon;
 use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\SitemapSettings;
+use FrankenCms\Sitemap\Sitemap;
+use FrankenCms\Sitemap\SitemapIndex;
+use FrankenCms\Sitemap\Url;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Spatie\Sitemap\Sitemap;
-use Spatie\Sitemap\SitemapIndex;
-use Spatie\Sitemap\Tags\Url;
 
 class SitemapService
 {
@@ -49,26 +49,33 @@ class SitemapService
      */
     public function generate(): SitemapIndex
     {
-        return Cache::rememberForever(self::CACHE_KEY_INDEX, function () {
-            $sitemapIndex = SitemapIndex::create();
+        // Cache::rememberForever would return stale entries serialized by older
+        // package versions; only trust values that unserialize to our class
+        $cached = Cache::get(self::CACHE_KEY_INDEX);
+        if ($cached instanceof SitemapIndex) {
+            return $cached;
+        }
 
-            // Always add pages sitemap
-            $sitemapIndex->add(url('sitemap-pages.xml'));
+        $sitemapIndex = SitemapIndex::create();
 
-            // Always add posts sitemap
-            $sitemapIndex->add(url('sitemap-posts.xml'));
+        // Always add pages sitemap
+        $sitemapIndex->add(url('sitemap-pages.xml'));
 
-            // Add custom sitemaps
-            foreach ($this->settings->custom_sitemaps as $customSitemap) {
-                // Convert relative URLs to absolute
-                if (str_starts_with($customSitemap, '/')) {
-                    $customSitemap = url($customSitemap);
-                }
-                $sitemapIndex->add($customSitemap);
+        // Always add posts sitemap
+        $sitemapIndex->add(url('sitemap-posts.xml'));
+
+        // Add custom sitemaps
+        foreach ($this->settings->custom_sitemaps as $customSitemap) {
+            // Convert relative URLs to absolute
+            if (str_starts_with($customSitemap, '/')) {
+                $customSitemap = url($customSitemap);
             }
+            $sitemapIndex->add($customSitemap);
+        }
 
-            return $sitemapIndex;
-        });
+        Cache::forever(self::CACHE_KEY_INDEX, $sitemapIndex);
+
+        return $sitemapIndex;
     }
 
     /**
@@ -81,17 +88,24 @@ class SitemapService
         // Track this post type as cached
         $this->trackCachedPostType($postType);
 
-        return Cache::rememberForever($cacheKey, function () use ($postType) {
-            $posts = $this->getPostsForType($postType);
-            $sitemap = Sitemap::create();
+        // Cache::rememberForever would return stale entries serialized by older
+        // package versions; only trust values that unserialize to our class
+        $cached = Cache::get($cacheKey);
+        if ($cached instanceof Sitemap) {
+            return $cached;
+        }
 
-            foreach ($posts as $post) {
-                $url = $this->createUrlForPost($post);
-                $sitemap->add($url);
-            }
+        $posts = $this->getPostsForType($postType);
+        $sitemap = Sitemap::create();
 
-            return $sitemap;
-        });
+        foreach ($posts as $post) {
+            $url = $this->createUrlForPost($post);
+            $sitemap->add($url);
+        }
+
+        Cache::forever($cacheKey, $sitemap);
+
+        return $sitemap;
     }
 
     /**

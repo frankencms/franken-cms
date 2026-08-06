@@ -4,11 +4,11 @@ use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Post;
 use FrankenCms\Services\SitemapService;
 use FrankenCms\Settings\SitemapSettings;
+use FrankenCms\Sitemap\Sitemap;
 use FrankenCms\Tests\Support\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Spatie\LaravelSettings\Settings;
-use Spatie\Sitemap\Sitemap;
 
 /**
  * Create a mock SitemapSettings with proper initialization.
@@ -495,6 +495,33 @@ describe('Last modification date', function () {
         // Should still have a lastmod tag (using Carbon::now() fallback)
         expect($rendered)->toContain('<lastmod>');
         expect($rendered)->toContain('no-updated-at');
+    });
+});
+
+describe('Stale cache handling', function () {
+    test('regenerates post type sitemap when cached value is not a Sitemap instance', function () {
+        Post::factory()->create([
+            'post_type'   => 'post',
+            'post_status' => PostStatus::PUBLISH,
+            'post_slug'   => 'fresh-post',
+        ]);
+
+        // Simulate a stale cache entry left behind by a previous package version
+        Cache::forever('sitemap_post', 'stale-value-from-old-package-version');
+
+        $sitemap = $this->service->generateForPostType('post');
+
+        expect($sitemap)->toBeInstanceOf(Sitemap::class);
+        expect($sitemap->render())->toContain('fresh-post');
+    });
+
+    test('regenerates sitemap index when cached value is not a SitemapIndex instance', function () {
+        Cache::forever('sitemap_index', 'stale-value-from-old-package-version');
+
+        $xml = $this->service->render();
+
+        expect($xml)->toContain('<sitemapindex');
+        expect($xml)->toContain('sitemap-pages.xml');
     });
 });
 
