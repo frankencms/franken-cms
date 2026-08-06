@@ -32,6 +32,7 @@ function createSettingsMock(): SitemapSettings
     $settings->excluded_paths = [];
     $settings->include_images = true;
     $settings->custom_sitemaps = [];
+    $settings->include_app_routes = true;
 
     return $settings;
 }
@@ -586,5 +587,11 @@ describe('Caching behavior', function () {
 
         expect($freshResult)->toContain('original-post');
         expect($freshResult)->toContain('new-post');
+    });
+});
+
+describe('Settings defaults', function () {
+    test('include_app_routes defaults to true', function () {
+        expect(app(SitemapSettings::class)->include_app_routes)->toBeTrue();
     });
 });

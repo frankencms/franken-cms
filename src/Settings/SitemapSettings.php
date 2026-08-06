@@ -45,6 +45,12 @@ class SitemapSettings extends Settings
      */
     public array $custom_sitemaps;
 
+    /**
+     * Automatically include the host app's own static public routes
+     * as sitemap-routes.xml in the sitemap index
+     */
+    public bool $include_app_routes;
+
     public static function group(): string
     {
         return 'franken_cms_sitemap';

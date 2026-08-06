@@ -91,6 +91,12 @@ class SitemapSettingsTabProvider implements SettingsTabProviderInterface
                             ->helperText('Add featured images to sitemap entries for better image SEO')
                             ->default(true)
                             ->columnSpanFull(),
+
+                        Toggle::make('include_app_routes')
+                            ->label('App Routes Sitemap')
+                            ->helperText('Automatically include your application\'s own static public routes (non-CMS pages) as sitemap-routes.xml. Routes can opt out in code with ->skipSitemap().')
+                            ->default(true)
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

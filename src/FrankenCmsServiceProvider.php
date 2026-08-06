@@ -111,6 +111,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '22_remove_ai_api_key_setting',
                 '23_add_ai_featured_image_settings',
                 '24_rename_ai_engine_settings',
+                '25_add_sitemap_include_app_routes',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
