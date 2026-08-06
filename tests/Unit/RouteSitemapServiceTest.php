@@ -161,3 +161,77 @@ describe('Heuristic filters', function () {
         expect(routeSitemapService()->generate()->render())->not->toContain('old-path');
     });
 });
+
+describe('Macro overrides', function () {
+    test('skipSitemap excludes an otherwise eligible route', function () {
+        Route::middleware('web')->get('hidden-page', fn () => 'ok')->skipSitemap();
+
+        expect(routeSitemapService()->generate()->render())->not->toContain('hidden-page');
+    });
+
+    test('sitemap macro force-includes a gated route', function () {
+        Route::middleware(['web', 'auth'])->get('members-welcome', fn () => 'ok')->sitemap();
+
+        expect(routeSitemapService()->generate()->render())->toContain(url('members-welcome'));
+    });
+
+    test('sitemap macro never overrides structural requirements', function () {
+        Route::middleware('web')->get('items/{id}', fn ($id) => 'ok')->sitemap();
+
+        expect(routeSitemapService()->generate()->render())->not->toContain('items');
+    });
+
+    test('sitemap macro metadata overrides settings defaults', function () {
+        Route::middleware('web')->get('special-page', fn () => 'ok')->sitemap(0.9, 'monthly');
+
+        $xml = routeSitemapService()->generate()->render();
+
+        expect($xml)->toContain('<priority>0.9</priority>');
+        expect($xml)->toContain('<changefreq>monthly</changefreq>');
+    });
+
+    test('excluded_paths beats a sitemap force-include', function () {
+        Route::middleware('web')->get('force-included', fn () => 'ok')->sitemap();
+
+        $settings = createRouteSitemapSettingsMock();
+        $settings->excluded_paths = ['*/force-included'];
+
+        expect(routeSitemapService($settings)->generate()->render())->not->toContain('force-included');
+    });
+});
+
+describe('Metadata defaults', function () {
+    test('routes get priority and changefreq from settings', function () {
+        Route::middleware('web')->get('defaults-page', fn () => 'ok');
+
+        $settings = createRouteSitemapSettingsMock();
+        $settings->default_priority = 0.3;
+        $settings->default_change_frequency = 'yearly';
+
+        $xml = routeSitemapService($settings)->generate()->render();
+
+        expect($xml)->toContain('<priority>0.3</priority>');
+        expect($xml)->toContain('<changefreq>yearly</changefreq>');
+    });
+
+    test('route urls have no lastmod tag', function () {
+        Route::middleware('web')->get('no-lastmod-page', fn () => 'ok');
+
+        expect(routeSitemapService()->generate()->render())->not->toContain('<lastmod>');
+    });
+});
+
+describe('Enabled state', function () {
+    test('enabled only when both toggles are on', function () {
+        $settings = createRouteSitemapSettingsMock();
+        expect(routeSitemapService($settings)->isEnabled())->toBeTrue();
+
+        $settings = createRouteSitemapSettingsMock();
+        $settings->enabled = false;
+        expect(routeSitemapService($settings)->isEnabled())->toBeFalse();
+
+        $settings = createRouteSitemapSettingsMock();
+        $settings->include_app_routes = false;
+        expect(routeSitemapService($settings)->isEnabled())->toBeFalse();
+    });
+});
