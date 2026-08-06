@@ -65,6 +65,11 @@ class SitemapService
         // Always add posts sitemap
         $sitemapIndex->add(url('sitemap-posts.xml'));
 
+        // Add app routes sitemap
+        if ($this->settings->include_app_routes) {
+            $sitemapIndex->add(url('sitemap-routes.xml'));
+        }
+
         // Add custom sitemaps
         foreach ($this->settings->custom_sitemaps as $customSitemap) {
             // Convert relative URLs to absolute

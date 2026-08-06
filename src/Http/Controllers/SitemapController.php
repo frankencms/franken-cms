@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace FrankenCms\Http\Controllers;
 
+use FrankenCms\Services\RouteSitemapService;
 use FrankenCms\Services\SitemapService;
 use Illuminate\Http\Response;
 
 class SitemapController
 {
     public function __construct(
-        protected SitemapService $sitemapService
+        protected SitemapService $sitemapService,
+        protected RouteSitemapService $routeSitemapService
     ) {}
 
     /**
@@ -40,6 +42,19 @@ class SitemapController
         $sitemap = $this->sitemapService->generateForPostType($postType);
 
         return response($sitemap->render())
+            ->header('Content-Type', 'text/xml; charset=UTF-8');
+    }
+
+    /**
+     * Display the sitemap of the host app's own static routes
+     */
+    public function routes(): Response
+    {
+        if (! $this->routeSitemapService->isEnabled()) {
+            abort(404);
+        }
+
+        return response($this->routeSitemapService->generate()->render())
             ->header('Content-Type', 'text/xml; charset=UTF-8');
     }
 }

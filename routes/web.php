@@ -20,6 +20,7 @@ Route::middleware('web')->group(function () {
     Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
     Route::get('sitemap-pages.xml', fn () => app(SitemapController::class)->postType('page'))->name('sitemap.pages');
     Route::get('sitemap-posts.xml', fn () => app(SitemapController::class)->postType('post'))->name('sitemap.posts');
+    Route::get('sitemap-routes.xml', [SitemapController::class, 'routes'])->name('sitemap.routes');
 
     // Register named routes for pages (must be before fallback)
     app(PageRouteService::class)->registerPageRoutes();

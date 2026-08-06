@@ -132,6 +132,18 @@ describe('Sitemap index generation', function () {
         expect($sitemap)->toContain('news-sitemap.xml');
         expect($sitemap)->toContain('https://cdn.example.com/products.xml');
     });
+
+    test('includes app routes sitemap in index when enabled', function () {
+        expect($this->service->render())->toContain('sitemap-routes.xml');
+    });
+
+    test('omits app routes sitemap from index when disabled', function () {
+        $this->settings->include_app_routes = false;
+
+        $service = new SitemapService($this->settings);
+
+        expect($service->render())->not->toContain('sitemap-routes.xml');
+    });
 });
 
 describe('Post type sitemap generation', function () {
