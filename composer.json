@@ -28,7 +28,7 @@
         "illuminate/support": "^13.0",
         "laravel/head": "^0.1.0",
         "league/html-to-markdown": "^5.1.1",
-        "mallardduck/blade-lucide-icons": "^1.26",
+        "mallardduck/blade-lucide-icons": "^2.0",
         "spatie/laravel-medialibrary": "^11.17.8",
         "spatie/laravel-package-tools": "^1.92.7",
         "spatie/laravel-sitemap": "^7.3.8"
