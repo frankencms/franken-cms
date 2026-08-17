@@ -26,7 +26,7 @@
         "filament/spatie-laravel-settings-plugin": "^v5.0.0",
         "illuminate/contracts": "^13.0",
         "illuminate/support": "^13.0",
-        "laravel/head": "^0.1.0",
+        "laravel/head": "^0.2.0",
         "league/html-to-markdown": "^5.1.1",
         "mallardduck/blade-lucide-icons": "^1.26",
         "spatie/laravel-medialibrary": "^11.17.8",
