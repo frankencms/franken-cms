@@ -4,6 +4,8 @@
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/frankencms/franken-cms/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/frankencms/franken-cms/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/frankencms/franken-cms.svg?style=flat-square)](https://packagist.org/packages/frankencms/franken-cms)
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mikewallcodes)
+
 A WordPress alternative for Laravel. Powered by FilamentPHP and the TALL stack.
 
 Franken CMS gives you content management — posts, pages, taxonomies, menus, SEO, and a template field system — as a Laravel package. Build your app your way without being locked into a rigid structure.
