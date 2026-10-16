@@ -31,7 +31,7 @@
         "mallardduck/blade-lucide-icons": "^1.26",
         "spatie/laravel-medialibrary": "^11.17.8",
         "spatie/laravel-package-tools": "^1.92.7",
-        "spatie/laravel-sitemap": "^7.3.8"
+        "spatie/laravel-sitemap": "^8.2.0"
     },
     "require-dev": {
         "larastan/larastan": "^3.8.1",
