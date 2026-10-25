@@ -64,7 +64,7 @@ class Url
     public function toXmlLines(): array
     {
         $lines = ['    <url>'];
-        $lines[] = '        <loc>' . Xml::escape($this->url) . '</loc>';
+        $lines[] = '        <loc>' . Xml::escape(url($this->url)) . '</loc>';
 
         if ($this->lastModificationDate !== null) {
             $lines[] = '        <lastmod>' . $this->lastModificationDate->format(DateTime::ATOM) . '</lastmod>';
@@ -80,7 +80,7 @@ class Url
 
         foreach ($this->images as $image) {
             $lines[] = '        <image:image>';
-            $lines[] = '            <image:loc>' . Xml::escape($image['url']) . '</image:loc>';
+            $lines[] = '            <image:loc>' . Xml::escape(url($image['url'])) . '</image:loc>';
 
             if ($image['caption'] !== '') {
                 $lines[] = '            <image:caption>' . Xml::escape($image['caption']) . '</image:caption>';
