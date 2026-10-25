@@ -43,7 +43,11 @@
                                         ];
                                     @endphp
 
-                                    <a href="{{ $post->url }}" class="block overflow-hidden">
+                                    <a
+                                        href="{{ $post->url }}"
+                                        @frankenNavigate($post->url)
+                                        class="block overflow-hidden"
+                                    >
                                         {!! $media('listing', $attributes) !!}
                                     </a>
                                 @else
@@ -70,7 +74,11 @@
                                             ];
                                         @endphp
 
-                                        <a href="{{ $post->url }}" class="block overflow-hidden">
+                                        <a
+                                            href="{{ $post->url }}"
+                                            @frankenNavigate($post->url)
+                                            class="block overflow-hidden"
+                                        >
                                             {!! $defaultImage('listing', $attributes) !!}
                                         </a>
                                     @else
@@ -85,6 +93,7 @@
                                             @foreach ($post->categories->take(2) as $category)
                                                 <a
                                                     href="{{ $category->url }}"
+                                                    @frankenNavigate($category->url)
                                                     class="rounded-full bg-gradient-to-r from-lime-500/20 to-emerald-500/20 px-3 py-1 text-xs font-medium text-lime-300 ring-1 ring-lime-400/30 transition-all hover:from-lime-500/30 hover:to-emerald-500/30 hover:ring-lime-400/50"
                                                 >
                                                     {{ $category->name }}
@@ -95,7 +104,11 @@
 
                                     {{-- Post Title --}}
                                     <h2 class="mb-3 text-xl font-bold text-lime-100">
-                                        <a href="{{ $post->url }}" class="transition-colors hover:text-lime-400">
+                                        <a
+                                            href="{{ $post->url }}"
+                                            @frankenNavigate($post->url)
+                                            class="transition-colors hover:text-lime-400"
+                                        >
                                             {{ $post->post_title }}
                                         </a>
                                     </h2>

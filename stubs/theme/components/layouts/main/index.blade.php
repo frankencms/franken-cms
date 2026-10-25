@@ -50,6 +50,12 @@
     {{-- Footer --}}
     <x-theme::layouts.main.footer />
 
+    {{--
+        With CMS_LIVEWIRE_NAVIGATE=true, links swap the page body without a reload.
+        Wrap anything that should survive navigation (e.g. an audio player) in @persist:
+        @persist('player') <audio src="..." controls></audio> @endpersist
+        Theme scripts should run on 'livewire:navigated' instead of DOMContentLoaded.
+    --}}
     @livewireScripts()
     @stack('scripts')
 

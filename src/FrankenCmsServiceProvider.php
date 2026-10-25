@@ -57,6 +57,7 @@ use FrankenCms\Services\SitemapService;
 use FrankenCms\Services\SocialLinksService;
 use FrankenCms\Services\TemplateFieldExtractor;
 use FrankenCms\Services\TemplateFieldRenderer;
+use FrankenCms\Services\TemplateResolver;
 use FrankenCms\Settings\StackSettings;
 use FrankenCms\View\Components\Breadcrumbs;
 use FrankenCms\View\Components\CmsField;
@@ -317,6 +318,15 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 BlogPostWizard::class
             );
         }
+
+        // Theme templates written as single-file components (<?php new class extends Component ...)
+        // render as Livewire page components; plain Blade templates are ignored by Livewire's finder
+        if (config('franken-cms.livewire.page_components', true)) {
+            Livewire::addNamespace(
+                TemplateResolver::LIVEWIRE_NAMESPACE,
+                viewPath: resource_path('views/' . config('franken-cms.theme_folder', 'theme'))
+            );
+        }
     }
 
     private function registerThemeComponents(): void
@@ -358,6 +368,11 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register social links directives using provider
         $socialLinksProvider = new SocialLinksDirectiveProvider;
         $socialLinksProvider->register();
+
+        // <a href="{{ $url }}" @frankenNavigate($url)> adds wire:navigate when enabled
+        Blade::directive('frankenNavigate', function (string $expression) {
+            return "<?php echo franken_navigate({$expression}); ?>";
+        });
     }
 
     private function registerFieldTypes(): void

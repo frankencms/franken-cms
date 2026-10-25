@@ -29,6 +29,7 @@
                     <li>
                         <a
                             href="/"
+                            @frankenNavigate('/')
                             class="text-emerald-200/80 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                         >
                             Home
@@ -37,6 +38,7 @@
                     <li>
                         <a
                             href="/about"
+                            @frankenNavigate('/about')
                             class="text-emerald-200/80 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                         >
                             About
@@ -45,6 +47,7 @@
                     <li>
                         <a
                             href="/blog"
+                            @frankenNavigate('/blog')
                             class="text-emerald-200/80 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                         >
                             Blog
@@ -53,6 +56,7 @@
                     <li>
                         <a
                             href="/contact"
+                            @frankenNavigate('/contact')
                             class="text-emerald-200/80 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                         >
                             Contact
@@ -70,6 +74,7 @@
                     <li>
                         <a
                             href="/privacy"
+                            @frankenNavigate('/privacy')
                             class="text-emerald-200/80 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                         >
                             Privacy Policy
@@ -78,6 +83,7 @@
                     <li>
                         <a
                             href="/terms"
+                            @frankenNavigate('/terms')
                             class="text-emerald-200/80 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                         >
                             Terms of Service
@@ -86,6 +92,7 @@
                     <li>
                         <a
                             href="/cookies"
+                            @frankenNavigate('/cookies')
                             class="text-emerald-200/80 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                         >
                             Cookie Policy

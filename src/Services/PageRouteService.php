@@ -71,19 +71,16 @@ class PageRouteService
                 return redirect('/');
             }
 
-            $themeFolder = config('franken-cms.theme_folder');
             $template = $post->template ?? 'page';
-            $view = sprintf('%s.%s', $themeFolder, $template);
-
-            // Fallback to default page template if specific template doesn't exist
-            if (! view()->exists($view)) {
-                $view = sprintf('%s.page', $themeFolder);
-            }
 
             $data = ['page' => $post];
 
             // Check if this is the blog listing page and add posts
-            if ($readingSettings->post_page && $post->post_slug === $readingSettings->post_page) {
+            // (Livewire page components query and paginate their own posts)
+            if ($readingSettings->post_page
+                && $post->post_slug === $readingSettings->post_page
+                && ! TemplateResolver::isLivewireTemplate($template)
+            ) {
                 $posts = Post::query()
                     ->where('post_type', 'post')
                     ->visibleOnFrontend()
@@ -94,7 +91,8 @@ class PageRouteService
                 $data['posts'] = $posts;
             }
 
-            return view($view, $data);
+            // Fallback to default page template if specific template doesn't exist
+            return TemplateResolver::render($template, $data, 'page');
         })->name($page['route_name']);
     }
 

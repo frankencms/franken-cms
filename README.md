@@ -210,6 +210,74 @@ Routes without overrides use the sitemap settings' default priority and change f
 
 Gate detection is alias- and known-middleware-based, not exhaustive — routes gated by policies, custom middleware classes, or custom middleware groups won't be recognized as gated automatically, so use `->skipSitemap()` explicitly for those.
 
+## Livewire Navigation & Page Components
+
+CMS content is routed by Laravel as usual (a `Route::fallback()` plus named page routes). Livewire can sit on top of that in two optional ways. Your theme layout needs `@livewireStyles` and `@livewireScripts`; the example theme already has both.
+
+Your own `Route::livewire()` routes in `routes/web.php` keep working alongside the CMS, because the CMS fallback route is registered last.
+
+### SPA-style navigation (`wire:navigate`)
+
+```dotenv
+CMS_LIVEWIRE_NAVIGATE=true
+# Optional: prefetch on hover (wire:navigate.hover)
+CMS_LIVEWIRE_NAVIGATE_PREFETCH=true
+```
+
+Menu items, breadcrumbs, and the example theme's post, category, and tag links then fetch the next page and swap the body without a full reload. Links get `wire:navigate` only when they are internal and open in the same tab. External URLs, `#anchors`, `mailto:`/`tel:` links, file URLs (`sitemap.xml`, `*.pdf`) and the paths in `franken-cms.livewire.navigate_except` (by default `admin`, `feed`) always do a full page load.
+
+Use the same rule on your own theme links:
+
+```blade
+<a href="{{ $url }}" @frankenNavigate($url)>…</a>
+{{-- or --}}
+<a href="{{ $url }}" {{ franken_navigate($url, $target) }}>…</a>
+```
+
+Things to know:
+
+- Theme JavaScript that runs on `DOMContentLoaded` runs only once. Listen for `livewire:navigated` instead.
+- Wrap elements that should survive navigation (an audio player, say) in `@persist('name') … @endpersist`. Don't persist the header if it shows the active menu state.
+- `<head>` tags are rendered server-side on every request and merged by Livewire, and crawlers always do full loads, so SEO output is unchanged.
+
+### Livewire page templates
+
+Any theme template can be a Livewire single-file component. Write it in the theme folder with the usual name (`page-…`, `post-…`), without a `⚡` prefix, and pick it per page in the admin like any other template:
+
+```blade
+{{-- resources/views/theme/page-newsletter.blade.php --}}
+<?php
+
+use FrankenCms\Livewire\Concerns\InteractsWithFrankenPage;
+use Livewire\Component;
+
+new class extends Component {
+    use InteractsWithFrankenPage; // provides $page / $post and $frankenFields
+
+    public string $email = '';
+
+    public function subscribe(): void
+    {
+        $this->validate(['email' => 'required|email']);
+        // ...
+    }
+};
+?>
+
+<div>
+    <h1>@frankenText('hero.title', ['label' => 'Title', 'default' => 'Join the list'])</h1>
+    <form wire:submit="subscribe">
+        <input type="email" wire:model="email">
+        <button>Subscribe</button>
+    </form>
+</div>
+```
+
+- `@franken*` fields work as they do in plain templates: they show up in the editor, and their values are available on every render, including Livewire update requests.
+- The page is wrapped in `franken-cms.livewire.layout`. If that isn't set, the example theme's `theme.components.layouts.main.index` is used when it exists, then Livewire's `component_layout`. A `#[Layout]` attribute on the component overrides all of these.
+- Blog-listing and archive templates written as components do their own querying (for example with `WithPagination`). The CMS passes only `$page`/`$post`, never the posts paginator.
+- Plain Blade templates are never treated as components. To turn the feature off completely, set `CMS_LIVEWIRE_PAGE_COMPONENTS=false`.
+
 ## Testing
 
 ```bash

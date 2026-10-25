@@ -44,7 +44,11 @@
                                         ];
                                     @endphp
 
-                                    <a href="{{ $post->url }}" class="relative block overflow-hidden">
+                                    <a
+                                        href="{{ $post->url }}"
+                                        @frankenNavigate($post->url)
+                                        class="relative block overflow-hidden"
+                                    >
                                         <div class="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
                                         {!! $media('listing', $attributes) !!}
@@ -75,7 +79,11 @@
                                             ];
                                         @endphp
 
-                                        <a href="{{ $post->url }}" class="relative block overflow-hidden">
+                                        <a
+                                            href="{{ $post->url }}"
+                                            @frankenNavigate($post->url)
+                                            class="relative block overflow-hidden"
+                                        >
                                             <div class="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
                                             {!! $defaultImage('listing', $attributes) !!}
@@ -94,6 +102,7 @@
                                             @foreach ($post->categories->take(2) as $category)
                                                 <a
                                                     href="{{ $category->url }}"
+                                                    @frankenNavigate($category->url)
                                                     class="rounded-full bg-gradient-to-r from-lime-500/10 to-emerald-500/10 px-3 py-1 text-xs font-medium text-lime-400 ring-1 ring-lime-400/30 transition-all duration-300 hover:from-lime-500/20 hover:to-emerald-500/20 hover:text-lime-300 hover:shadow-[0_0_10px_rgba(163,230,53,0.3)] hover:ring-lime-400/50"
                                                 >
                                                     {{ $category->name }}
@@ -106,6 +115,7 @@
                                     <h2 class="mb-3 text-xl font-bold text-lime-100">
                                         <a
                                             href="{{ $post->url }}"
+                                            @frankenNavigate($post->url)
                                             class="transition-all duration-300 hover:bg-gradient-to-r hover:from-lime-400 hover:to-emerald-400 hover:bg-clip-text hover:text-transparent hover:drop-shadow-[0_0_10px_rgba(163,230,53,0.4)]"
                                         >
                                             {{ $post->post_title }}
