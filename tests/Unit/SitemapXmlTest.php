@@ -194,3 +194,27 @@ describe('SitemapIndex rendering', function () {
         expect($restored->render())->toBe($index->render());
     });
 });
+
+describe('Relative URLs', function () {
+    test('url locs are made absolute against the app url', function () {
+        $xml = Sitemap::create()
+            ->add(Url::create('/blog/hello')->addImage('/storage/1/photo.jpg', 'Photo'))
+            ->render();
+
+        expect($xml)->toContain('<loc>' . url('/blog/hello') . '</loc>')
+            ->and($xml)->toContain('<image:loc>' . url('/storage/1/photo.jpg') . '</image:loc>')
+            ->and($xml)->not->toContain('<loc>/blog/hello</loc>');
+    });
+
+    test('sitemap index locs are made absolute against the app url', function () {
+        $xml = SitemapIndex::create()->add('/custom-sitemap.xml')->render();
+
+        expect($xml)->toContain('<loc>' . url('/custom-sitemap.xml') . '</loc>');
+    });
+
+    test('absolute urls are left unchanged', function () {
+        $xml = Sitemap::create()->add(Url::create('https://example.com/hello'))->render();
+
+        expect($xml)->toContain('<loc>https://example.com/hello</loc>');
+    });
+});

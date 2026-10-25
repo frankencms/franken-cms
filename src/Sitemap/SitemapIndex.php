@@ -36,7 +36,7 @@ class SitemapIndex
 
         foreach ($this->tags as $tag) {
             $lines[] = '    <sitemap>';
-            $lines[] = '        <loc>' . Xml::escape($tag['url']) . '</loc>';
+            $lines[] = '        <loc>' . Xml::escape(url($tag['url'])) . '</loc>';
             $lines[] = '        <lastmod>' . $tag['lastModificationDate']->format(DateTime::ATOM) . '</lastmod>';
             $lines[] = '    </sitemap>';
         }
