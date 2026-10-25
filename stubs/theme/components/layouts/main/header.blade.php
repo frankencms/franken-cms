@@ -12,6 +12,7 @@
             <div class="flex items-center">
                 <a
                     href="/"
+                    @frankenNavigate('/')
                     class="bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 bg-clip-text text-xl font-extrabold text-transparent transition-all duration-300 hover:drop-shadow-[0_0_15px_rgba(163,230,53,0.6)]"
                 >
                     {{ $siteName }}
@@ -39,24 +40,28 @@
                 {{-- Option 3: Hardcoded links (for template portability) --}}
                 <a
                     href="/"
+                    @frankenNavigate('/')
                     class="text-sm font-medium text-emerald-200/90 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                 >
                     Home
                 </a>
                 <a
                     href="/about"
+                    @frankenNavigate('/about')
                     class="text-sm font-medium text-emerald-200/90 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                 >
                     About
                 </a>
                 <a
                     href="/blog"
+                    @frankenNavigate('/blog')
                     class="text-sm font-medium text-emerald-200/90 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                 >
                     Blog
                 </a>
                 <a
                     href="/contact"
+                    @frankenNavigate('/contact')
                     class="text-sm font-medium text-emerald-200/90 transition-all duration-200 hover:text-lime-400 hover:drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]"
                 >
                     Contact
@@ -89,24 +94,28 @@
             <div class="space-y-1 border-t border-emerald-500/30 bg-slate-900 pt-2 pb-3 shadow-inner shadow-emerald-500/10">
                 <a
                     href="/"
+                    @frankenNavigate('/')
                     class="block px-3 py-2 text-base font-medium text-emerald-200/90 transition-all duration-200 hover:bg-emerald-500/20 hover:text-lime-400 hover:shadow-inner hover:shadow-lime-500/20"
                 >
                     Home
                 </a>
                 <a
                     href="/about"
+                    @frankenNavigate('/about')
                     class="block px-3 py-2 text-base font-medium text-emerald-200/90 transition-all duration-200 hover:bg-emerald-500/20 hover:text-lime-400 hover:shadow-inner hover:shadow-lime-500/20"
                 >
                     About
                 </a>
                 <a
                     href="/blog"
+                    @frankenNavigate('/blog')
                     class="block px-3 py-2 text-base font-medium text-emerald-200/90 transition-all duration-200 hover:bg-emerald-500/20 hover:text-lime-400 hover:shadow-inner hover:shadow-lime-500/20"
                 >
                     Blog
                 </a>
                 <a
                     href="/contact"
+                    @frankenNavigate('/contact')
                     class="block px-3 py-2 text-base font-medium text-emerald-200/90 transition-all duration-200 hover:bg-emerald-500/20 hover:text-lime-400 hover:shadow-inner hover:shadow-lime-500/20"
                 >
                     Contact

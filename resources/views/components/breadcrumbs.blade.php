@@ -4,7 +4,11 @@
             @foreach ($breadcrumbs as $breadcrumb)
                 <li class="flex items-center">
                     @if ($breadcrumb->url && ! $loop->last)
-                        <a href="{{ $breadcrumb->url }}" class="transition-colors hover:text-lime-400">
+                        <a
+                            href="{{ $breadcrumb->url }}"
+                            @frankenNavigate($breadcrumb->url)
+                            class="transition-colors hover:text-lime-400"
+                        >
                             {{ $breadcrumb->label }}
                         </a>
                         <svg

@@ -148,6 +148,37 @@ return [
 
     'cache_parsed_fields' => env('CMS_CACHE_PARSED_FIELDS', true),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Livewire Navigation & Page Components
+    |--------------------------------------------------------------------------
+    |
+    | navigate: add wire:navigate to internal theme links (menus, breadcrumbs,
+    | post links) so page changes swap the body without a full reload.
+    | Requires @livewireScripts in your theme layout.
+    |
+    | navigate_prefetch: use wire:navigate.hover to prefetch on hover.
+    |
+    | navigate_except: path patterns (Str::is) that always get a full page
+    | load. File URLs (sitemap.xml, *.pdf, ...) are always excluded.
+    |
+    | page_components: allow theme templates to be Livewire single-file
+    | components (<?php new class extends Component { ... } ?>). Templates
+    | that are plain Blade keep rendering as normal views.
+    |
+    | layout: layout used by a page component that declares none, e.g.
+    | 'theme::layouts.main'. Null falls back to livewire.component_layout.
+    |
+    */
+
+    'livewire' => [
+        'navigate'          => env('CMS_LIVEWIRE_NAVIGATE', false),
+        'navigate_prefetch' => env('CMS_LIVEWIRE_NAVIGATE_PREFETCH', false),
+        'navigate_except'   => ['admin', 'admin/*', 'feed', 'feed/*'],
+        'page_components'   => env('CMS_LIVEWIRE_PAGE_COMPONENTS', true),
+        'layout'            => null,
+    ],
+
     'rich_editor' => [
         'custom_text_colors' => [
             'brand'     => TextColor::make(label: 'Brand', color: '#919831'),

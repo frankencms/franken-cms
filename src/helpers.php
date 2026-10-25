@@ -9,6 +9,7 @@ use FrankenCms\Settings\ReadingSettings;
 use FrankenCms\Settings\RobotsSettings;
 use FrankenCms\Settings\SeoSettings;
 use FrankenCms\Settings\SitemapSettings;
+use FrankenCms\Support\LivewireNavigation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View;
 
@@ -259,5 +260,18 @@ if (! function_exists('_parseFieldExpression')) {
     function _parseFieldExpression(string $fieldName, array $options = []): array
     {
         return ['name' => $fieldName, 'options' => $options];
+    }
+}
+
+if (! function_exists('franken_navigate')) {
+    /**
+     * The wire:navigate attribute for a theme link when Livewire navigation
+     * is enabled and the URL is internal, otherwise an empty string.
+     *
+     * Usage: <a href="{{ $url }}" {{ franken_navigate($url) }}>
+     */
+    function franken_navigate(?string $url, ?string $target = null): string
+    {
+        return LivewireNavigation::attribute($url, $target);
     }
 }

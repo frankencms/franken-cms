@@ -11,6 +11,7 @@
                             @foreach ($post->categories as $category)
                                 <a
                                     href="{{ $category->url }}"
+                                    @frankenNavigate($category->url)
                                     class="rounded-full bg-gradient-to-r from-lime-500/20 to-emerald-500/20 px-3 py-1 text-sm font-medium text-lime-300 ring-1 ring-lime-400/30 transition-all hover:from-lime-500/30 hover:to-emerald-500/30 hover:ring-lime-400/50"
                                 >
                                     {{ $category->name }}
@@ -100,6 +101,7 @@
                                 @foreach ($post->tags as $tag)
                                     <a
                                         href="{{ $tag->url }}"
+                                        @frankenNavigate($tag->url)
                                         class="rounded bg-gradient-to-r from-lime-500/10 to-emerald-500/10 px-3 py-1 text-sm text-lime-300 ring-1 ring-lime-400/20 transition-all hover:from-lime-500/20 hover:to-emerald-500/20 hover:ring-lime-400/40"
                                     >
                                         #{{ $tag->name }}

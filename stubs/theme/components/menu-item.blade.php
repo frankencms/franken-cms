@@ -13,6 +13,7 @@
 
 <a
     href="{{ $href }}"
+    @frankenNavigate($href, $item['target'] ?? null)
     @if (($item['target'] ?? '_self') !== '_self')
         target="{{ $item["target"] }}"
     @endif

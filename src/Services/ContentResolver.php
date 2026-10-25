@@ -8,6 +8,7 @@ use FrankenCms\Models\Page;
 use FrankenCms\Models\Post;
 use FrankenCms\Settings\PermalinkSettings;
 use FrankenCms\Settings\ReadingSettings;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 readonly class ContentResolver
@@ -18,7 +19,7 @@ readonly class ContentResolver
         private CurrentPageService $currentPageService
     ) {}
 
-    public function resolveHomePage(): View
+    public function resolveHomePage(): View | Response
     {
         $homePage = $this->readingSettings->home_page;
 
@@ -37,7 +38,7 @@ readonly class ContentResolver
         $welcomeView = sprintf('%s.welcome', $themeFolder);
 
         if (view()->exists($welcomeView)) {
-            return view($welcomeView);
+            return TemplateResolver::render('welcome', []);
         }
 
         // If no welcome template exists, 404
@@ -66,7 +67,7 @@ readonly class ContentResolver
 
     }
 
-    public function resolvePage(string $path): View
+    public function resolvePage(string $path): View | Response
     {
         // Reuse page already resolved by SetCurrentPage middleware
         $existingPage = $this->currentPageService->getPage();

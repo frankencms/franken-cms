@@ -3,6 +3,7 @@
 namespace FrankenCms\View\Composers;
 
 use FrankenCms\Services\TemplateFieldExtractor;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\View\View;
 
@@ -29,6 +30,23 @@ class FrankenFieldComposer
             return;
         }
 
+        $frankenFields = $this->shareFieldsFor($viewPath);
+
+        if ($frankenFields === null) {
+            return;
+        }
+
+        // Also pass it to this specific view
+        $view->with('frankenFields', $frankenFields);
+    }
+
+    /**
+     * Parse a theme template's @franken* fields, render their values for the
+     * current page and share them as $frankenFields with all views.
+     * Returns null when the template declares no fields.
+     */
+    public function shareFieldsFor(string $viewPath): ?Collection
+    {
         // Check if caching is enabled
         $cacheEnabled = config('franken-cms.cache_parsed_fields', true);
 
@@ -51,7 +69,7 @@ class FrankenFieldComposer
         }
 
         if (empty($fields)) {
-            return;
+            return null;
         }
 
         // Get existing $frankenFields collection or create a new one
@@ -77,8 +95,7 @@ class FrankenFieldComposer
         // Share the collection with all views
         ViewFacade::share('frankenFields', $frankenFields);
 
-        // Also pass it to this specific view
-        $view->with('frankenFields', $frankenFields);
+        return $frankenFields;
     }
 
     /**

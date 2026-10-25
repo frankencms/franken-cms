@@ -10,6 +10,7 @@ use FrankenCms\Models\Term;
 use FrankenCms\Services\ContentResolver;
 use FrankenCms\Services\CurrentPageService;
 use FrankenCms\Services\RouteHandler;
+use FrankenCms\Services\TemplateResolver;
 use FrankenCms\Settings\ReadingSettings;
 use Illuminate\Http\Request;
 
@@ -71,15 +72,12 @@ class RouteController
         $postPageSlug = $this->settings->post_page;
         $page = Page::where('post_slug', $postPageSlug)->first();
 
-        $themeFolder = config('franken-cms.theme_folder');
-
         // Use the page's template if it exists, otherwise default to 'page-blog'
         $template = $page?->template ?? 'page-blog';
-        $view = sprintf('%s.%s', $themeFolder, $template);
 
-        // Fallback to page-blog if the specific template doesn't exist
-        if (! view()->exists($view)) {
-            $view = sprintf('%s.page-blog', $themeFolder);
+        // Livewire page components query (and paginate) their own posts
+        if (TemplateResolver::isLivewireTemplate($template)) {
+            return TemplateResolver::render($template, compact('page'));
         }
 
         // Get posts for the listing
@@ -89,7 +87,8 @@ class RouteController
             ->orderBy('post_published_at', 'desc')
             ->paginate($this->settings->posts_per_page ?? 10);
 
-        return view($view, compact('posts', 'page'));
+        // Fallback to page-blog if the specific template doesn't exist
+        return TemplateResolver::render($template, compact('posts', 'page'), 'page-blog');
     }
 
     private function handlePostPath(string $path, Request $request)
@@ -101,16 +100,8 @@ class RouteController
             $post = $this->contentResolver->resolvePost($slug, $request->query('p'));
         }
 
-        $themeFolder = config('franken-cms.theme_folder');
-        $template = $post->template ?? 'post';
-        $view = sprintf('%s.%s', $themeFolder, $template);
-
         // Fallback to default post template if specific template doesn't exist
-        if (! view()->exists($view)) {
-            $view = sprintf('%s.post', $themeFolder);
-        }
-
-        return view($view, compact('post'));
+        return TemplateResolver::render($post->template ?? 'post', compact('post'), 'post');
     }
 
     private function isRootPath(string $path): bool
@@ -153,17 +144,8 @@ class RouteController
             ->orderBy('post_published_at', 'desc')
             ->paginate($this->settings->posts_per_page ?? 10);
 
-        $themeFolder = config('franken-cms.theme_folder');
-
-        // Try taxonomy-specific template first (e.g., 'archive-category', 'archive-tag')
-        $specificView = sprintf('%s.archive-%s', $themeFolder, $taxonomyName);
-
-        // Then try generic archive template
-        $genericView = sprintf('%s.archive', $themeFolder);
-
-        // Determine which view to use
-        $view = view()->exists($specificView) ? $specificView : $genericView;
-
-        return view($view, compact('term', 'taxonomy', 'posts'));
+        // Try taxonomy-specific template first (e.g., 'archive-category', 'archive-tag'),
+        // then the generic archive template
+        return TemplateResolver::render("archive-{$taxonomyName}", compact('term', 'taxonomy', 'posts'), 'archive');
     }
 }
