@@ -4,11 +4,11 @@ use FrankenCms\Enums\PostStatus;
 use FrankenCms\Models\Post;
 use FrankenCms\Services\SitemapService;
 use FrankenCms\Settings\SitemapSettings;
+use FrankenCms\Sitemap\Sitemap;
 use FrankenCms\Tests\Support\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Spatie\LaravelSettings\Settings;
-use Spatie\Sitemap\Sitemap;
 
 /**
  * Create a mock SitemapSettings with proper initialization.
@@ -32,6 +32,7 @@ function createSettingsMock(): SitemapSettings
     $settings->excluded_paths = [];
     $settings->include_images = true;
     $settings->custom_sitemaps = [];
+    $settings->include_app_routes = true;
 
     return $settings;
 }
@@ -130,6 +131,18 @@ describe('Sitemap index generation', function () {
 
         expect($sitemap)->toContain('news-sitemap.xml');
         expect($sitemap)->toContain('https://cdn.example.com/products.xml');
+    });
+
+    test('includes app routes sitemap in index when enabled', function () {
+        expect($this->service->render())->toContain('sitemap-routes.xml');
+    });
+
+    test('omits app routes sitemap from index when disabled', function () {
+        $this->settings->include_app_routes = false;
+
+        $service = new SitemapService($this->settings);
+
+        expect($service->render())->not->toContain('sitemap-routes.xml');
     });
 });
 
@@ -498,6 +511,33 @@ describe('Last modification date', function () {
     });
 });
 
+describe('Stale cache handling', function () {
+    test('regenerates post type sitemap when cached value is not a Sitemap instance', function () {
+        Post::factory()->create([
+            'post_type'   => 'post',
+            'post_status' => PostStatus::PUBLISH,
+            'post_slug'   => 'fresh-post',
+        ]);
+
+        // Simulate a stale cache entry left behind by a previous package version
+        Cache::forever('sitemap_post', 'stale-value-from-old-package-version');
+
+        $sitemap = $this->service->generateForPostType('post');
+
+        expect($sitemap)->toBeInstanceOf(Sitemap::class);
+        expect($sitemap->render())->toContain('fresh-post');
+    });
+
+    test('regenerates sitemap index when cached value is not a SitemapIndex instance', function () {
+        Cache::forever('sitemap_index', 'stale-value-from-old-package-version');
+
+        $xml = $this->service->render();
+
+        expect($xml)->toContain('<sitemapindex');
+        expect($xml)->toContain('sitemap-pages.xml');
+    });
+});
+
 describe('Caching behavior', function () {
     test('caches sitemap index results', function () {
         // First call should cache
@@ -559,5 +599,11 @@ describe('Caching behavior', function () {
 
         expect($freshResult)->toContain('original-post');
         expect($freshResult)->toContain('new-post');
+    });
+});
+
+describe('Settings defaults', function () {
+    test('include_app_routes defaults to true', function () {
+        expect(app(SitemapSettings::class)->include_app_routes)->toBeTrue();
     });
 });

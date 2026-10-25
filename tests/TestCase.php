@@ -25,7 +25,6 @@ use Spatie\LaravelSettings\LaravelSettingsServiceProvider;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;
 use Spatie\OgImage\OgImageServiceProvider;
-use Spatie\Sitemap\SitemapServiceProvider;
 
 class TestCase extends Orchestra
 {
@@ -98,7 +97,6 @@ class TestCase extends Orchestra
             WidgetsServiceProvider::class,
             LaravelSettingsServiceProvider::class,
             AiServiceProvider::class,
-            SitemapServiceProvider::class,
             MediaLibraryServiceProvider::class,
             OgImageServiceProvider::class,
             HeadServiceProvider::class,

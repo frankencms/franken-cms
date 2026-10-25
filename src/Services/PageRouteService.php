@@ -48,6 +48,16 @@ class PageRouteService
     }
 
     /**
+     * Route names of published pages registered as named routes
+     *
+     * @return array<int, string>
+     */
+    public function getRegisteredRouteNames(): array
+    {
+        return array_column($this->getCachedPages(), 'route_name');
+    }
+
+    /**
      * Register a single page as a named route
      */
     protected function registerPage(array $page): void

@@ -50,6 +50,7 @@ use FrankenCms\Services\MenuService;
 use FrankenCms\Services\PageRouteService;
 use FrankenCms\Services\PostService;
 use FrankenCms\Services\RobotsService;
+use FrankenCms\Services\RouteSitemapService;
 use FrankenCms\Services\SeoService;
 use FrankenCms\Services\SettingsTabService;
 use FrankenCms\Services\SitemapService;
@@ -63,6 +64,7 @@ use FrankenCms\View\Components\CmsPost;
 use FrankenCms\View\Components\OgImage as OgImageComponent;
 use FrankenCms\View\Composers\FrankenFieldComposer;
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
@@ -111,6 +113,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
                 '22_remove_ai_api_key_setting',
                 '23_add_ai_featured_image_settings',
                 '24_rename_ai_engine_settings',
+                '25_add_sitemap_include_app_routes',
             ])
             ->hasTranslations()
             ->hasRoutes('web')
@@ -157,6 +160,7 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
         // Register robots, sitemap, feed, and social links services
         $this->app->singleton(RobotsService::class);
         $this->app->singleton(SitemapService::class);
+        $this->app->singleton(RouteSitemapService::class);
         $this->app->singleton(FeedService::class);
         $this->app->singleton(SocialLinksService::class);
 
@@ -183,6 +187,30 @@ class FrankenCmsServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        // Per-route sitemap overrides, stored in the action array: survives
+        // route:cache and never leaks into parameter binding like defaults()
+        RoutingRoute::macro('sitemap', function (?float $priority = null, ?string $changeFrequency = null) {
+            /** @var RoutingRoute $this */
+            $this->setAction(array_merge($this->getAction(), [
+                'sitemap' => [
+                    'include'          => true,
+                    'priority'         => $priority,
+                    'change_frequency' => $changeFrequency,
+                ],
+            ]));
+
+            return $this;
+        });
+
+        RoutingRoute::macro('skipSitemap', function () {
+            /** @var RoutingRoute $this */
+            $this->setAction(array_merge($this->getAction(), [
+                'sitemap' => ['include' => false],
+            ]));
+
+            return $this;
+        });
+
         $this->app->singleton(CurrentPageService::class);
         $this->app->singleton(PostService::class);
 

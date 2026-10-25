@@ -177,6 +177,39 @@ FrankenCMS's OG image generation is scoped to CMS-managed pages, so on these non
 
 Append `?ogimage` to any page URL to preview the generated image directly in the browser.
 
+## App Routes Sitemap
+
+FrankenCMS automatically generates sitemaps for CMS content (`sitemap-pages.xml`, `sitemap-posts.xml`). It can also generate `sitemap-routes.xml` covering your application's **own routes** — the static pages you define in `routes/web.php` outside the CMS.
+
+Enabled by default; toggle it under **Settings → Sitemap → App Routes Sitemap**.
+
+### What gets included
+
+A route is included automatically when it is a static `GET` route (no URI parameters), uses the `web` middleware, has no domain restriction, and is not:
+
+- a vendor route (Filament, Livewire, Horizon, Telescope, Debugbar, Pulse)
+- gated behind `auth`, `guest`, `verified`, `signed`, or `password.confirm` middleware
+- a `Route::redirect()` (the target belongs in the sitemap, not the redirect)
+- a FrankenCMS route or a CMS page route (those are already in the content sitemaps)
+
+### Per-route overrides
+
+```php
+// Force-include a route the heuristics would skip, optionally with metadata
+Route::middleware(['web', 'auth'])
+    ->get('/members/welcome', WelcomeController::class)
+    ->sitemap(priority: 0.9, changeFrequency: 'monthly');
+
+// Exclude a route the heuristics would include
+Route::view('/internal-demo', 'demo')->skipSitemap();
+```
+
+Allowed `changeFrequency` values: `always`, `hourly`, `daily`, `weekly`, `monthly`, `yearly`, `never`. Priority is `0.0`–`1.0`.
+
+Routes without overrides use the sitemap settings' default priority and change frequency. The **Excluded Paths** setting always wins — a URL matching an excluded pattern never appears, even with a `->sitemap()` force-include. Routes with URI parameters can't be enumerated; point **Custom Sitemaps** at a hand-built sitemap for those.
+
+Gate detection is alias- and known-middleware-based, not exhaustive — routes gated by policies, custom middleware classes, or custom middleware groups won't be recognized as gated automatically, so use `->skipSitemap()` explicitly for those.
+
 ## Testing
 
 ```bash
