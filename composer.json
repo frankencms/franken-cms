@@ -34,7 +34,7 @@
     },
     "require-dev": {
         "larastan/larastan": "^3.8.1",
-        "laravel/ai": "0.*",
+        "laravel/ai": "^1.0",
         "laravel/pint": "^1.30",
         "nunomaduro/collision": "^v8.9.5",
         "orchestra/testbench": "^v11.0",
@@ -50,7 +50,7 @@
         "tightenco/duster": "^3.3"
     },
     "suggest": {
-        "laravel/ai": "Required for AI content generation features (^0.x)",
+        "laravel/ai": "Required for AI content generation features (^1.0)",
         "spatie/laravel-og-image": "Recommended for automatic Open Graph image generation from Blade templates"
     },
     "autoload": {

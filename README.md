@@ -43,7 +43,13 @@ Franken CMS ships with optional AI-assisted content generation (SEO titles, meta
 ### Install the SDK
 
 ```bash
-composer require laravel/ai
+composer require laravel/ai:^1.0
+```
+
+Using Amazon Bedrock? laravel/ai 1.x no longer installs the AWS SDK, so add it yourself:
+
+```bash
+composer require aws/aws-sdk-php
 ```
 
 ### Configure a provider
